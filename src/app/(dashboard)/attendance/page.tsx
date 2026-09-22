@@ -8,6 +8,8 @@ import {
   Clock,
   FloppyDisk,
   Check,
+  X,
+  ClipboardText,
   Calendar,
   WarningCircle,
   ChatText,
@@ -17,6 +19,7 @@ import { LocalStore } from '@/lib/store';
 import { AttendanceService, StudentService } from '@/services';
 import { StudentRow, AttendanceStatus, SubjectRow } from '@/types';
 import { Button } from '@/components/ui/button';
+import { RoleBadge } from '@/components/ui/badge';
 import { formatDateVietnamese, getTodayISO } from '@/lib/utils';
 import { EmptyStateView } from '@/components/ui/state-views';
 import { toast } from 'sonner';
@@ -171,18 +174,17 @@ export default function AttendancePage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-border">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary">
               Điểm danh {currentSubjectObj ? `tiết ${currentSubjectObj.name}` : 'buổi học'}
             </h1>
             {isSubjectTeacher ? (
-              <span className="px-2.5 py-0.5 text-xs font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded-full border border-amber-500/30">
-                GVBM: {teacherSubjects.map((s) => s.name).join(', ')}
-              </span>
+              <RoleBadge
+                role="SUBJECT"
+                label={`GVBM: ${teacherSubjects.map((s) => s.name).join(', ')}`}
+              />
             ) : (
-              <span className="px-2.5 py-0.5 text-xs font-semibold bg-accent-subtle text-accent rounded-full border border-accent/30">
-                GVCN
-              </span>
+              <RoleBadge role="HOMEROOM" label="GVCN" />
             )}
           </div>
           <p className="text-sm text-text-muted mt-1">
@@ -304,57 +306,61 @@ export default function AttendancePage() {
                     {item.full_name}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-1.5">
+                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
                       {/* Present Button */}
                       <button
                         type="button"
                         onClick={() => handleSetStatus(item.student_id, 'present')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium inline-flex items-center gap-1 transition-all cursor-pointer ${
                           item.status === 'present'
-                            ? 'bg-success text-white shadow-2xs'
-                            : 'bg-surface border border-border text-text-secondary hover:bg-success-subtle hover:text-success'
+                            ? 'bg-success text-white shadow-2xs font-semibold'
+                            : 'bg-surface border border-border text-text-secondary hover:bg-success-bg hover:text-success'
                         }`}
                       >
-                        Có mặt
+                        <Check size={12} weight="bold" />
+                        <span>Có mặt</span>
                       </button>
 
                       {/* Absent Button */}
                       <button
                         type="button"
                         onClick={() => handleSetStatus(item.student_id, 'absent')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium inline-flex items-center gap-1 transition-all cursor-pointer ${
                           item.status === 'absent'
-                            ? 'bg-danger text-white shadow-2xs'
-                            : 'bg-surface border border-border text-text-secondary hover:bg-danger-subtle hover:text-danger'
+                            ? 'bg-danger text-white shadow-2xs font-semibold'
+                            : 'bg-surface border border-border text-text-secondary hover:bg-danger-bg hover:text-danger'
                         }`}
                       >
-                        Vắng
+                        <X size={12} weight="bold" />
+                        <span>Vắng</span>
                       </button>
 
                       {/* Late Button */}
                       <button
                         type="button"
                         onClick={() => handleSetStatus(item.student_id, 'late')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium inline-flex items-center gap-1 transition-all cursor-pointer ${
                           item.status === 'late'
-                            ? 'bg-warning text-white shadow-2xs'
-                            : 'bg-surface border border-border text-text-secondary hover:bg-warning-subtle hover:text-warning'
+                            ? 'bg-warning text-white shadow-2xs font-semibold'
+                            : 'bg-surface border border-border text-text-secondary hover:bg-warning-bg hover:text-warning'
                         }`}
                       >
-                        Muộn
+                        <Clock size={12} weight="bold" />
+                        <span>Muộn</span>
                       </button>
 
                       {/* Excused Button */}
                       <button
                         type="button"
                         onClick={() => handleSetStatus(item.student_id, 'excused')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium inline-flex items-center gap-1 transition-all cursor-pointer ${
                           item.status === 'excused'
-                            ? 'bg-zinc-700 text-white shadow-2xs'
+                            ? 'bg-zinc-700 text-white shadow-2xs font-semibold'
                             : 'bg-surface border border-border text-text-secondary hover:bg-surface-muted hover:text-text-primary'
                         }`}
                       >
-                        Phép
+                        <ClipboardText size={12} weight="bold" />
+                        <span>Phép</span>
                       </button>
                     </div>
                   </td>

@@ -18,7 +18,7 @@ import {
 import { LocalStore } from '@/lib/store';
 import { ClassRow, StudentRow, DeskWithSeats, AnnouncementRow, AttendanceRow } from '@/types';
 import { formatDateVietnamese } from '@/lib/utils';
-import { AttendanceBadge } from '@/components/ui/badge';
+import { AttendanceBadge, RoleBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 import { useCurrentClass } from '@/contexts/class-context';
@@ -96,36 +96,35 @@ export default function DashboardPage() {
   const pinnedAnnouncement = announcements.find((a) => a.is_pinned) || announcements[0];
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-border">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary">
               {classInfo.name}
             </h1>
-            <span className="px-2 py-0.5 text-xs font-medium bg-surface-muted text-text-secondary rounded">
-              {classInfo.room_name || 'Chưa gắn phòng'}
+            <span className="px-2 py-0.5 text-xs font-medium bg-surface-muted text-text-secondary rounded-md border border-border">
+              {classInfo.room_name || 'Chưa xếp phòng'}
             </span>
-            <span className="px-2 py-0.5 text-xs font-medium bg-accent-subtle text-accent rounded">
+            <span className="px-2 py-0.5 text-xs font-medium bg-accent-subtle text-accent rounded-md border border-accent/20">
               Niên khoá {classInfo.school_year || '2025 - 2026'}
             </span>
             {isHomeroom ? (
-              <span className="px-2.5 py-0.5 text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 rounded-full">
-                GVCN
-              </span>
+              <RoleBadge role="HOMEROOM" label="GVCN" />
             ) : (
-              <span className="px-2.5 py-0.5 text-xs font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded-full">
-                GVBM: {teacherSubjects.map((s) => s.name).join(', ')}
-              </span>
+              <RoleBadge
+                role="SUBJECT"
+                label={`GVBM: ${teacherSubjects.map((s) => s.name).join(', ')}`}
+              />
             )}
           </div>
-          <p className="text-sm text-text-muted mt-1 capitalize">
+          <p className="text-xs text-text-muted mt-1.5 capitalize">
             {formatDateVietnamese(todayStr)}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link href="/attendance">
             <Button variant="primary">
               <ClipboardText size={16} />
@@ -143,22 +142,22 @@ export default function DashboardPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-4 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/25 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 bg-indigo-50/70 border border-indigo-200/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-xs flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
               GVBM
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm text-text-primary">
+                <span className="font-semibold text-xs text-text-primary">
                   Giáo viên Bộ môn: {teacherSubjects.map((s) => s.name).join(', ')}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-200 font-medium">
-                  Chỉ đọc hồ sơ & Điểm danh tiết
+                <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-medium">
+                  Chế độ chỉ đọc hồ sơ & Điểm danh tiết
                 </span>
               </div>
               <p className="text-xs text-text-muted mt-0.5">
-                Bạn có thể điểm danh tiết học của mình, xem danh sách và sơ đồ bàn ghế của lớp {classInfo.name}.
+                Bạn có thể điểm danh tiết học của mình, tra cứu danh sách và xem vị trí chỗ ngồi học sinh lớp {classInfo.name}.
               </p>
             </div>
           </div>
@@ -364,8 +363,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Blackboard indicator */}
-            <div className="w-full py-1.5 mb-4 text-center bg-surface-muted border border-border/80 rounded text-xs font-semibold text-text-secondary tracking-widest uppercase">
-              Bục giảng / Bảng đen
+            <div className="w-full py-1.5 mb-4 text-center bg-slate-700 text-slate-100 rounded-md text-[11px] font-semibold tracking-wider uppercase shadow-inner">
+              Bục giảng & Bảng viết (Hướng nhìn của giáo viên)
             </div>
 
             {/* Mini desk grid */}
@@ -376,13 +375,13 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={desk.id}
-                    className="border border-border/70 rounded-md p-1.5 bg-surface-subtle text-center text-[10px]"
+                    className="border border-border rounded-lg p-2 bg-surface text-center text-xs shadow-2xs hover:border-accent/40 transition-colors"
                   >
-                    <div className="text-text-muted font-mono mb-1">Bàn {desk.desk_number}</div>
-                    <div className="truncate font-medium text-text-primary">
+                    <div className="text-text-muted font-mono text-[10px] mb-1">Bàn {desk.desk_number}</div>
+                    <div className="truncate font-medium text-text-primary text-[11px]">
                       {leftStu ? leftStu.full_name.split(' ').slice(-1)[0] : '—'}
                     </div>
-                    <div className="truncate font-medium text-text-primary">
+                    <div className="truncate font-medium text-text-primary text-[11px]">
                       {rightStu ? rightStu.full_name.split(' ').slice(-1)[0] : '—'}
                     </div>
                   </div>
@@ -390,8 +389,9 @@ export default function DashboardPage() {
               })}
             </div>
             <div className="text-center mt-3">
-              <Link href="/seating" className="text-xs text-accent hover:underline">
-                Xem toàn bộ 25 bàn và kéo thả đổi chỗ →
+              <Link href="/seating" className="text-xs font-medium text-accent hover:underline inline-flex items-center gap-1">
+                <span>Xem toàn bộ 25 bàn và xếp chỗ</span>
+                <ArrowRight size={12} />
               </Link>
             </div>
           </div>

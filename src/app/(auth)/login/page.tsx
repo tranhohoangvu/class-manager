@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   User,
   WarningCircle,
-  Sparkle,
+  Key,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 
@@ -187,10 +187,10 @@ export default function LoginPage() {
       </div>
 
       {/* Demo Accounts Quick-Select for Prototype */}
-      <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
+      <div className="bg-surface rounded-2xl border border-border p-5 space-y-3 shadow-2xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-text-secondary uppercase tracking-wider">
-            <Sparkle size={14} className="text-accent" />
+            <Key size={14} className="text-accent" />
             <span>Tài khoản thử nghiệm (1-Click Login)</span>
           </div>
           <span className="text-[11px] text-text-muted">Prototype</span>

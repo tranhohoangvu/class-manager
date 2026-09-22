@@ -294,26 +294,26 @@ export default function StudentDetailPage() {
           </h2>
 
           <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="p-2.5 rounded-lg bg-success-subtle/50 border border-success/20">
-              <span className="text-xs text-success block">Có mặt</span>
+            <div className="p-2.5 rounded-lg bg-success-bg border border-success/20 shadow-2xs">
+              <span className="text-xs text-success font-medium block">Có mặt</span>
               <span className="text-lg font-semibold text-success">{presentDays}</span>
               <span className="text-[10px] text-text-muted block">buổi</span>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-danger-subtle/50 border border-danger/20">
-              <span className="text-xs text-danger block">Vắng</span>
+            <div className="p-2.5 rounded-lg bg-danger-bg border border-danger/20 shadow-2xs">
+              <span className="text-xs text-danger font-medium block">Vắng</span>
               <span className="text-lg font-semibold text-danger">{absentDays}</span>
               <span className="text-[10px] text-text-muted block">buổi</span>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-warning-subtle/50 border border-warning/20">
-              <span className="text-xs text-warning block">Đi muộn</span>
+            <div className="p-2.5 rounded-lg bg-warning-bg border border-warning/20 shadow-2xs">
+              <span className="text-xs text-warning font-medium block">Đi muộn</span>
               <span className="text-lg font-semibold text-warning">{lateDays}</span>
               <span className="text-[10px] text-text-muted block">buổi</span>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-surface-muted border border-border">
-              <span className="text-xs text-text-secondary block">Có phép</span>
+            <div className="p-2.5 rounded-lg bg-surface-muted border border-border shadow-2xs">
+              <span className="text-xs text-text-secondary font-medium block">Có phép</span>
               <span className="text-lg font-semibold text-text-secondary">{excusedDays}</span>
               <span className="text-[10px] text-text-muted block">buổi</span>
             </div>

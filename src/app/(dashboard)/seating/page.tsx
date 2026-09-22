@@ -239,42 +239,50 @@ export default function SeatingPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 no-print">
+        <div className="p-3.5 bg-indigo-50 border border-indigo-200/80 rounded-xl flex items-center justify-between text-xs text-indigo-900 no-print shadow-2xs">
           <span>
             Bạn đang xem sơ đồ chỗ ngồi lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ tra cứu vị trí học sinh khi vào lớp dạy.
           </span>
-          <span className="px-2 py-0.5 rounded bg-amber-500/20 font-medium text-[11px]">Chỉ xem sơ đồ</span>
+          <span className="px-2 py-0.5 rounded bg-indigo-100 font-medium text-[11px] text-indigo-800">Chỉ xem sơ đồ</span>
         </div>
       )}
 
       {/* Notice / Action bar when seat is selected */}
       {selectedSeatId && (
-        <div className="p-3 bg-accent-subtle border border-accent/30 rounded-lg flex items-center justify-between text-xs text-accent no-print">
-          <div className="flex items-center gap-2">
-            <ArrowsLeftRight size={16} className="animate-pulse" />
-            <span>
-              Đang chọn: <strong>{selectedStudent ? selectedStudent.full_name : 'Ghế trống'}</strong>.
-              Nhấp vào một ghế khác để hoán đổi chỗ, hoặc chọn học sinh chưa xếp ở bảng dưới.
-            </span>
+        <div className="p-3.5 bg-accent-subtle border border-accent/40 rounded-xl flex items-center justify-between text-xs text-accent shadow-2xs no-print">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-accent text-accent-text flex items-center justify-center flex-shrink-0 animate-pulse">
+              <ArrowsLeftRight size={14} />
+            </div>
+            <div>
+              <span className="font-semibold text-text-primary">
+                Đang chọn: {selectedStudent ? selectedStudent.full_name : 'Ghế trống'}
+              </span>
+              <span className="text-text-secondary ml-1.5 hidden sm:inline">
+                (Nhấp vào một ghế khác trên sơ đồ để hoán đổi vị trí, hoặc bấm vào học sinh chưa xếp chỗ bên dưới)
+              </span>
+            </div>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setSelectedSeatId(null)}
-            className="p-1 hover:bg-accent/10 rounded transition-colors cursor-pointer"
+            className="text-xs text-text-muted hover:text-text-primary h-7 px-2.5"
           >
-            <X size={15} />
-          </button>
+            <X size={14} />
+            <span>Hủy chọn</span>
+          </Button>
         </div>
       )}
 
       {/* Main Grid: Classroom Layout */}
-      <div className="bg-surface rounded-2xl border border-border p-6 shadow-xs space-y-8 printable-card">
+      <div className="bg-surface rounded-2xl border border-border p-5 sm:p-7 shadow-xs space-y-7 printable-card">
         {/* Blackboard area */}
-        <div className="w-full max-w-2xl mx-auto py-2.5 bg-zinc-800 text-zinc-100 rounded-lg text-center shadow-inner">
+        <div className="w-full max-w-2xl mx-auto py-2.5 bg-slate-700 text-slate-100 rounded-lg text-center shadow-inner">
           <div className="text-xs font-semibold tracking-widest uppercase">
             Bục giảng & Bảng viết (Hướng nhìn của giáo viên)
           </div>
-          <div className="text-[10px] text-zinc-400 mt-0.5">
+          <div className="text-[10px] text-slate-300 mt-0.5 font-mono">
             Dãy 1 ← Dãy 2 ← Dãy 3 → Dãy 4 → Dãy 5
           </div>
         </div>

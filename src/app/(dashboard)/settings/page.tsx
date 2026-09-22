@@ -164,9 +164,8 @@ export default function SettingsPage() {
               type="number"
               label="Số lượng bàn học trong phòng"
               value={deskCount}
-              onChange={(e) => setDeskCount(e.target.value)}
-              min="10"
-              max="50"
+              disabled
+              hint="Cố định 25 bàn (50 chỗ ngồi) theo mô hình chuẩn 5 dãy × 5 hàng của trường"
             />
           </div>
 

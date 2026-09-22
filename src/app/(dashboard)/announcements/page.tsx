@@ -120,11 +120,11 @@ export default function AnnouncementsPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+        <div className="p-3.5 bg-indigo-50 border border-indigo-200/80 rounded-xl flex items-center justify-between text-xs text-indigo-900 shadow-2xs">
           <span>
             Bạn đang xem bảng thông báo lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ chỉ xem thông báo từ GVCN.
           </span>
-          <span className="px-2 py-0.5 rounded bg-amber-500/20 font-medium text-[11px]">Chỉ xem</span>
+          <span className="px-2 py-0.5 rounded bg-indigo-100 font-medium text-[11px] text-indigo-800">Chỉ xem</span>
         </div>
       )}
 
@@ -142,10 +142,10 @@ export default function AnnouncementsPage() {
           announcements.map((ann) => (
             <div
               key={ann.id}
-              className={`p-6 rounded-xl border transition-all ${
+              className={`p-5 sm:p-6 rounded-xl border transition-all ${
                 ann.is_pinned
                   ? 'bg-surface border-accent/40 shadow-xs'
-                  : 'bg-surface border-border'
+                  : 'bg-surface border-border shadow-2xs'
               }`}
             >
               <div className="flex items-start justify-between gap-4">

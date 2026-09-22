@@ -209,11 +209,11 @@ export default function StudentsPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 no-print">
+        <div className="p-3.5 bg-indigo-50 border border-indigo-200/80 rounded-xl flex items-center justify-between text-xs text-indigo-900 no-print shadow-2xs">
           <span>
-            Bạn đang xem danh sách học sinh lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ chỉ xem hồ sơ.
+            Bạn đang xem danh sách học sinh lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ tra cứu hồ sơ.
           </span>
-          <span className="px-2 py-0.5 rounded bg-amber-500/20 font-medium text-[11px]">Chỉ xem</span>
+          <span className="px-2 py-0.5 rounded bg-indigo-100 font-medium text-[11px] text-indigo-800">Chỉ xem</span>
         </div>
       )}
 
@@ -229,7 +229,7 @@ export default function StudentsPage() {
             placeholder="Tìm theo tên học sinh, mã HS hoặc số điện thoại..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm bg-surface rounded-lg border border-border focus:outline-none focus:border-accent"
+            className="w-full pl-9 pr-3 py-2 text-xs bg-surface rounded-lg border border-border focus:outline-none focus:border-accent shadow-2xs placeholder:text-text-muted"
           />
         </div>
 
@@ -237,7 +237,7 @@ export default function StudentsPage() {
           <select
             value={genderFilter}
             onChange={(e) => setGenderFilter(e.target.value)}
-            className="px-3 py-2 text-sm bg-surface rounded-lg border border-border text-text-secondary focus:outline-none focus:border-accent"
+            className="px-3 py-2 text-xs bg-surface rounded-lg border border-border text-text-secondary focus:outline-none focus:border-accent shadow-2xs cursor-pointer"
           >
             <option value="all">Tất cả giới tính</option>
             <option value="male">Nam</option>
@@ -247,7 +247,7 @@ export default function StudentsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-sm bg-surface rounded-lg border border-border text-text-secondary focus:outline-none focus:border-accent"
+            className="px-3 py-2 text-xs bg-surface rounded-lg border border-border text-text-secondary focus:outline-none focus:border-accent shadow-2xs cursor-pointer"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang học</option>

@@ -183,18 +183,18 @@ export default function AttendanceHistoryPage() {
 
       {/* Warning Alert if students absent */}
       {studentsNeedingAttention.length > 0 && (
-        <div className="p-4 rounded-xl bg-warning-subtle/50 border border-warning/30 flex items-start gap-3 no-print">
+        <div className="p-4 rounded-xl bg-warning-bg border border-warning/30 flex items-start gap-3 no-print shadow-2xs">
           <Warning size={20} className="text-warning flex-shrink-0 mt-0.5" />
-          <div className="space-y-1 text-xs">
+          <div className="space-y-1.5 text-xs">
             <p className="font-semibold text-text-primary">
               Học sinh cần lưu ý về chuyên cần:
             </p>
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex flex-wrap gap-2 pt-0.5">
               {studentsNeedingAttention.map((item) => (
                 <Link
                   key={item.student.id}
                   href={`/students/${item.student.id}`}
-                  className="px-2.5 py-1 rounded bg-surface border border-warning/40 hover:border-warning font-medium text-text-primary inline-flex items-center gap-1.5"
+                  className="px-2.5 py-1 rounded-md bg-surface border border-warning/40 hover:border-warning font-medium text-text-primary inline-flex items-center gap-1.5 shadow-2xs hover:shadow-xs transition-all"
                 >
                   <span>{item.student.full_name}</span>
                   <span className="text-danger font-semibold">({item.absent} vắng, {item.late} muộn)</span>
@@ -204,6 +204,32 @@ export default function AttendanceHistoryPage() {
           </div>
         </div>
       )}
+
+      {/* Legend & Summary Info */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-text-muted px-1 no-print">
+        <div className="flex items-center gap-4 flex-wrap font-medium">
+          <span className="text-text-secondary font-semibold">Chú giải:</span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-4 h-4 rounded bg-success text-white text-[10px] font-bold inline-flex items-center justify-center">✓</span>
+            <span>Có mặt</span>
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-4 h-4 rounded bg-danger text-white text-[10px] font-bold inline-flex items-center justify-center">V</span>
+            <span>Vắng</span>
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-4 h-4 rounded bg-warning text-white text-[10px] font-bold inline-flex items-center justify-center">M</span>
+            <span>Đi muộn</span>
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-4 h-4 rounded bg-zinc-600 text-white text-[10px] font-bold inline-flex items-center justify-center">P</span>
+            <span>Có phép</span>
+          </span>
+        </div>
+        <div>
+          <span>Hiển thị <strong>{dates.length}</strong> buổi học gần nhất</span>
+        </div>
+      </div>
 
       {/* Main Matrix Table */}
       {dates.length === 0 ? (
