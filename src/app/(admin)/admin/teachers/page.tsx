@@ -1,0 +1,656 @@
+'use client';
+
+import { useState, useEffect, useMemo } from 'react';
+import {
+  MagnifyingGlass,
+  Plus,
+  PencilSimple,
+  Lock,
+  LockOpen,
+  Key,
+  ChalkboardTeacher,
+  Phone,
+  EnvelopeSimple,
+  Check,
+  Eye,
+  BookOpen,
+  GraduationCap,
+} from '@phosphor-icons/react';
+import { LocalStore } from '@/lib/store';
+import { UserRow, ClassRow, TeacherFormData, SubjectRow, SubjectAssignmentRow } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Modal, ConfirmDialog } from '@/components/ui/modal';
+import { toast } from 'sonner';
+
+export default function AdminTeachersPage() {
+  const [teachers, setTeachers] = useState<UserRow[]>([]);
+  const [classes, setClasses] = useState<ClassRow[]>([]);
+  const [subjects, setSubjects] = useState<SubjectRow[]>([]);
+  const [subjectAssignments, setSubjectAssignments] = useState<SubjectAssignmentRow[]>([]);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'disabled'>('all');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Modal states
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState<UserRow | null>(null);
+  const [selectedTeacherDetail, setSelectedTeacherDetail] = useState<UserRow | null>(null);
+  const [targetToggleUser, setTargetToggleUser] = useState<UserRow | null>(null);
+  const [targetResetUser, setTargetResetUser] = useState<UserRow | null>(null);
+
+  // Form states
+  const [formData, setFormData] = useState<TeacherFormData>({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    status: 'active',
+    assigned_class_ids: [],
+  });
+
+  const loadData = () => {
+    setTeachers(LocalStore.getTeachers());
+    setClasses(LocalStore.getClasses().filter((c) => c.status === 'active'));
+    setSubjects(LocalStore.getSubjects());
+    setSubjectAssignments(LocalStore.getSubjectAssignments());
+    setIsLoaded(true);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const filteredTeachers = useMemo(() => {
+    return teachers.filter((t) => {
+      const matchSearch =
+        search.trim() === '' ||
+        t.name.toLowerCase().includes(search.toLowerCase()) ||
+        t.email.toLowerCase().includes(search.toLowerCase()) ||
+        (t.phone && t.phone.includes(search));
+      const matchStatus = statusFilter === 'all' || t.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [teachers, search, statusFilter]);
+
+  const openAddModal = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      password: 'password123',
+      status: 'active',
+      assigned_class_ids: [],
+    });
+    setIsAddModalOpen(true);
+  };
+
+  const openEditModal = (teacher: UserRow) => {
+    setEditingTeacher(teacher);
+    // Find classes currently assigned to this teacher
+    const assigned = classes.filter((c) => c.teacher_id === teacher.id).map((c) => c.id);
+    setFormData({
+      name: teacher.name,
+      email: teacher.email,
+      phone: teacher.phone || '',
+      status: teacher.status,
+      assigned_class_ids: assigned,
+    });
+  };
+
+  const handleSaveTeacher = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim() || !formData.email.trim()) {
+      toast.error('Vui lòng điền đủ Họ tên và Email');
+      return;
+    }
+
+    if (editingTeacher) {
+      LocalStore.updateTeacher(editingTeacher.id, formData);
+      toast.success('Đã cập nhật thông tin giáo viên');
+      setEditingTeacher(null);
+    } else {
+      // Check duplicate email
+      const existing = teachers.some(
+        (t) => t.email.toLowerCase() === formData.email.trim().toLowerCase()
+      );
+      if (existing) {
+        toast.error('Email này đã tồn tại trong hệ thống!');
+        return;
+      }
+      LocalStore.addTeacher(formData);
+      toast.success('Đã tạo tài khoản giáo viên mới');
+      setIsAddModalOpen(false);
+    }
+
+    loadData();
+  };
+
+  const handleToggleStatus = () => {
+    if (!targetToggleUser) return;
+    const updated = LocalStore.toggleTeacherStatus(targetToggleUser.id);
+    if (updated) {
+      toast.success(
+        updated.status === 'active'
+          ? `Đã kích hoạt lại tài khoản ${updated.name}`
+          : `Đã vô hiệu hóa tài khoản ${updated.name}`
+      );
+      loadData();
+    }
+    setTargetToggleUser(null);
+  };
+
+  const handleResetPassword = () => {
+    if (!targetResetUser) return;
+    const ok = LocalStore.resetTeacherPassword(targetResetUser.id, 'password123');
+    if (ok) {
+      toast.success(`Đã reset mật khẩu của ${targetResetUser.name} về mặc định: password123`);
+    }
+    setTargetResetUser(null);
+  };
+
+  const toggleClassAssignment = (classId: string) => {
+    const current = formData.assigned_class_ids || [];
+    if (current.includes(classId)) {
+      setFormData({
+        ...formData,
+        assigned_class_ids: current.filter((id) => id !== classId),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        assigned_class_ids: [...current, classId],
+      });
+    }
+  };
+
+  return (
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-border">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+            Quản lý Giáo viên
+          </h1>
+          <p className="text-sm text-text-muted mt-1">
+            Quản lý danh sách, cấp tài khoản và phân công lớp cho giáo viên chủ nhiệm
+          </p>
+        </div>
+
+        <Button variant="primary" onClick={openAddModal}>
+          <Plus size={16} />
+          <span>Thêm Giáo viên</span>
+        </Button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md">
+          <MagnifyingGlass
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+          />
+          <input
+            type="text"
+            placeholder="Tìm theo tên, email, số điện thoại..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-text-muted">Trạng thái:</span>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="bg-surface border border-border px-3 py-1.5 rounded-lg text-xs font-medium focus:outline-none focus:border-accent"
+          >
+            <option value="all">Tất cả ({teachers.length})</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="disabled">Đã khóa</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-surface-muted/50 border-b border-border text-xs text-text-muted uppercase tracking-wider font-semibold">
+              <tr>
+                <th className="px-4 py-3">Giáo viên</th>
+                <th className="px-4 py-3">Môn phụ trách</th>
+                <th className="px-4 py-3">Lớp GVCN</th>
+                <th className="px-4 py-3">Lớp GVBM</th>
+                <th className="px-4 py-3">Trạng thái</th>
+                <th className="px-4 py-3 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border text-text-secondary">
+              {filteredTeachers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-text-muted text-sm">
+                    Không tìm thấy giáo viên nào phù hợp.
+                  </td>
+                </tr>
+              ) : (
+                filteredTeachers.map((t) => {
+                  const teacherAssignments = subjectAssignments.filter((sa) => sa.teacher_id === t.id);
+                  const subjectId = t.subject_id || (teacherAssignments.length > 0 ? teacherAssignments[0].subject_id : null);
+                  const subject = subjects.find((s) => s.id === subjectId);
+                  const homeroomClass = classes.find((c) => c.teacher_id === t.id);
+                  const subjectClassList = teacherAssignments
+                    .map((sa) => classes.find((c) => c.id === sa.class_id))
+                    .filter(Boolean) as ClassRow[];
+
+                  return (
+                    <tr key={t.id} className="hover:bg-surface-muted/30 transition-colors">
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-accent/15 text-accent font-semibold text-xs flex items-center justify-center flex-shrink-0">
+                            {t.name.charAt(0)}
+                          </div>
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedTeacherDetail(t)}
+                              className="font-semibold text-text-primary hover:text-accent transition-colors block text-sm text-left"
+                            >
+                              {t.name}
+                            </button>
+                            <span className="text-[11px] text-text-muted block">{t.email}</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        {subject ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent-subtle text-accent border border-accent/20">
+                            <BookOpen size={12} />
+                            {subject.name} ({subject.code})
+                          </span>
+                        ) : (
+                          <span className="text-xs text-text-muted italic">Chưa gán môn</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        {homeroomClass ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                            {homeroomClass.name}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-text-muted italic">—</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        <div className="flex flex-wrap items-center gap-1 max-w-xs">
+                          {subjectClassList.length > 0 ? (
+                            subjectClassList.map((c) => (
+                              <span
+                                key={c.id}
+                                className="px-1.5 py-0.5 text-[11px] font-medium bg-surface-muted text-text-secondary rounded border border-border"
+                              >
+                                {c.name}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-xs text-text-muted italic">—</span>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        {t.status === 'active' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            Đang hoạt động
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 rounded-full">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                            Đã khóa
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => setSelectedTeacherDetail(t)}
+                            title="Xem chi tiết phân công"
+                            className="p-1.5 text-text-muted hover:text-accent hover:bg-surface-muted rounded-md transition-colors"
+                          >
+                            <Eye size={16} />
+                          </button>
+
+                          <button
+                            onClick={() => openEditModal(t)}
+                            title="Chỉnh sửa thông tin"
+                            className="p-1.5 text-text-muted hover:text-accent hover:bg-surface-muted rounded-md transition-colors"
+                          >
+                            <PencilSimple size={16} />
+                          </button>
+
+                          <button
+                            onClick={() => setTargetResetUser(t)}
+                            title="Đặt lại mật khẩu (password123)"
+                            className="p-1.5 text-text-muted hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                          >
+                            <Key size={16} />
+                          </button>
+
+                          <button
+                            onClick={() => setTargetToggleUser(t)}
+                            title={t.status === 'active' ? 'Vô hiệu hóa tài khoản' : 'Mở khóa'}
+                            className={`p-1.5 rounded-md transition-colors ${
+                              t.status === 'active'
+                                ? 'text-text-muted hover:text-danger hover:bg-danger/10'
+                                : 'text-emerald-600 hover:bg-emerald-50'
+                            }`}
+                          >
+                            {t.status === 'active' ? <Lock size={16} /> : <LockOpen size={16} />}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Add / Edit Teacher Modal */}
+      <Modal
+        isOpen={isAddModalOpen || !!editingTeacher}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingTeacher(null);
+        }}
+        title={editingTeacher ? 'Chỉnh sửa Giáo viên' : 'Thêm Giáo viên mới'}
+      >
+        <form onSubmit={handleSaveTeacher} className="space-y-4">
+          <div>
+            <Input
+              id="name"
+              label="Họ và tên giáo viên *"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              placeholder="VD: Thầy Nguyễn Văn Nam"
+            />
+          </div>
+
+          <div>
+            <Input
+              id="email"
+              type="email"
+              label="Email đăng nhập *"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              placeholder="nam.nguyen@school.edu.vn"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Input
+                id="phone"
+                label="Số điện thoại"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="0912345678"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-secondary mb-1">
+                Trạng thái
+              </label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+              >
+                <option value="active">Đang hoạt động</option>
+                <option value="disabled">Khóa tài khoản</option>
+              </select>
+            </div>
+          </div>
+
+          {!editingTeacher && (
+            <div>
+              <Input
+                id="password"
+                type="text"
+                label="Mật khẩu ban đầu"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="password123"
+              />
+              <p className="text-[11px] text-text-muted mt-1">
+                Mật khẩu mẫu ở prototype (mặc định: password123)
+              </p>
+            </div>
+          )}
+
+          {/* Assign Classes */}
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              Phân công lớp phụ trách
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 border border-border rounded-lg bg-surface-muted/30">
+              {classes.map((cls) => {
+                const isSelected = (formData.assigned_class_ids || []).includes(cls.id);
+                return (
+                  <button
+                    key={cls.id}
+                    type="button"
+                    onClick={() => toggleClassAssignment(cls.id)}
+                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium border transition-all ${
+                      isSelected
+                        ? 'bg-accent-subtle border-accent text-accent'
+                        : 'bg-surface border-border text-text-secondary hover:border-text-muted'
+                    }`}
+                  >
+                    <span>{cls.name}</span>
+                    {isSelected && <Check size={12} weight="bold" />}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-text-muted mt-1">
+              Nhấp để chọn một hoặc nhiều lớp học phụ trách.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setIsAddModalOpen(false);
+                setEditingTeacher(null);
+              }}
+            >
+              Hủy
+            </Button>
+            <Button type="submit" variant="primary">
+              {editingTeacher ? 'Lưu thay đổi' : 'Tạo tài khoản'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Teacher Detail Modal */}
+      <Modal
+        isOpen={!!selectedTeacherDetail}
+        onClose={() => setSelectedTeacherDetail(null)}
+        title="Hồ sơ & Phân công Giáo viên"
+        description="Thông tin chi tiết giáo viên và các lớp chủ nhiệm, bộ môn được phân công"
+      >
+        {selectedTeacherDetail && (() => {
+          const teacherAssignments = subjectAssignments.filter((sa) => sa.teacher_id === selectedTeacherDetail.id);
+          const subjectId = selectedTeacherDetail.subject_id || (teacherAssignments.length > 0 ? teacherAssignments[0].subject_id : null);
+          const subject = subjects.find((s) => s.id === subjectId);
+          const homeroomClass = classes.find((c) => c.teacher_id === selectedTeacherDetail.id);
+          const subjectClassList = teacherAssignments
+            .map((sa) => classes.find((c) => c.id === sa.class_id))
+            .filter(Boolean) as ClassRow[];
+
+          const allAssignedClasses = [
+            ...(homeroomClass ? [homeroomClass] : []),
+            ...subjectClassList,
+          ];
+          const distinctGrades = Array.from(new Set(allAssignedClasses.map((c) => c.grade))).sort();
+
+          return (
+            <div className="space-y-5">
+              {/* Teacher Bio Header */}
+              <div className="p-4 bg-surface-muted rounded-xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-accent/20 text-accent font-bold text-base flex items-center justify-center">
+                    {selectedTeacherDetail.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-text-primary text-base">
+                      {selectedTeacherDetail.name}
+                    </h3>
+                    <div className="flex items-center gap-3 text-xs text-text-muted mt-0.5">
+                      <span>{selectedTeacherDetail.email}</span>
+                      {selectedTeacherDetail.phone && <span>• {selectedTeacherDetail.phone}</span>}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  {selectedTeacherDetail.status === 'active' ? (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Đang hoạt động
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                      Đã khóa
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Subject Specialist */}
+              <div className="p-3.5 bg-surface border border-border rounded-xl flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <BookOpen size={16} className="text-accent" />
+                  <span className="text-text-muted font-medium">Bộ môn chuyên trách:</span>
+                  <span className="font-semibold text-text-primary">
+                    {subject ? `${subject.name} (${subject.code})` : 'Chưa phân công'}
+                  </span>
+                </div>
+                {distinctGrades.length > 0 && (
+                  <span className="px-2 py-0.5 rounded bg-surface-muted text-text-secondary text-[11px]">
+                    Khối phụ trách: {distinctGrades.map((g) => `Khối ${g}`).join(', ')}
+                  </span>
+                )}
+              </div>
+
+              {/* Homeroom Assignment */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-text-muted block">
+                  Lớp Chủ nhiệm (GVCN)
+                </span>
+                {homeroomClass ? (
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 rounded-xl flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-emerald-800 dark:text-emerald-300 text-sm">
+                        {homeroomClass.name}
+                      </span>
+                      <span className="text-text-muted">
+                        (Phòng: {homeroomClass.room_name || 'Chưa xếp'})
+                      </span>
+                    </div>
+                    <span className="text-emerald-700 dark:text-emerald-300 font-medium">
+                      Toàn quyền quản lý lớp
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-text-muted italic p-2.5 bg-surface-muted/50 rounded-lg">
+                    Giáo viên này hiện không chủ nhiệm lớp nào.
+                  </p>
+                )}
+              </div>
+
+              {/* Subject Classes Assignments */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                    Các lớp dạy Bộ môn ({subjectClassList.length} lớp)
+                  </span>
+                  <span className="text-[11px] text-text-muted">Quyền điểm danh tiết</span>
+                </div>
+
+                {subjectClassList.length === 0 ? (
+                  <p className="text-xs text-text-muted italic p-2.5 bg-surface-muted/50 rounded-lg">
+                    Chưa được phân công dạy bộ môn ở lớp nào.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {subjectClassList.map((cls) => (
+                      <div
+                        key={cls.id}
+                        className="p-2.5 bg-surface border border-border rounded-lg text-xs flex items-center justify-between"
+                      >
+                        <span className="font-medium text-text-primary">{cls.name}</span>
+                        <span className="text-[11px] text-text-muted">
+                          {cls.room_name || `Khối ${cls.grade}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-3 border-t border-border">
+                <Button variant="secondary" onClick={() => setSelectedTeacherDetail(null)}>
+                  Đóng
+                </Button>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
+
+      {/* Confirm Lock / Unlock Dialog */}
+      <ConfirmDialog
+        isOpen={!!targetToggleUser}
+        onClose={() => setTargetToggleUser(null)}
+        onConfirm={handleToggleStatus}
+        title={
+          targetToggleUser?.status === 'active'
+            ? 'Vô hiệu hóa tài khoản giáo viên'
+            : 'Kích hoạt lại tài khoản giáo viên'
+        }
+        description={
+          targetToggleUser?.status === 'active'
+            ? `Bạn có chắc chắn muốn khóa tài khoản "${targetToggleUser?.name}"? Giáo viên này sẽ không thể đăng nhập vào hệ thống.`
+            : `Mở khóa tài khoản cho "${targetToggleUser?.name}". Giáo viên sẽ có thể tiếp tục đăng nhập quản lý lớp học.`
+        }
+        confirmText={targetToggleUser?.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa'}
+        variant={targetToggleUser?.status === 'active' ? 'danger' : 'primary'}
+      />
+
+      {/* Confirm Reset Password Dialog */}
+      <ConfirmDialog
+        isOpen={!!targetResetUser}
+        onClose={() => setTargetResetUser(null)}
+        onConfirm={handleResetPassword}
+        title="Đặt lại mật khẩu giáo viên"
+        description={`Bạn có chắc chắn muốn đặt lại mật khẩu cho giáo viên "${targetResetUser?.name}" về mặc định "password123"?`}
+        confirmText="Đặt lại mật khẩu"
+        variant="primary"
+      />
+    </div>
+  );
+}

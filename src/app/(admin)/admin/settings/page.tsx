@@ -1,0 +1,137 @@
+'use client';
+
+import { useState } from 'react';
+import { GearSix, ArrowClockwise, Check, ShieldCheck, Database } from '@phosphor-icons/react';
+import { LocalStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ConfirmDialog } from '@/components/ui/modal';
+import { toast } from 'sonner';
+
+export default function AdminSettingsPage() {
+  const [schoolName, setSchoolName] = useState('Trường THCS Chu Văn An');
+  const [currentYear, setCurrentYear] = useState('2025 - 2026');
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
+  const handleSaveSystemSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success('Đã lưu cấu hình hệ thống');
+  };
+
+  const handleResetAllData = () => {
+    LocalStore.resetToDefaults();
+    toast.success('Đã khôi phục toàn bộ dữ liệu hệ thống về mặc định ban đầu!');
+    setIsResetConfirmOpen(false);
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
+
+  return (
+    <div className="p-6 md:p-8 space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="pb-5 border-b border-border">
+        <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+          Cài đặt hệ thống
+        </h1>
+        <p className="text-sm text-text-muted mt-1">
+          Cấu hình quy mô toàn trường và quản lý cơ sở dữ liệu mẫu
+        </p>
+      </div>
+
+      {/* General School Settings */}
+      <div className="bg-surface rounded-xl border border-border p-6 space-y-5">
+        <div className="flex items-center gap-2 text-sm font-semibold text-text-primary pb-2 border-b border-border">
+          <GearSix size={18} className="text-accent" />
+          <span>Thông tin đơn vị trường học</span>
+        </div>
+
+        <form onSubmit={handleSaveSystemSettings} className="space-y-4 max-w-lg">
+          <div>
+            <Input
+              id="school"
+              label="Tên đơn vị trường học"
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              placeholder="VD: Trường THCS Chu Văn An"
+            />
+          </div>
+
+          <div>
+            <Input
+              id="year"
+              label="Năm học chính thức"
+              value={currentYear}
+              onChange={(e) => setCurrentYear(e.target.value)}
+              placeholder="2025 - 2026"
+            />
+          </div>
+
+          <Button type="submit" variant="primary">
+            <span>Lưu cấu hình</span>
+          </Button>
+        </form>
+      </div>
+
+      {/* System Status & Architecture */}
+      <div className="bg-surface rounded-xl border border-border p-6 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-text-primary pb-2 border-b border-border">
+          <Database size={18} className="text-accent" />
+          <span>Trạng thái kiến trúc dữ liệu</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="p-3.5 bg-surface-muted/60 rounded-lg border border-border space-y-1">
+            <span className="text-text-muted block">Chế độ lưu trữ</span>
+            <span className="font-semibold text-text-primary block text-sm">
+              LocalStorage Repository (Prototype)
+            </span>
+            <span className="text-text-muted block">
+              Dữ liệu được cô lập theo classId, sẵn sàng ánh xạ sang Supabase PostgreSQL.
+            </span>
+          </div>
+
+          <div className="p-3.5 bg-surface-muted/60 rounded-lg border border-border space-y-1">
+            <span className="text-text-muted block">Mô hình phân quyền</span>
+            <span className="font-semibold text-text-primary block text-sm">
+              Role-Based Access Control (RBAC)
+            </span>
+            <span className="text-text-muted block">
+              Phân quyền chặt chẽ giữa Quản trị viên (ADMIN) và Giáo viên chủ nhiệm (TEACHER).
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Reset System Data */}
+      <div className="bg-surface rounded-xl border border-danger/30 p-6 space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-danger">Khôi phục dữ liệu mẫu hệ thống</h2>
+          <p className="text-xs text-text-muted mt-1">
+            Khôi phục toàn bộ dữ liệu mẫu (1 Admin, 5 Giáo viên, 6 Lớp học cùng danh sách học sinh, sơ đồ chỗ ngồi và lịch sử điểm danh ban đầu).
+          </p>
+        </div>
+
+        <Button
+          variant="secondary"
+          onClick={() => setIsResetConfirmOpen(true)}
+          className="text-danger hover:bg-danger/10 border-danger/30"
+        >
+          <ArrowClockwise size={16} />
+          <span>Đặt lại toàn bộ dữ liệu</span>
+        </Button>
+      </div>
+
+      {/* Confirm Reset Dialog */}
+      <ConfirmDialog
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={handleResetAllData}
+        title="Khôi phục dữ liệu hệ thống"
+        description="Toàn bộ các thay đổi về giáo viên, lớp học, học sinh bạn đã tạo sẽ được khôi phục về trạng thái mẫu ban đầu. Bạn có chắc chắn muốn thực hiện?"
+        confirmText="Đồng ý đặt lại"
+        variant="danger"
+      />
+    </div>
+  );
+}
