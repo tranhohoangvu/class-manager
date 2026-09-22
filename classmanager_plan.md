@@ -23,6 +23,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 ├───────────────────┬───────────────────┬──────────────────┬───────────────┬─────────────┤
 │ 1. SƠ ĐỒ LỚP HỌC  │ 2. CÀI ĐẶT & DATA │ 3. ĐIỂM DANH &   │ 4. THỜI KHÓA  │ 5. ADMIN &  │
 │    (SEATING MAP)  │    (CONSISTENCY)  │    HỌC SINH      │    BIỂU (TKB) │    HỆ THỐNG │
+│    [ĐÃ XONG ✅]   │    [ĐÃ XONG ✅]   │   [CHƯA LÀM]     │   [CHƯA LÀM]  │   [CHƯA LÀM]│
 ├───────────────────┼───────────────────┼──────────────────┼───────────────┼─────────────┤
 │ • Lọc Chuyên cần  │ • Fix Settings    │ • Import Excel   │ • Lưới TKB    │ • Thống kê  │
 │ • Lọc Giới tính   │ • Lưu max_students│ • Lọc vắng mặt   │   Thứ 2 - 7   │   toàn trường│
@@ -35,64 +36,75 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ---
 
-## 1. CẢI TIẾN 1 — SƠ ĐỒ LỚP HỌC (SEATING MAP ENHANCEMENTS)
+## 1. CẢI TIẾN 1 — SƠ ĐỒ LỚP HỌC (SEATING MAP ENHANCEMENTS) `[ĐÃ HOÀN THÀNH ✅]`
 
-### 1.1. Lọc trực quan Chuyên cần hôm nay trên sơ đồ lớp
+> **Trạng thái:** Đã triển khai hoàn tất, kiểm thử và đẩy lên nhánh `main` (Commit `64c880a`).
+
+### 1.1. Lọc trực quan Chuyên cần hôm nay trên sơ đồ lớp `[ĐÃ XONG ✅]`
 * **Vấn đề:** Giáo viên khi đứng lớp nhìn vào sơ đồ chỉ thấy tên học sinh mà không biết ngay em nào hôm nay đang vắng mặt hoặc đi muộn.
-* **Giải pháp cải tiến:**
-  * Thêm nút bật/tắt: `[👁 Hiện trạng thái điểm danh hôm nay]`.
-  * Nếu học sinh hôm nay **Vắng mặt**: Hiển thị viền đỏ và chấm trạng thái `Vắng` nổi bật trên ghế ngồi.
+* **Giải pháp đã thực hiện:**
+  * Thêm nút bật/tắt: `[👁 Trạng thái chuyên cần]` trên thanh công cụ sơ đồ lớp.
+  * Nếu học sinh hôm nay **Vắng mặt**: Hiển thị viền đỏ và chấm trạng thái `Vắng` nổi bật trên ghế ngồi kèm pulse badge.
   * Nếu học sinh **Đi muộn**: Hiển thị viền vàng hổ phách và nhãn `Muộn`.
+  * Nếu học sinh **Nghỉ có phép**: Hiển thị viền xanh lam nhạt và nhãn `Phép`.
   * Giúp giáo viên đứng trên bục giảng chỉ cần liếc sơ đồ là kiểm soát được chỗ trống thực tế trong phòng học.
 
-### 1.2. Lọc trực quan Giới tính (Nam / Nữ)
-* **Giải pháp cải tiến:**
+### 1.2. Lọc trực quan Giới tính (Nam / Nữ) `[ĐÃ XONG ✅]`
+* **Giải pháp đã thực hiện:**
   * Thêm bộ lọc: `Tất cả` | `Nam` | `Nữ`.
-  * Highlight nhẹ nhàng theo giới tính (Xanh dương nhạt cho Nam, Hồng phấn nhạt cho Nữ) giúp giáo viên dễ dàng cân bằng tỷ lệ nam/nữ khi sắp xếp chỗ ngồi giữa các dãy.
+  * Highlight giới tính đã chọn (Xanh dương nhạt cho Nam, Hồng phấn nhạt cho Nữ) và làm mờ ghế không trùng khớp giúp giáo viên dễ dàng cân bằng tỷ lệ nam/nữ khi sắp xếp chỗ ngồi giữa các dãy.
 
-### 1.3. Chuẩn hóa tính năng In sơ đồ lớp học ra khổ giấy A4 (Print Optimization)
+### 1.3. Chuẩn hóa tính năng In sơ đồ lớp học ra khổ giấy A4 (Print Optimization) `[ĐÃ XONG ✅]`
 * **Vấn đề:** Khi bấm nút "In sơ đồ", trình duyệt in kèm cả sidebar, thanh điều hướng và có thể bị co cụm vỡ trang.
-* **Giải pháp cải tiến:**
-  * Bổ sung CSS `@media print` chuyên biệt:
-    * Ẩn toàn bộ Sidebar, Header, thanh công cụ, nút bấm.
-    * Tự động ép xoay trang ngang (`@page { size: landscape; margin: 10mm; }`).
-    * Căn giữa bảng lớp, bàn giáo viên, 4 dãy bàn 20 ghế rõ nét chữ in đen trắng tương phản cao, chân trang có phần ký tên GVCN.
+* **Giải pháp đã thực hiện:**
+  * Bổ sung CSS `@media print` chuyên biệt trong `globals.css` và `seating/page.tsx`:
+    * Ẩn toàn bộ Sidebar, Header, thanh công cụ, nút bấm khi in.
+    * Tự động ép xoay trang ngang (`@page { size: landscape; margin: 8mm; }`).
+    * Bổ sung tiêu đề in trang trọng: *Trường THCS Nguyễn Tất Thành · Sơ đồ vị trí chỗ ngồi học sinh*.
+    * Khung chữ ký chính thức của Ban Giám hiệu và Giáo viên chủ nhiệm ở cuối trang in.
 
-### 1.4. Tự động ghi nhớ Góc nhìn ưa thích (Perspective Persistence)
-* **Giải pháp:** Lưu trạng thái `nhin_tu_duoi_len` hoặc `nhin_tu_buc_giang` vào `localStorage` theo từng tài khoản giáo viên, không bị reset về mặc định sau mỗi lần F5.
+### 1.4. Tự động ghi nhớ Góc nhìn ưa thích (Perspective Persistence) `[ĐÃ XONG ✅]`
+* **Giải pháp đã thực hiện:** Lưu trạng thái `nhin_tu_duoi_len` hoặc `nhin_tu_buc_giang` vào `localStorage` theo key `cm_seating_perspective`, giữ nguyên góc nhìn ưa thích của giáo viên sau mỗi lần tải lại trang.
 
 ---
 
-## 2. CẢI TIẾN 2 — CÀI ĐẶT LỚP HỌC & TÍNH NHẤT QUÁN DỮ LIỆU
+## 2. CẢI TIẾN 2 — CÀI ĐẶT LỚP HỌC & TÍNH NHẤT QUÁN DỮ LIỆU `[ĐÃ HOÀN THÀNH ✅]`
 
-### 2.1. Chuẩn hóa trang Cài đặt lớp (`src/app/(dashboard)/settings/page.tsx`)
-* **Các việc cần xử lý:**
+> **Trạng thái:** Đã triển khai hoàn tất, kiểm thử và đẩy lên nhánh `main` (Commit `5b13f59`).
+
+### 2.1. Chuẩn hóa trang Cài đặt lớp (`src/app/(dashboard)/settings/page.tsx`) `[ĐÃ XONG ✅]`
+* **Các việc đã xử lý:**
   1. Thay đổi state khởi tạo mặc định:
      * `maxStudents = '40'` (thay vì `'45'`).
      * `deskCount = '20'` (thay vì `'25'`).
   2. Cập nhật `classSettingsSchema` trong `src/lib/validations/forms.ts`:
      * Nhận thêm trường `max_students: z.coerce.number().min(1).max(40)`.
   3. Cập nhật `ClassService.updateClassSettings` và `LocalStore.updateClass`:
+     * Chặn không cho hạ `max_students` thấp hơn số lượng học sinh đang học thực tế trong lớp.
      * Lưu giá trị `max_students` thật vào kho dữ liệu khi giáo viên bấm "Lưu thay đổi".
-  4. Hiển thị khối thông số trực quan:
-     * Sĩ số hiện tại: `... / 40 học sinh`.
-     * Số chỗ còn trống: `... ghế`.
-     * Tỷ lệ lấp đầy phòng học: `...%`.
+  4. Hiển thị khối Widget thông số trực quan:
+     * **Sĩ số hiện tại:** `... / 40 học sinh` đang theo học.
+     * **Số chỗ còn trống:** `... chỗ ngồi` khả dụng tiếp nhận.
+     * **Tỷ lệ lấp đầy phòng học:** `...% công suất phòng (20 bàn)` kèm thanh tiến trình màu sắc động.
 
-### 2.2. Đồng bộ lược đồ CSDL Supabase Migration (`supabase/migrations/001_initial_schema.sql`)
-* **Các việc cần xử lý:**
-  * Cập nhật ràng buộc bảng `classes`: `max_students <= 40`, `desk_count = 20`.
+### 2.2. Đồng bộ lược đồ CSDL Supabase Migration (`supabase/migrations/001_initial_schema.sql` & `seed.sql`) `[ĐÃ XONG ✅]`
+* **Các việc đã xử lý:**
+  * Cập nhật ràng buộc bảng `classes`: `max_students <= 40`, `desk_count = 20`, `grade BETWEEN 6 AND 9`.
   * Cập nhật bảng `desks`: `desk_number BETWEEN 1 AND 20`, `row_num BETWEEN 1 AND 5`, `col_num BETWEEN 1 AND 4`.
+  * Bảng `seats`: 40 chỗ ngồi (2 chỗ/bàn: `left` và `right`).
   * Bổ sung đầy đủ DDL cho các bảng quan hệ:
+    * `profiles` (đồng bộ người dùng từ auth.users kèm role ADMIN/TEACHER)
     * `subjects` (id, code, name)
     * `class_memberships` (id, teacher_id, class_id, role)
     * `subject_assignments` (id, teacher_id, class_id, subject_id)
     * `timetable_entries` (id, class_id, day_of_week, period, subject_id, teacher_id)
-  * Thiết lập các chính sách bảo mật hàng (Row Level Security - RLS) cho từng bảng theo đúng vai trò Admin / GVCN / GVBM.
+  * Thiết lập các chính sách bảo mật hàng (Row Level Security - RLS) cho từng bảng với helper functions `is_admin()` và `has_class_access()`.
+  * Đồng bộ `supabase/seed.sql` tạo 20 bàn (5 hàng × 4 cột) và 40 ghế ngồi chuẩn xác.
+  * Bổ sung bộ test tự động `tests/class-settings.test.ts` (100% passed).
 
 ---
 
-## 3. CẢI TIẾN 3 — ĐIỂM DANH & QUẢN LÝ HỌC SINH
+## 3. CẢI TIẾN 3 — ĐIỂM DANH & QUẢN LÝ HỌC SINH `[CHƯA LÀM — CHỜ TRIỂN KHAI]`
 
 ### 3.1. Tính năng Nhập học sinh hàng loạt từ file Excel (Import Students via Excel/CSV)
 * **Vấn đề:** Đầu năm học, GVCN phải nhập từng học sinh một rất mất thời gian.
@@ -119,7 +131,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ---
 
-## 4. CẢI TIẾN 4 — THỜI KHÓA BIỂU LỚP HỌC (CLASS TIMETABLE MODULE)
+## 4. CẢI TIẾN 4 — THỜI KHÓA BIỂU LỚP HỌC (CLASS TIMETABLE MODULE) `[CHƯA LÀM — CHỜ TRIỂN KHAI]`
 
 Đây là **mảnh ghép liên kết thực tế** giữa thời gian học, môn học, giáo viên phụ trách và luồng điểm danh hằng ngày.
 
@@ -150,7 +162,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ---
 
-## 5. CẢI TIẾN 5 — ADMIN PORTAL & BÁO CÁO TOÀN TRƯỜNG
+## 5. CẢI TIẾN 5 — ADMIN PORTAL & BÁO CÁO TOÀN TRƯỜNG `[CHƯA LÀM — CHỜ TRIỂN KHAI]`
 
 ### 5.1. Bảng điều khiển Quản trị viên (Admin Executive Dashboard)
 * **Bổ sung chỉ số toàn trường:**
@@ -175,11 +187,11 @@ gantt
     title LỘ TRÌNH TRIỂN KHAI CẢI TIẾN CLASS MANAGER
     dateFormat  YYYY-MM-DD
     section Giai đoạn 1 (Core Fixes)
-    Fix logic trang Settings & max_students       :a1, 2026-09-23, 1d
-    Đồng bộ SQL Supabase Migration 20 bàn         :a2, 2026-09-23, 1d
-    Lưu góc nhìn ưa thích & CSS in A4 sơ đồ      :a3, 2026-09-24, 1d
+    Fix logic trang Settings & max_students       :done, a1, 2026-09-23, 1d
+    Đồng bộ SQL Supabase Migration 20 bàn         :done, a2, 2026-09-23, 1d
+    Lưu góc nhìn ưa thích & CSS in A4 sơ đồ      :done, a3, 2026-09-24, 1d
     section Giai đoạn 2 (UX & Thời khóa biểu)
-    Lọc Chuyên cần & Giới tính trên sơ đồ lớp     :b1, 2026-09-24, 1d
+    Lọc Chuyên cần & Giới tính trên sơ đồ lớp     :done, b1, 2026-09-24, 1d
     Lọc học sinh vắng đầu giờ & lọc ngày Lịch sử  :b2, 2026-09-25, 1d
     Xây dựng module Thời khóa biểu (/timetable)   :b3, 2026-09-25, 2d
     section Giai đoạn 3 (Automation & Admin)
@@ -189,21 +201,21 @@ gantt
     Kiểm thử Vitest & Đóng gói hoàn thiện         :c4, 2026-09-30, 1d
 ```
 
-### 📋 GIAI ĐOẠN 1: Chuẩn hóa Dữ liệu & Tính năng Thiết yếu (Ưu tiên làm ngay)
-- [x] **Task 1.1:** Cập nhật `src/app/(dashboard)/settings/page.tsx`, `src/services/class.service.ts` và schema form để lưu và cập nhật chuẩn `max_students = 40` và `desk_count = 20`.
-- [x] **Task 1.2:** Cập nhật file `supabase/migrations/001_initial_schema.sql` bổ sung các bảng quan hệ mới (`subjects`, `class_memberships`, `subject_assignments`, `timetable_entries`) và ràng buộc 20 bàn.
-- [x] **Task 1.3:** Tối ưu CSS Print `@media print` cho trang Sơ đồ lớp (`/seating`) để in A4 ngang chuẩn không viền thừa.
-- [x] **Task 1.4:** Lưu `viewPerspective` vào `localStorage`.
+### 📋 GIAI ĐOẠN 1: Chuẩn hóa Dữ liệu & Tính năng Thiết yếu `[100% HOÀN THÀNH ✅]`
+- [x] **Task 1.1:** Cập nhật `src/app/(dashboard)/settings/page.tsx`, `src/services/class.service.ts` và schema form để lưu và cập nhật chuẩn `max_students = 40` và `desk_count = 20` *(Commit `5b13f59`)*.
+- [x] **Task 1.2:** Cập nhật file `supabase/migrations/001_initial_schema.sql` bổ sung các bảng quan hệ mới (`subjects`, `class_memberships`, `subject_assignments`, `timetable_entries`) và ràng buộc 20 bàn *(Commit `5b13f59`)*.
+- [x] **Task 1.3:** Tối ưu CSS Print `@media print` cho trang Sơ đồ lớp (`/seating`) để in A4 ngang chuẩn không viền thừa *(Commit `64c880a`)*.
+- [x] **Task 1.4:** Lưu `viewPerspective` vào `localStorage` *(Commit `64c880a`)*.
 
-### 📋 GIAI ĐOẠN 2: Nâng tầm Trải nghiệm Giảng dạy & Thời khóa biểu
-- [x] **Task 2.1:** Thêm layer hiển thị trạng thái điểm danh hôm nay trực tiếp trên ghế ngồi của sơ đồ lớp.
-- [x] **Task 2.2:** Thêm bộ lọc Giới tính (Nam/Nữ) highlight trên sơ đồ lớp.
+### 📋 GIAI ĐOẠN 2: Nâng tầm Trải nghiệm Giảng dạy & Thời khóa biểu `[ĐANG THỰC HIỆN ⏳]`
+- [x] **Task 2.1:** Thêm layer hiển thị trạng thái điểm danh hôm nay trực tiếp trên ghế ngồi của sơ đồ lớp *(Commit `64c880a`)*.
+- [x] **Task 2.2:** Thêm bộ lọc Giới tính (Nam/Nữ) highlight trên sơ đồ lớp *(Commit `64c880a`)*.
 - [ ] **Task 2.3:** Bổ sung tab lọc nhanh học sinh vắng / muộn đầu giờ trong màn hình Điểm danh.
 - [ ] **Task 2.4:** Thêm bộ lọc khoảng ngày (Tuần / Tháng) trên trang Lịch sử chuyên cần.
 - [ ] **Task 2.5:** Xây dựng trang **Thời khóa biểu lớp học (`/timetable`)** dạng lưới tương tác (Thứ 2 $\rightarrow$ Thứ 7, Tiết 1 $\rightarrow$ Tiết 5), chọn môn và gán giáo viên phụ trách.
 - [ ] **Task 2.6:** Tối ưu in Thời khóa biểu A4 ngang dán bảng tin lớp học.
 
-### 📋 GIAI ĐOẠN 3: Tự động hóa & Báo cáo Quản trị
+### 📋 GIAI ĐOẠN 3: Tự động hóa & Báo cáo Quản trị `[CHỜ TRIỂN KHAI]`
 - [ ] **Task 3.1:** Kết nối Thời khóa biểu thông minh vào trang Điểm danh (tự nhận diện môn và giáo viên theo giờ học hiện tại).
 - [ ] **Task 3.2:** Bổ sung widget "Lịch học hôm nay" trên Dashboard lớp học.
 - [ ] **Task 3.3:** Xây dựng tính năng Import danh sách học sinh từ file Excel `.xlsx` có modal xem trước và validate dữ liệu.
