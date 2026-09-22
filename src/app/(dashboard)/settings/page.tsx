@@ -165,7 +165,7 @@ export default function SettingsPage() {
               label="Số lượng bàn học trong phòng"
               value={deskCount}
               disabled
-              hint="Cố định 50 chỗ ngồi theo mô hình chuẩn 5 dãy × 5 hàng của trường"
+              hint="Cố định 20 bàn học (40 chỗ ngồi) theo mô hình chuẩn 4 dãy × 5 hàng của trường"
             />
           </div>
 

@@ -26,8 +26,7 @@
 - **16 Classes**: 6A1–6A4, 7A1–7A4, 8A1–8A4, 9A1–9A4
 - **480 Students**: Exactly 30 students per class with realistic demographic and contact data
 - **10 Core Subjects**: Mathematics, Literature, English, Physics, Chemistry, Biology, History, Geography, Informatics, Technology
-- **28 Teachers + 1 Administrator**: Every teacher teaches at most 2 grades according to THCS regulations
-- **800 Seats**: 50 seats per class arranged in a 5×5 classroom layout
+- **20 Desks / 40 Seats per Class**: 20 double desks arranged in a standardized 4×5 classroom layout (4 vertical columns × 5 rows)
 
 ---
 

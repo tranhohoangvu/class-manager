@@ -436,7 +436,7 @@ export default function DashboardPage() {
                   Sơ đồ chỗ ngồi lớp học
                 </h2>
                 <p className="text-[13px] text-text-muted mt-0.5">
-                  Bố cục 5 dãy × 5 hàng, 2 vị trí mỗi bàn
+                  Bố cục 4 dãy × 5 hàng (20 bàn đôi · sức chứa 40 học sinh)
                 </p>
               </div>
               <Link href="/seating">
@@ -447,14 +447,18 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* Blackboard & Teacher's Podium Marker */}
-            <div className="w-full py-2.5 mb-5 text-center bg-slate-800 text-slate-100 rounded-xl text-[12px] font-bold tracking-wider uppercase shadow-inner border border-slate-700">
-              Bục giảng & Bảng viết phấn (Hướng nhìn của giáo viên)
+            {/* Blackboard & Teacher's Podium Marker (at top matching View A - Nhìn từ dưới lên) */}
+            <div className="w-full py-2.5 mb-3 text-center bg-slate-800 text-slate-100 rounded-xl text-[12px] font-bold tracking-wider uppercase shadow-inner border border-slate-700">
+              ↑ Phía trước lớp: Bàn giáo viên · Bảng viết phấn · Cửa ra vào
             </div>
 
-            {/* 10 Desks Mini Preview */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {desks.slice(0, 10).map((desk) => {
+            {/* 8 Desks Mini Preview (4 columns × 2 front rows: Row 1 then Row 2, ordered D1 to D4) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[1, 2].flatMap((rNum) => {
+                const rDesks = desks.filter((d) => d.row_num === rNum);
+                return [1, 2, 3, 4].map((cNum) => rDesks.find((d) => d.col_num === cNum)).filter(Boolean);
+              }).map((desk) => {
+                if (!desk) return null;
                 const leftStu = desk.seats[0]?.student;
                 const rightStu = desk.seats[1]?.student;
                 return (
@@ -462,8 +466,9 @@ export default function DashboardPage() {
                     key={desk.id}
                     className="border border-border rounded-xl p-2.5 bg-surface-muted/50 text-center hover:border-accent hover:bg-surface transition-all shadow-2xs"
                   >
-                    <div className="text-text-muted font-mono text-[11px] font-semibold mb-1.5">
-                      Bàn {desk.desk_number.toString().padStart(2, '0')}
+                    <div className="text-text-muted font-mono text-[11px] font-semibold mb-1.5 flex items-center justify-between px-0.5">
+                      <span>Bàn {desk.desk_number.toString().padStart(2, '0')}</span>
+                      <span className="text-[10px]">Dãy {desk.col_num}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-1 text-[12px]">
                       <div
@@ -495,7 +500,7 @@ export default function DashboardPage() {
                 href="/seating"
                 className="text-[14px] font-semibold text-accent hover:underline inline-flex items-center gap-1.5"
               >
-                <span>Xem toàn bộ sơ đồ và đổi chỗ ngồi</span>
+                <span>Xem toàn bộ sơ đồ chỗ ngồi lớp học</span>
                 <ArrowRight size={14} />
               </Link>
             </div>

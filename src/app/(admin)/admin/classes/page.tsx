@@ -47,8 +47,8 @@ export default function AdminClassesPage() {
     room_name: '',
     school_year: '2026 - 2027',
     teacher_id: null,
-    max_students: 45,
-    desk_count: 25,
+    max_students: 40,
+    desk_count: 20,
   });
 
   const loadData = () => {
@@ -123,8 +123,8 @@ export default function AdminClassesPage() {
       room_name: '',
       school_year: '2026 - 2027',
       teacher_id: null,
-      max_students: 45,
-      desk_count: 25,
+      max_students: 40,
+      desk_count: 20,
     });
     setIsAddModalOpen(true);
   };
@@ -514,7 +514,7 @@ export default function AdminClassesPage() {
                 label="Sĩ số tối đa"
                 value={formData.max_students.toString()}
                 onChange={(e) =>
-                  setFormData({ ...formData, max_students: parseInt(e.target.value, 10) || 45 })
+                  setFormData({ ...formData, max_students: parseInt(e.target.value, 10) || 40 })
                 }
               />
             </div>
@@ -525,12 +525,12 @@ export default function AdminClassesPage() {
                 label="Số lượng bàn học"
                 value={formData.desk_count.toString()}
                 onChange={(e) =>
-                  setFormData({ ...formData, desk_count: parseInt(e.target.value, 10) || 25 })
+                  setFormData({ ...formData, desk_count: parseInt(e.target.value, 10) || 20 })
                 }
                 disabled={!!editingClass}
               />
               {editingClass && (
-                <p className="text-[10px] text-text-muted mt-1">Cố định 50 chỗ ngồi chuẩn</p>
+                <p className="text-[10px] text-text-muted mt-1">Cố định 20 bàn (40 chỗ ngồi chuẩn)</p>
               )}
             </div>
           </div>

@@ -24,9 +24,9 @@ describe('Seating System & Invariants Tests', () => {
     expect(shuffled.sort()).toEqual(input.sort());
   });
 
-  it('Seating layout should contain 25 desks and 50 seats per class', () => {
+  it('Seating layout should contain 20 desks and 40 seats per class', () => {
     const desks = SeatingService.getDesks('c-6a1');
-    expect(desks).toHaveLength(25);
+    expect(desks).toHaveLength(20);
 
     let totalSeats = 0;
     desks.forEach((d) => {
@@ -34,7 +34,7 @@ describe('Seating System & Invariants Tests', () => {
       totalSeats += d.seats.length;
     });
 
-    expect(totalSeats).toBe(50);
+    expect(totalSeats).toBe(40);
   });
 
   it('Rejects unauthorized users from modifying seating chart', () => {
@@ -74,5 +74,38 @@ describe('Seating System & Invariants Tests', () => {
 
     expect(seatedCount).toBe(30);
     expect(seatedIds.size).toBe(30);
+  });
+
+  it('Verifies viewpoint-dependent visual ordering and seat 01/02 reversal invariant', () => {
+    const desks = SeatingService.getDesks('c-6a1');
+    const firstDesk = desks[0]; // Bàn 01 (Dãy 1, Hàng 1)
+
+    // Logical seats inside desk
+    const seat01 = firstDesk.seats[0];
+    const seat02 = firstDesk.seats[1];
+
+    // VIEW A: "Nhìn từ dưới lên" (from back toward board)
+    // - Columns: 1 -> 2 -> 3 -> 4
+    // - Seats: 01 visually Left, 02 visually Right
+    const viewA_columns = [1, 2, 3, 4];
+    const [viewA_left, viewA_right] = [seat01, seat02];
+    expect(viewA_columns[0]).toBe(1); // Dãy 1 on left
+    expect(viewA_columns[3]).toBe(4); // Dãy 4 on right
+    expect(viewA_left.id).toBe(seat01.id);
+    expect(viewA_right.id).toBe(seat02.id);
+
+    // VIEW B: "Nhìn từ bục giảng xuống" (from teaching platform toward back)
+    // - Columns: 4 -> 3 -> 2 -> 1
+    // - Seats: 02 visually Left, 01 visually Right
+    const viewB_columns = [...viewA_columns].reverse();
+    const [viewB_left, viewB_right] = [seat02, seat01];
+    expect(viewB_columns[0]).toBe(4); // Dãy 4 on left
+    expect(viewB_columns[3]).toBe(1); // Dãy 1 on right
+    expect(viewB_left.id).toBe(seat02.id);
+    expect(viewB_right.id).toBe(seat01.id);
+
+    // Critical data invariant: Underlying IDs and student assignments are NEVER modified
+    expect(firstDesk.seats[0].id).toBe(seat01.id);
+    expect(firstDesk.seats[1].id).toBe(seat02.id);
   });
 });

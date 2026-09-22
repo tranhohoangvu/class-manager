@@ -5,12 +5,12 @@
 // =============================================
 
 export const CLASS_CONSTANTS = {
-  MAX_STUDENTS: 50,
-  DESK_COUNT: 25,
+  MAX_STUDENTS: 40,
+  DESK_COUNT: 20,
   SEATS_PER_DESK: 2,
-  MAX_SEATS: 50, // 25 * 2
+  MAX_SEATS: 40, // 20 * 2
   ROWS: 5,
-  COLS: 5,
+  COLS: 4,
 } as const;
 
 export const STUDENT_STATUS = {

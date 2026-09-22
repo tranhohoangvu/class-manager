@@ -32,7 +32,7 @@ import {
   generateDesksForClass,
 } from './mock-data';
 
-const CURRENT_DATA_VERSION = '2026_thcs_ntt_2026_2027_v3';
+const CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v6';
 
 const STORAGE_KEYS = {
   DATA_VERSION: 'cm_data_version',
@@ -443,8 +443,8 @@ export const LocalStore = {
       room_name: data.room_name?.trim() || null,
       school_year: data.school_year.trim(),
       teacher_id: data.teacher_id || null,
-      max_students: data.max_students || 30,
-      desk_count: data.desk_count || 25,
+      max_students: data.max_students || 40,
+      desk_count: data.desk_count || 20,
       status: 'active',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
