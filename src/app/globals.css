@@ -357,3 +357,42 @@ textarea {
     padding: var(--space-5) var(--space-4);
   }
 }
+
+/* =============================================
+   PRINT STYLES (A4 Landscape & Portrait)
+   ============================================= */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .app-sidebar,
+  header,
+  nav,
+  .no-print,
+  button,
+  .btn,
+  input,
+  select {
+    display: none !important;
+  }
+
+  .app-main {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .printable-card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  @page {
+    size: auto;
+    margin: 12mm;
+  }
+}
+
