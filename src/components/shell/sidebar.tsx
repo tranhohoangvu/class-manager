@@ -116,7 +116,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     href={href}
                     onClick={() => onClose?.()}
                     className={cn(
-                      'flex items-center justify-between h-11 px-3.5 rounded-xl transition-all duration-150',
+                      'flex items-center justify-between h-11 px-3.5 rounded-xl transition-all duration-150 group relative',
                       'text-[15px] font-medium',
                       isActive
                         ? 'bg-accent/10 text-accent font-semibold shadow-2xs'
@@ -130,15 +130,27 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                       <Icon
                         size={20}
                         weight={isActive ? 'duotone' : 'regular'}
-                        className={cn('flex-shrink-0', isActive ? 'text-accent' : 'text-text-muted')}
+                        className={cn(
+                          'flex-shrink-0 transition-transform group-hover:scale-105',
+                          isActive ? 'text-accent' : 'text-text-muted group-hover:text-text-primary'
+                        )}
                       />
                       <span className="truncate">{label}</span>
                     </div>
 
                     {badge && (
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-surface-muted text-text-muted border border-border/70">
+                      <span
+                        className={cn(
+                          'text-[11px] font-semibold px-2 py-0.5 rounded-md bg-surface-muted text-text-muted border border-border/70',
+                          isActive && 'mr-3.5'
+                        )}
+                      >
                         {badge}
                       </span>
+                    )}
+
+                    {isActive && (
+                      <span className="absolute right-3 w-1.5 h-5 rounded-full bg-accent" />
                     )}
                   </Link>
                 </li>
@@ -171,7 +183,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               href="/settings"
               onClick={() => onClose?.()}
               className={cn(
-                'flex items-center gap-3 h-10 px-3.5 rounded-xl text-[14px] transition-colors',
+                'flex items-center gap-3 h-10 px-3.5 rounded-xl text-[14px] transition-colors group relative',
                 pathname === '/settings'
                   ? 'bg-accent/10 text-accent font-semibold'
                   : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted font-medium'
@@ -179,6 +191,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             >
               <GearSix size={18} weight={pathname === '/settings' ? 'duotone' : 'regular'} />
               <span>Cài đặt lớp</span>
+              {pathname === '/settings' && (
+                <span className="absolute right-3 w-1.5 h-5 rounded-full bg-accent" />
+              )}
             </Link>
           )}
 
