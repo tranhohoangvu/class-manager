@@ -324,12 +324,12 @@ export default function AdminClassesPage() {
 
                       <td className="px-4 py-3.5">
                         {c.status === 'active' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded-full">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             Đang học
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-surface-muted text-text-muted border border-border rounded-full">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium bg-surface-muted text-text-muted border border-border rounded-full">
                             Đã lưu trữ
                           </span>
                         )}

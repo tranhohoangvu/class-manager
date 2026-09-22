@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-2">
+        <div className="metric-card space-y-2">
           <div className="flex items-center justify-between text-text-muted">
             <span className="text-xs font-medium uppercase tracking-wider">Tổng giáo viên</span>
             <ChalkboardTeacher size={20} className="text-accent" />
@@ -96,7 +96,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-2">
+        <div className="metric-card space-y-2">
           <div className="flex items-center justify-between text-text-muted">
             <span className="text-xs font-medium uppercase tracking-wider">Tổng số lớp học</span>
             <Chalkboard size={20} className="text-emerald-600" />
@@ -109,18 +109,18 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-2">
+        <div className="metric-card space-y-2">
           <div className="flex items-center justify-between text-text-muted">
             <span className="text-xs font-medium uppercase tracking-wider">Tổng số học sinh</span>
             <Student size={20} className="text-amber-600" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-semibold text-text-primary">{students.length}</span>
-            <span className="text-xs text-text-muted font-normal">em trên toàn hệ thống</span>
+            <span className="text-xs text-text-muted font-normal">em toàn trường</span>
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-2">
+        <div className="metric-card space-y-2">
           <div className="flex items-center justify-between text-text-muted">
             <span className="text-xs font-medium uppercase tracking-wider">Tỷ lệ phân công</span>
             <CheckCircle size={20} className="text-indigo-600" />
