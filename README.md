@@ -92,6 +92,12 @@ Permissions adapt dynamically based on the teacher's active class role:
 - **Export Attendance to Excel**: Download `.xlsx` monthly attendance matrix (Students × Dates) with summary totals.
 - **A4 Print Layout**: Specialized `@media print` CSS for printing classroom seating diagrams and class rosters directly.
 
+### 5. Mobile-First Responsive Shell & Modern UI/UX
+- **Education-First Aesthetic**: Calm, trustworthy, and distraction-free visual design (pure flat borders, subtle semantic backgrounds, no AI-generated gradients or decorative clutter).
+- **Responsive Off-Canvas Navigation**: Dedicated sticky `MobileNav` header with a smooth sliding drawer navigation overlay for mobile (<768px) and tablet devices.
+- **Accessible Dual-Coded Attendance**: High-contrast visual buttons with explicit icons and text (`✓ Có mặt`, `✕ Vắng`, `⏱ Muộn`, `📋 Phép`).
+- **Vietnamese Typography**: Fully calibrated Google Geist Sans typography stack with crisp diacritics and monospace tabular numbers for student IDs and dates.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -158,6 +164,7 @@ The `/login` page provides quick-access profiles for all test cases:
 
 ## 📚 Documentation
 
+- [UI/UX Audit & Completion Report](docs/ui-ux-audit.md)
 - [Codebase Audit & Resolution Report](docs/codebase-audit.md)
 - [Target Data Model & Supabase Contracts](docs/data-model.md)
 
