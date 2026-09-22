@@ -1,0 +1,263 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import {
+  Megaphone,
+  Plus,
+  PushPin,
+  Trash,
+  CheckCircle,
+  Calendar,
+} from '@phosphor-icons/react';
+import { LocalStore } from '@/lib/store';
+import { AnnouncementRow } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Modal, ConfirmDialog } from '@/components/ui/modal';
+import { formatDateVietnamese } from '@/lib/utils';
+import { toast } from 'sonner';
+
+import { useCurrentClass } from '@/contexts/class-context';
+
+export default function AnnouncementsPage() {
+  const { currentClassId, currentClass, isHomeroom, isSubjectTeacher, teacherSubjects } = useCurrentClass();
+  const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<AnnouncementRow | null>(null);
+
+  // Form states
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [isPinned, setIsPinned] = useState(false);
+
+  const loadData = () => {
+    if (!currentClassId) return;
+    const list = LocalStore.getAnnouncements(currentClassId);
+    // Sort: pinned first, then by date descending
+    list.sort((a, b) => {
+      if (a.is_pinned === b.is_pinned) {
+        return b.created_at.localeCompare(a.created_at);
+      }
+      return a.is_pinned ? -1 : 1;
+    });
+    setAnnouncements(list);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [currentClassId]);
+
+  const handleCreateAnnouncement = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      toast.error('Vui lòng nhập tiêu đề thông báo');
+      return;
+    }
+
+    LocalStore.addAnnouncement(title.trim(), content.trim(), isPinned, currentClassId || undefined);
+    toast.success('Đã tạo thông báo mới');
+    setTitle('');
+    setContent('');
+    setIsPinned(false);
+    setIsAddOpen(false);
+    loadData();
+  };
+
+  const handleTogglePin = (id: string, currentlyPinned: boolean) => {
+    LocalStore.togglePinAnnouncement(id);
+    toast.success(currentlyPinned ? 'Đã bỏ ghim thông báo' : 'Đã ghim thông báo lên đầu');
+    loadData();
+  };
+
+  const handleConfirmDelete = () => {
+    if (announcementToDelete) {
+      LocalStore.deleteAnnouncement(announcementToDelete.id);
+      toast.success('Đã xoá thông báo');
+      setAnnouncementToDelete(null);
+      loadData();
+    }
+  };
+
+  return (
+    <div className="p-6 md:p-8 space-y-6 max-w-5xl mx-auto">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-border">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+              Bảng thông báo lớp học
+            </h1>
+            <span className="px-2.5 py-0.5 text-xs font-semibold bg-accent-subtle text-accent rounded-full">
+              {announcements.length} thông báo
+            </span>
+          </div>
+          <p className="text-sm text-text-muted mt-1">
+            Gửi dặn dò, lịch thi cử, phân công và các sự kiện quan trọng tới học sinh và phụ huynh {currentClass?.name || 'lớp'}
+          </p>
+        </div>
+
+        {isHomeroom && (
+          <Button variant="primary" onClick={() => setIsAddOpen(true)}>
+            <Plus size={16} />
+            <span>Tạo thông báo mới</span>
+          </Button>
+        )}
+      </div>
+
+      {/* Role Banner for Subject Teachers */}
+      {isSubjectTeacher && (
+        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+          <span>
+            Bạn đang xem bảng thông báo lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ chỉ xem thông báo từ GVCN.
+          </span>
+          <span className="px-2 py-0.5 rounded bg-amber-500/20 font-medium text-[11px]">Chỉ xem</span>
+        </div>
+      )}
+
+      {/* Announcements List */}
+      <div className="space-y-4">
+        {announcements.length === 0 ? (
+          <div className="bg-surface rounded-xl border border-border p-12 text-center">
+            <Megaphone size={36} className="mx-auto text-text-muted opacity-40 mb-3" />
+            <p className="text-sm font-medium text-text-secondary">
+              Chưa có thông báo nào
+            </p>
+            <p className="text-xs text-text-muted mt-1">
+              Bấm "Tạo thông báo mới" để đăng tin đầu tiên cho lớp.
+            </p>
+          </div>
+        ) : (
+          announcements.map((ann) => (
+            <div
+              key={ann.id}
+              className={`p-6 rounded-xl border transition-all ${
+                ann.is_pinned
+                  ? 'bg-surface border-accent/40 shadow-xs'
+                  : 'bg-surface border-border'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1.5 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {ann.is_pinned && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-accent-subtle text-accent">
+                        <PushPin size={12} weight="fill" />
+                        Ghim ưu tiên
+                      </span>
+                    )}
+                    <h2 className="text-base font-semibold text-text-primary">
+                      {ann.title}
+                    </h2>
+                  </div>
+
+                  <p className="text-sm text-text-secondary leading-relaxed pt-1 whitespace-pre-wrap">
+                    {ann.content}
+                  </p>
+
+                  <div className="flex items-center gap-2 text-xs text-text-muted pt-3">
+                    <Calendar size={13} />
+                    <span>Đăng ngày {formatDateVietnamese(ann.created_at)}</span>
+                  </div>
+                </div>
+
+                {isHomeroom && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePin(ann.id, ann.is_pinned)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        ann.is_pinned
+                          ? 'text-accent bg-accent-subtle hover:bg-accent/20'
+                          : 'text-text-muted hover:text-text-primary hover:bg-surface-muted'
+                      }`}
+                      title={ann.is_pinned ? 'Bỏ ghim' : 'Ghim lên đầu'}
+                    >
+                      <PushPin size={16} weight={ann.is_pinned ? 'fill' : 'regular'} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setAnnouncementToDelete(ann)}
+                      className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors"
+                      title="Xoá thông báo"
+                    >
+                      <Trash size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Create Announcement Modal */}
+      <Modal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="Tạo thông báo lớp mới"
+        description="Thông báo sẽ được hiển thị ngay trên bảng tin và trang tổng quan"
+      >
+        <form onSubmit={handleCreateAnnouncement} className="space-y-4">
+          <Input
+            id="ann_title"
+            label="Tiêu đề thông báo"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            placeholder="Ví dụ: Lịch thi giữa kỳ II môn Toán"
+          />
+
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">
+              Nội dung thông báo
+            </label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={4}
+              placeholder="Nhập nội dung chi tiết thông báo..."
+              className="w-full text-xs p-3 bg-surface rounded-lg border border-border focus:outline-none focus:border-accent text-text-primary placeholder:text-text-muted"
+            />
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer pt-1">
+            <input
+              type="checkbox"
+              checked={isPinned}
+              onChange={(e) => setIsPinned(e.target.checked)}
+              className="rounded border-border text-accent focus:ring-accent w-4 h-4"
+            />
+            <span className="text-xs font-medium text-text-primary">
+              Ghim thông báo này lên đầu trang
+            </span>
+          </label>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsAddOpen(false)}
+            >
+              Huỷ
+            </Button>
+            <Button type="submit" variant="primary">
+              Đăng thông báo
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={!!announcementToDelete}
+        onClose={() => setAnnouncementToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xoá thông báo"
+        description={`Bạn có chắc chắn muốn xoá thông báo "${announcementToDelete?.title}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xoá thông báo"
+        variant="danger"
+      />
+    </div>
+  );
+}
