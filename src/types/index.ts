@@ -71,6 +71,17 @@ export interface SubjectAssignmentRow {
   created_at: string;
 }
 
+export interface TimetableEntryRow {
+  id: string;
+  class_id: string;
+  day_of_week: number; // 2 = Thứ Hai, ..., 7 = Thứ Bảy
+  period: number;      // 1..5 (Tiết 1 đến Tiết 5)
+  subject_id: string;
+  teacher_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // =============================================
 // Database Row Types
 // =============================================
@@ -282,6 +293,7 @@ export interface ClassSettingsFormData {
   name: string;
   room_name: string;
   school_year: string;
+  max_students?: number;
 }
 
 // =============================================

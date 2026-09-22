@@ -39,7 +39,7 @@ export const ClassService = {
 
   updateClassSettings(
     classId: string,
-    data: { name: string; room_name?: string; school_year?: string },
+    data: { name: string; room_name?: string; school_year?: string; max_students?: number },
     currentUser: UserRow | null
   ): OperationResult<ClassRow> {
     if (!AuthGuard.canEditClassSettings(currentUser, classId)) {
@@ -48,13 +48,24 @@ export const ClassService = {
 
     const validation = classSettingsSchema.safeParse(data);
     if (!validation.success) {
-      return failure(validation.error.errors[0]?.message || 'Thông tin lớp học không hợp lệ');
+      const firstError = validation.error.errors[0]?.message || 'Thông tin lớp học không hợp lệ';
+      return failure(firstError);
+    }
+
+    if (data.max_students !== undefined) {
+      const activeStudents = LocalStore.getStudents(classId).filter((s) => s.status === 'active');
+      if (activeStudents.length > data.max_students) {
+        return failure(
+          `Lớp hiện có ${activeStudents.length} học sinh đang học, không thể đặt sĩ số tối đa nhỏ hơn (${data.max_students}).`
+        );
+      }
     }
 
     const updated = LocalStore.updateClass(classId, {
       name: data.name.trim(),
       room_name: data.room_name?.trim() || null,
       school_year: data.school_year?.trim() || '2026 - 2027',
+      ...(data.max_students !== undefined ? { max_students: data.max_students } : {}),
     });
 
     if (!updated) {

@@ -70,22 +70,22 @@ BEGIN
   END LOOP;
 
   -- ===========================
-  -- INSERT CLASS
+  -- INSERT CLASS (Quy chuẩn 20 bàn, 40 học sinh)
   -- ===========================
-  INSERT INTO classes (id, teacher_id, name, room_name, school_year, max_students, desk_count)
-  VALUES (gen_random_uuid(), v_teacher_id, '9A1', 'A101', '2026-2027', 50, 25)
+  INSERT INTO classes (id, teacher_id, name, grade, room_name, school_year, max_students, desk_count)
+  VALUES (gen_random_uuid(), v_teacher_id, '9A1', 9, 'A101', '2026 - 2027', 40, 20)
   RETURNING id INTO v_class_id;
 
   -- ===========================
-  -- INSERT 25 DESKS (5 rows × 5 cols)
+  -- INSERT 20 DESKS (5 rows × 4 cols)
   -- ===========================
   v_desk_ids := ARRAY[]::uuid[];
   FOR r IN 1..5 LOOP
-    FOR c IN 1..5 LOOP
+    FOR c IN 1..4 LOOP
       DECLARE v_did uuid;
       BEGIN
         INSERT INTO desks (id, class_id, desk_number, row_num, col_num)
-        VALUES (gen_random_uuid(), v_class_id, ((r-1)*5 + c), r, c)
+        VALUES (gen_random_uuid(), v_class_id, ((r-1)*4 + c), r, c)
         RETURNING id INTO v_did;
         v_desk_ids := array_append(v_desk_ids, v_did);
       END;
@@ -93,10 +93,10 @@ BEGIN
   END LOOP;
 
   -- ===========================
-  -- INSERT 50 SEATS (2 per desk)
+  -- INSERT 40 SEATS (2 per desk)
   -- ===========================
   v_seat_ids := ARRAY[]::uuid[];
-  FOR i IN 1..25 LOOP
+  FOR i IN 1..20 LOOP
     DECLARE
       v_sid_left  uuid;
       v_sid_right uuid;
@@ -187,6 +187,6 @@ BEGIN
   (v_student_ids[3], 'Hay nói chuyện trong giờ học. Đã nhắc nhở, cần theo dõi thêm.', now() - interval '3 days'),
   (v_student_ids[5], 'Vắng học không phép 2 buổi liên tiếp. Đã liên hệ phụ huynh.', now() - interval '1 day');
 
-  RAISE NOTICE 'Seed data inserted successfully for class 9A1 with 40 students, 25 desks, 50 seats.';
+  RAISE NOTICE 'Seed data inserted successfully for class 9A1 with 40 students, 20 desks, 40 seats.';
 END;
 $$;

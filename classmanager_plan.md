@@ -190,8 +190,8 @@ gantt
 ```
 
 ### 📋 GIAI ĐOẠN 1: Chuẩn hóa Dữ liệu & Tính năng Thiết yếu (Ưu tiên làm ngay)
-- [ ] **Task 1.1:** Cập nhật `src/app/(dashboard)/settings/page.tsx`, `src/services/class.service.ts` và schema form để lưu và cập nhật chuẩn `max_students = 40` và `desk_count = 20`.
-- [ ] **Task 1.2:** Cập nhật file `supabase/migrations/001_initial_schema.sql` bổ sung các bảng quan hệ mới (`subjects`, `class_memberships`, `subject_assignments`, `timetable_entries`) và ràng buộc 20 bàn.
+- [x] **Task 1.1:** Cập nhật `src/app/(dashboard)/settings/page.tsx`, `src/services/class.service.ts` và schema form để lưu và cập nhật chuẩn `max_students = 40` và `desk_count = 20`.
+- [x] **Task 1.2:** Cập nhật file `supabase/migrations/001_initial_schema.sql` bổ sung các bảng quan hệ mới (`subjects`, `class_memberships`, `subject_assignments`, `timetable_entries`) và ràng buộc 20 bàn.
 - [x] **Task 1.3:** Tối ưu CSS Print `@media print` cho trang Sơ đồ lớp (`/seating`) để in A4 ngang chuẩn không viền thừa.
 - [x] **Task 1.4:** Lưu `viewPerspective` vào `localStorage`.
 

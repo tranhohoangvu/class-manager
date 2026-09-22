@@ -39,6 +39,11 @@ export const classSettingsSchema = z.object({
     .max(20, 'Năm học tối đa 20 ký tự')
     .optional()
     .or(z.literal('')),
+  max_students: z.coerce
+    .number()
+    .min(1, 'Sĩ số tối thiểu là 1 học sinh')
+    .max(40, 'Sĩ số tối đa là 40 học sinh theo quy chuẩn 20 bàn học')
+    .optional(),
 });
 
 export type ClassSettingsFormValues = z.infer<typeof classSettingsSchema>;

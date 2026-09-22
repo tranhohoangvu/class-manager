@@ -10,6 +10,9 @@ import {
   Warning,
   Building,
   GraduationCap,
+  Users,
+  Armchair,
+  ChartPieSlice,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
 import { ClassService } from '@/services';
@@ -20,6 +23,7 @@ import { ConfirmDialog } from '@/components/ui/modal';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
+import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -28,8 +32,8 @@ export default function SettingsPage() {
   const [name, setName] = useState('');
   const [roomName, setRoomName] = useState('');
   const [schoolYear, setSchoolYear] = useState('');
-  const [maxStudents, setMaxStudents] = useState('45');
-  const [deskCount, setDeskCount] = useState('25');
+  const [maxStudents, setMaxStudents] = useState('40');
+  const [deskCount, setDeskCount] = useState('20');
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(false);
@@ -42,8 +46,8 @@ export default function SettingsPage() {
       setName(cls.name);
       setRoomName(cls.room_name || '');
       setSchoolYear(cls.school_year || '');
-      setMaxStudents(cls.max_students.toString());
-      setDeskCount(cls.desk_count.toString());
+      setMaxStudents((cls.max_students || 40).toString());
+      setDeskCount((cls.desk_count || 20).toString());
     }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -61,12 +65,19 @@ export default function SettingsPage() {
     }
     if (!currentClassId) return;
 
+    const parsedMaxStudents = parseInt(maxStudents, 10);
+    if (isNaN(parsedMaxStudents) || parsedMaxStudents < 1 || parsedMaxStudents > 40) {
+      toast.error('Sĩ số học sinh tối đa phải từ 1 đến 40 (theo quy chuẩn 20 bàn học)');
+      return;
+    }
+
     const res = ClassService.updateClassSettings(
       currentClassId,
       {
         name: name.trim(),
         room_name: roomName.trim() || undefined,
         school_year: schoolYear.trim(),
+        max_students: parsedMaxStudents,
       },
       user
     );
@@ -101,6 +112,15 @@ export default function SettingsPage() {
     );
   }
 
+  const activeStudents = currentClassId
+    ? LocalStore.getStudents(currentClassId).filter((s) => s.status === 'active')
+    : [];
+  const currentEnrolledCount = activeStudents.length;
+  const currentMaxStudents = classInfo.max_students || 40;
+  const vacantSeats = Math.max(0, currentMaxStudents - currentEnrolledCount);
+  const occupancyPercentage =
+    currentMaxStudents > 0 ? Math.round((currentEnrolledCount / currentMaxStudents) * 100) : 0;
+
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-4xl mx-auto">
       {/* Top Header */}
@@ -111,6 +131,75 @@ export default function SettingsPage() {
         <p className="text-sm text-text-secondary mt-1.5">
           Tuỳ chỉnh thông số lớp học, thông tin phòng và quản trị cơ sở dữ liệu
         </p>
+      </div>
+
+      {/* Class Capacity & Occupancy Overview Widget */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+              Sĩ số hiện tại
+            </span>
+            <div className="p-2 rounded-xl bg-accent/10 text-accent">
+              <Users size={20} weight="duotone" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
+              {currentEnrolledCount}
+            </span>
+            <span className="text-sm font-medium text-text-muted">/ {currentMaxStudents} học sinh</span>
+          </div>
+          <p className="text-xs text-text-secondary mt-1">Đang theo học tại lớp</p>
+        </div>
+
+        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+              Số chỗ còn trống
+            </span>
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600">
+              <Armchair size={20} weight="duotone" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-emerald-600 tracking-tight">
+              {vacantSeats}
+            </span>
+            <span className="text-sm font-medium text-text-muted">chỗ ngồi</span>
+          </div>
+          <p className="text-xs text-text-secondary mt-1">Khả dụng để tiếp nhận thêm</p>
+        </div>
+
+        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+              Tỷ lệ lấp đầy
+            </span>
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600">
+              <ChartPieSlice size={20} weight="duotone" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
+              {occupancyPercentage}%
+            </span>
+            <span className="text-xs text-text-muted font-medium">công suất phòng (20 bàn)</span>
+          </div>
+          <div className="w-full bg-surface-muted rounded-full h-2 mt-3 overflow-hidden">
+            <div
+              className={cn(
+                'h-2 rounded-full transition-all duration-500',
+                occupancyPercentage >= 100
+                  ? 'bg-amber-500'
+                  : occupancyPercentage >= 80
+                  ? 'bg-accent'
+                  : 'bg-emerald-500'
+              )}
+              style={{ width: `${Math.min(100, occupancyPercentage)}%` }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Main Settings Form */}
@@ -156,7 +245,8 @@ export default function SettingsPage() {
               value={maxStudents}
               onChange={(e) => setMaxStudents(e.target.value)}
               min="1"
-              max="60"
+              max="40"
+              hint="Quy chuẩn phòng học 20 bàn: tối đa 40 học sinh"
             />
 
             <Input
