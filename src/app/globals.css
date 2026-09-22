@@ -1,26 +1,359 @@
 @import "tailwindcss";
 
+/* =============================================
+   CLASS MANAGER — DESIGN SYSTEM
+   Token-based, restrained, practical
+   ============================================= */
+
+/* =============================================
+   COLOR TOKENS
+   ============================================= */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Page & surfaces */
+  --bg:            oklch(0.975 0.005 240);  /* very light cool-neutral page */
+  --surface:       oklch(1 0 0);            /* white — primary surface */
+  --surface-muted: oklch(0.965 0.005 240);  /* subtle off-white secondary surface */
+
+  /* Borders */
+  --border:        oklch(0.88 0.006 240);   /* default border */
+  --border-strong: oklch(0.78 0.010 240);   /* emphasized border */
+
+  /* Text */
+  --text-primary:   oklch(0.18 0.010 240);  /* deep neutral — headings */
+  --text-secondary: oklch(0.38 0.010 240);  /* supporting text */
+  --text-muted:     oklch(0.56 0.008 240);  /* placeholder, metadata */
+
+  /* Accent — restrained teal-indigo */
+  --accent:        oklch(0.50 0.110 220);
+  --accent-hover:  oklch(0.44 0.110 220);
+  --accent-subtle: oklch(0.95 0.030 220);   /* light tint background */
+  --accent-text:   oklch(1 0 0);            /* text on accent bg */
+
+  /* Status colors — semantic, not decorative */
+  --success:       oklch(0.52 0.140 148);   /* green — Present */
+  --success-bg:    oklch(0.96 0.040 148);
+  --warning:       oklch(0.62 0.130 70);    /* amber — Late */
+  --warning-bg:    oklch(0.97 0.040 70);
+  --danger:        oklch(0.52 0.180 25);    /* red — Absent */
+  --danger-bg:     oklch(0.97 0.040 25);
+  --neutral:       oklch(0.56 0.008 240);   /* Excused / inactive */
+  --neutral-bg:    oklch(0.95 0.004 240);
+
+  /* =============================================
+     SPACING SCALE
+     ============================================= */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* =============================================
+     RADIUS
+     ============================================= */
+  --radius-sm:  4px;
+  --radius:     6px;
+  --radius-md:  8px;
+  --radius-lg:  10px;
+  --radius-xl:  12px;
+
+  /* =============================================
+     SHADOWS — sparingly, only for elevation
+     ============================================= */
+  --shadow-sm:  0 1px 2px 0 oklch(0.18 0.010 240 / 0.06);
+  --shadow:     0 1px 3px 0 oklch(0.18 0.010 240 / 0.08),
+                0 1px 2px -1px oklch(0.18 0.010 240 / 0.06);
+  --shadow-md:  0 4px 6px -1px oklch(0.18 0.010 240 / 0.08),
+                0 2px 4px -2px oklch(0.18 0.010 240 / 0.06);
+
+  /* =============================================
+     TYPOGRAPHY
+     ============================================= */
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-base: 14px;
+  --text-md:   15px;
+  --text-lg:   16px;
+  --text-xl:   18px;
+  --text-2xl:  22px;
+  --text-3xl:  26px;
+
+  --leading-tight:  1.25;
+  --leading-snug:   1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
 }
 
+/* =============================================
+   TAILWIND THEME EXTENSION
+   ============================================= */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg:            var(--bg);
+  --color-surface:       var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border:        var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text-primary:  var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted:    var(--text-muted);
+  --color-accent:        var(--accent);
+  --color-accent-hover:  var(--accent-hover);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-text:   var(--accent-text);
+  --color-success:       var(--success);
+  --color-success-bg:    var(--success-bg);
+  --color-warning:       var(--warning);
+  --color-warning-bg:    var(--warning-bg);
+  --color-danger:        var(--danger);
+  --color-danger-bg:     var(--danger-bg);
+  --color-neutral:       var(--neutral);
+  --color-neutral-bg:    var(--neutral-bg);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* =============================================
+   BASE RESET & GLOBALS
+   ============================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  margin: 0;
+}
+
+/* =============================================
+   TYPOGRAPHY UTILITIES
+   ============================================= */
+.page-title {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.section-heading {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: var(--leading-snug);
+  color: var(--text-primary);
+}
+
+.label-text {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.meta-text {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: var(--leading-normal);
+}
+
+/* =============================================
+   ATTENDANCE STATUS BADGES
+   ============================================= */
+.badge-present {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border: 1px solid oklch(0.52 0.140 148 / 0.2);
+}
+
+.badge-absent {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid oklch(0.52 0.180 25 / 0.2);
+}
+
+.badge-late {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid oklch(0.62 0.130 70 / 0.2);
+}
+
+.badge-excused {
+  background-color: var(--neutral-bg);
+  color: var(--neutral);
+  border: 1px solid oklch(0.56 0.008 240 / 0.2);
+}
+
+/* =============================================
+   FOCUS STYLES — Accessible, visible
+   ============================================= */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* =============================================
+   SCROLLBAR — Subtle
+   ============================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* =============================================
+   TRANSITIONS — Subtle, not performative
+   ============================================= */
+button,
+a,
+input,
+select,
+textarea {
+  transition-property: color, background-color, border-color, box-shadow, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* =============================================
+   TABLE BASE
+   ============================================= */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.data-table th {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--surface-muted);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover td {
+  background-color: var(--accent-subtle);
+}
+
+/* =============================================
+   FORM INPUTS — Base
+   ============================================= */
+.input-base {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input-base::placeholder {
+  color: var(--text-muted);
+}
+
+.input-base:hover {
+  border-color: var(--border-strong);
+}
+
+.input-base:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px oklch(0.50 0.110 220 / 0.12);
+}
+
+.input-base:disabled {
+  background-color: var(--surface-muted);
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+/* =============================================
+   SIDEBAR LAYOUT HELPER
+   ============================================= */
+.app-layout {
+  display: flex;
+  min-height: 100dvh;
+}
+
+.app-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background-color: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* =============================================
+   PAGE CONTENT WRAPPER
+   ============================================= */
+.page-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-8);
+}
+
+@media (max-width: 768px) {
+  .page-content {
+    padding: var(--space-5) var(--space-4);
+  }
 }
