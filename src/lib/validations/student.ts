@@ -5,7 +5,7 @@ export const studentSchema = z.object({
     .string()
     .min(1, 'Mã học sinh không được để trống')
     .max(20, 'Mã học sinh tối đa 20 ký tự')
-    .regex(/^[A-Z0-9]+$/i, 'Mã học sinh chỉ gồm chữ và số'),
+    .regex(/^[A-Z0-9_-]+$/i, 'Mã học sinh chỉ gồm chữ, số hoặc dấu gạch nối (-/_)'),
   full_name: z
     .string()
     .min(2, 'Họ và tên tối thiểu 2 ký tự')
