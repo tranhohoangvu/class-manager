@@ -16,35 +16,35 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantStyles: Record<ButtonVariant, string> = {
   primary: [
     'bg-accent text-accent-text hover:bg-accent-hover',
-    'border border-transparent',
-    'font-medium',
+    'border border-transparent shadow-2xs',
+    'font-medium active:scale-[0.98]',
   ].join(' '),
   secondary: [
     'bg-surface text-text-primary hover:bg-surface-muted',
-    'border border-border hover:border-border-strong',
-    'font-medium',
+    'border border-border hover:border-border-strong shadow-2xs',
+    'font-medium active:scale-[0.98]',
   ].join(' '),
   ghost: [
     'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-muted',
     'border border-transparent',
-    'font-medium',
+    'font-medium active:scale-[0.98]',
   ].join(' '),
   outline: [
     'bg-transparent text-accent hover:bg-accent-subtle',
-    'border border-accent',
-    'font-medium',
+    'border border-accent/40 hover:border-accent',
+    'font-medium active:scale-[0.98]',
   ].join(' '),
   danger: [
     'bg-danger text-white hover:opacity-90',
-    'border border-transparent',
-    'font-medium',
+    'border border-transparent shadow-2xs',
+    'font-medium active:scale-[0.98]',
   ].join(' '),
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-7 px-3 text-xs rounded-[var(--radius)]',
-  md: 'h-8 px-4 text-sm rounded-[var(--radius-md)]',
-  lg: 'h-10 px-5 text-sm rounded-[var(--radius-md)]',
+  sm: 'h-8 px-3 text-xs rounded-lg',
+  md: 'h-9 px-4 text-xs rounded-lg',
+  lg: 'h-10 px-5 text-sm rounded-lg',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -69,8 +69,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           'inline-flex items-center justify-center gap-2 whitespace-nowrap',
           'select-none cursor-pointer',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
-          'transition-colors duration-150',
+          'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
+          'transition-all duration-150',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
           variantStyles[variant],
           sizeStyles[size],

@@ -75,32 +75,32 @@ export function Modal({
       {/* Panel */}
       <div
         className={cn(
-          'relative z-10 w-full bg-surface rounded-[var(--radius-xl)]',
-          'border border-border shadow-md',
+          'relative z-10 w-full bg-surface rounded-2xl',
+          'border border-border shadow-lg max-h-[90dvh] flex flex-col',
           sizeClasses[size]
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-border">
+        <div className="flex items-start justify-between p-5 border-b border-border flex-shrink-0">
           <div>
-            <h2 id="modal-title" className="section-heading">
+            <h2 id="modal-title" className="text-base font-semibold text-text-primary">
               {title}
             </h2>
             {description && (
-              <p className="text-sm text-text-secondary mt-0.5">{description}</p>
+              <p className="text-xs text-text-muted mt-0.5">{description}</p>
             )}
           </div>
           <button
             onClick={onClose}
             aria-label="Đóng"
-            className="p-1 rounded-[var(--radius)] text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors"
+            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-5">{children}</div>
+        <div className="p-5 overflow-y-auto flex-1">{children}</div>
 
         {/* Footer */}
         {footer && (

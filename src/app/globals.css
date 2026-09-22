@@ -73,8 +73,8 @@
   /* =============================================
      TYPOGRAPHY
      ============================================= */
-  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-geist-mono), 'JetBrains Mono', monospace;
 
   --text-xs:   12px;
   --text-sm:   13px;
@@ -98,6 +98,7 @@
   --color-bg:            var(--bg);
   --color-surface:       var(--surface);
   --color-surface-muted: var(--surface-muted);
+  --color-surface-subtle: var(--surface-muted);
   --color-border:        var(--border);
   --color-border-strong: var(--border-strong);
   --color-text-primary:  var(--text-primary);
@@ -109,10 +110,13 @@
   --color-accent-text:   var(--accent-text);
   --color-success:       var(--success);
   --color-success-bg:    var(--success-bg);
+  --color-success-subtle: var(--success-bg);
   --color-warning:       var(--warning);
   --color-warning-bg:    var(--warning-bg);
+  --color-warning-subtle: var(--warning-bg);
   --color-danger:        var(--danger);
   --color-danger-bg:     var(--danger-bg);
+  --color-danger-subtle: var(--danger-bg);
   --color-neutral:       var(--neutral);
   --color-neutral-bg:    var(--neutral-bg);
   --font-sans: var(--font-sans);
@@ -317,7 +321,26 @@ textarea {
 }
 
 /* =============================================
-   SIDEBAR LAYOUT HELPER
+   CARD & METRIC UTILITIES
+   ============================================= */
+.metric-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.metric-card:hover {
+  border-color: var(--border-strong);
+}
+
+/* =============================================
+   SIDEBAR LAYOUT HELPER & RESPONSIVE DRAWER
    ============================================= */
 .app-layout {
   display: flex;
@@ -325,7 +348,7 @@ textarea {
 }
 
 .app-sidebar {
-  width: 220px;
+  width: 230px;
   flex-shrink: 0;
   background-color: var(--surface);
   border-right: 1px solid var(--border);
@@ -335,12 +358,37 @@ textarea {
   top: 0;
   height: 100dvh;
   overflow-y: auto;
+  z-index: 40;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .app-main {
   flex: 1;
   min-width: 0;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100dvh;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-md);
+    z-index: 50;
+  }
+
+  .app-sidebar.drawer-open {
+    transform: translateX(0);
+  }
 }
 
 /* =============================================
