@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { AdminSidebar } from '@/components/shell/admin-sidebar';
+import { MobileNav } from '@/components/shell/mobile-nav';
 
 export default function AdminLayout({
   children,
@@ -12,6 +13,7 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -36,7 +38,15 @@ export default function AdminLayout({
 
   return (
     <div className="app-layout">
-      <AdminSidebar />
+      <MobileNav
+        isOpen={isMobileNavOpen}
+        onToggle={() => setIsMobileNavOpen(!isMobileNavOpen)}
+        isAdmin
+      />
+      <AdminSidebar
+        isOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+      />
       <main className="app-main">
         {children}
       </main>

@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { ClassProvider, useCurrentClass } from '@/contexts/class-context';
 import { Sidebar } from '@/components/shell/sidebar';
+import { MobileNav } from '@/components/shell/mobile-nav';
 import { Chalkboard, SignOut } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { assignedClasses, isLoading } = useCurrentClass();
   const { user, logout } = useAuth();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -27,7 +29,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   if (user?.role === 'TEACHER' && assignedClasses.length === 0) {
     return (
       <div className="app-layout">
-        <Sidebar />
+        <MobileNav
+          isOpen={isMobileNavOpen}
+          onToggle={() => setIsMobileNavOpen(!isMobileNavOpen)}
+        />
+        <Sidebar
+          isOpen={isMobileNavOpen}
+          onClose={() => setIsMobileNavOpen(false)}
+        />
         <main className="app-main flex items-center justify-center p-8">
           <div className="max-w-md w-full bg-surface border border-border rounded-2xl p-8 text-center space-y-5 shadow-xs">
             <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center">
@@ -59,7 +68,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-layout">
-      <Sidebar />
+      <MobileNav
+        isOpen={isMobileNavOpen}
+        onToggle={() => setIsMobileNavOpen(!isMobileNavOpen)}
+      />
+      <Sidebar
+        isOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+      />
       <main className="app-main">
         {children}
       </main>

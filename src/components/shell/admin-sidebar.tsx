@@ -10,6 +10,7 @@ import {
   SignOut,
   ArrowSquareOut,
   ShieldCheck,
+  X,
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
@@ -21,28 +22,51 @@ const adminNavItems = [
   { href: '/admin/settings', label: 'Cài đặt hệ thống', icon: GearSix },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
   return (
-    <aside className="app-sidebar">
-      {/* Brand */}
-      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center font-bold text-sm">
-            <ShieldCheck size={18} weight="duotone" />
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-[1px]"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={cn('app-sidebar', isOpen && 'drawer-open')}>
+        {/* Brand */}
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center font-bold text-sm">
+              <ShieldCheck size={18} weight="duotone" />
+            </div>
+            <div>
+              <span className="text-sm font-semibold tracking-tight text-text-primary block leading-tight">
+                Class Manager
+              </span>
+              <span className="text-[11px] font-medium text-indigo-600 block">
+                Quản trị viên
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="text-sm font-semibold tracking-tight text-text-primary block leading-tight">
-              Class Manager
-            </span>
-            <span className="text-[11px] font-medium text-indigo-600 block">
-              Quản trị viên
-            </span>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng bảng điều hướng"
+            className="md:hidden p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
+          >
+            <X size={18} />
+          </button>
         </div>
-      </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-2 py-3" aria-label="Điều hướng Quản trị">
@@ -56,6 +80,7 @@ export function AdminSidebar() {
               <li key={href}>
                 <Link
                   href={href}
+                  onClick={() => onClose?.()}
                   className={cn(
                     'flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-md)]',
                     'text-sm transition-colors duration-150',
@@ -84,6 +109,7 @@ export function AdminSidebar() {
           </div>
           <Link
             href="/dashboard"
+            onClick={() => onClose?.()}
             className="flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)] text-xs text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors mt-1 group"
           >
             <span>Xem giao diện Lớp học</span>
@@ -105,13 +131,17 @@ export function AdminSidebar() {
         </div>
 
         <button
-          onClick={logout}
-          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-text-muted hover:text-danger hover:bg-danger/10 transition-colors text-left"
+          onClick={() => {
+            onClose?.();
+            logout();
+          }}
+          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-text-muted hover:text-danger hover:bg-danger/10 transition-colors text-left cursor-pointer"
         >
           <SignOut size={14} />
           <span>Đăng xuất</span>
         </button>
       </div>
     </aside>
+    </>
   );
 }

@@ -159,3 +159,9 @@ export function useCurrentClass(): ClassContextType {
   }
   return context;
 }
+
+export function useOptionalCurrentClass(): ClassContextType | null {
+  const context = useContext(ClassContext);
+  return context || null;
+}
+
