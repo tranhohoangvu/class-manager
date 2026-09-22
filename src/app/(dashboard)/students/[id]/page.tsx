@@ -143,26 +143,45 @@ export default function StudentDetailPage() {
       <div>
         <Link
           href="/students"
-          className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors mb-3"
+          className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors mb-4 group"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
           <span>Quay lại danh sách học sinh</span>
         </Link>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-accent-subtle text-accent flex items-center justify-center font-semibold text-lg">
-              {student.full_name.split(' ').slice(-1)[0][0]}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-                  {student.full_name}
-                </h1>
-                <StudentStatusBadge status={student.status} />
+
+        {/* Hero Card */}
+        <div className="bg-surface rounded-2xl border border-border p-6 sm:p-7 shadow-xs relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-4 sm:gap-5">
+              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-accent-subtle text-accent border border-accent/20 flex items-center justify-center font-bold text-2xl sm:text-3xl flex-shrink-0 shadow-2xs">
+                {student.full_name.trim().split(' ').slice(-1)[0][0]}
               </div>
-              <p className="text-xs text-text-muted font-mono mt-0.5">
-                Mã học sinh: {student.student_code} · Lớp {studentClass?.name || '—'}
-              </p>
+              <div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
+                    {student.full_name}
+                  </h1>
+                  <StudentStatusBadge status={student.status} />
+                </div>
+                <div className="flex items-center gap-3 text-xs sm:text-sm text-text-secondary mt-1.5 flex-wrap">
+                  <span className="font-mono font-semibold text-text-primary bg-surface-muted px-2.5 py-0.5 rounded-md border border-border">
+                    {student.student_code}
+                  </span>
+                  <span>·</span>
+                  <span>Lớp: <strong className="text-text-primary font-semibold">{studentClass?.name || '—'}</strong></span>
+                  <span>·</span>
+                  <span>Niên khoá: <strong className="text-text-primary font-medium">{studentClass?.school_year || '2026 - 2027'}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link href="/seating">
+                <Button variant="secondary" className="gap-2">
+                  <Armchair size={18} weight="duotone" className="text-accent" />
+                  <span>Xem vị trí chỗ ngồi</span>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -171,115 +190,127 @@ export default function StudentDetailPage() {
       {/* Main Grid Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Col 1: Basic Info */}
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-text-primary border-b border-border pb-2 flex items-center gap-2">
-            <User size={16} className="text-accent" />
+        <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-text-muted border-b border-border pb-3 flex items-center gap-2">
+            <User size={18} className="text-accent" weight="duotone" />
             Thông tin cá nhân
           </h2>
 
-          <div className="space-y-3 text-sm">
+          <div className="space-y-4 text-sm">
             <div>
-              <span className="text-xs text-text-muted block">Giới tính</span>
-              <div className="flex items-center gap-1 text-text-secondary mt-0.5">
+              <span className="text-xs text-text-muted block font-medium">Giới tính</span>
+              <div className="flex items-center gap-1.5 text-text-primary font-semibold mt-1">
                 {student.gender === 'male' ? (
-                  <>
-                    <GenderMale size={15} className="text-blue-500" />
-                    <span>Nam</span>
-                  </>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200/60">
+                    <GenderMale size={15} weight="bold" className="text-blue-600" />
+                    Nam
+                  </span>
                 ) : (
-                  <>
-                    <GenderFemale size={15} className="text-rose-500" />
-                    <span>Nữ</span>
-                  </>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200/60">
+                    <GenderFemale size={15} weight="bold" className="text-rose-600" />
+                    Nữ
+                  </span>
                 )}
               </div>
             </div>
 
             <div>
-              <span className="text-xs text-text-muted block">Ngày sinh</span>
-              <div className="flex items-center gap-1.5 text-text-secondary mt-0.5">
-                <Calendar size={14} className="text-text-muted" />
+              <span className="text-xs text-text-muted block font-medium">Ngày sinh</span>
+              <div className="flex items-center gap-2 text-text-primary font-medium mt-1">
+                <Calendar size={16} className="text-text-muted" />
                 <span>{student.date_of_birth || 'Chưa cập nhật'}</span>
               </div>
             </div>
 
             <div>
-              <span className="text-xs text-text-muted block">Số điện thoại liên lạc</span>
-              <div className="flex items-center gap-1.5 text-text-secondary mt-0.5">
-                <Phone size={14} className="text-text-muted" />
-                <span>{student.phone || 'Chưa có SĐT'}</span>
+              <span className="text-xs text-text-muted block font-medium">Số điện thoại phụ huynh</span>
+              <div className="flex items-center gap-2 text-text-primary font-medium mt-1">
+                <Phone size={16} className="text-text-muted" />
+                {student.phone ? (
+                  <a
+                    href={`tel:${student.phone}`}
+                    className="text-accent hover:underline font-semibold"
+                  >
+                    {student.phone}
+                  </a>
+                ) : (
+                  <span className="text-text-muted">Chưa có SĐT</span>
+                )}
               </div>
             </div>
 
             <div>
-              <span className="text-xs text-text-muted block">Email học sinh</span>
-              <div className="flex items-center gap-1.5 text-text-secondary mt-0.5">
-                <EnvelopeSimple size={14} className="text-text-muted" />
+              <span className="text-xs text-text-muted block font-medium">Email học sinh</span>
+              <div className="flex items-center gap-2 text-text-primary font-medium mt-1">
+                <EnvelopeSimple size={16} className="text-text-muted" />
                 <span>{student.email || 'Chưa có email'}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Col 2: Seating Position */}
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-text-primary border-b border-border pb-2 flex items-center gap-2">
-            <Armchair size={16} className="text-accent" />
-            Vị trí chỗ ngồi
+        {/* Col 2: Seating Position & Desk Partner */}
+        <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-text-muted border-b border-border pb-3 flex items-center gap-2">
+            <Armchair size={18} className="text-accent" weight="duotone" />
+            Vị trí lớp & Bạn cùng bàn
           </h2>
 
           {currentDesk ? (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-surface-subtle border border-border/80 text-center">
-                <span className="text-xs font-mono text-text-muted uppercase">Vị trí hiện tại</span>
-                <p className="text-lg font-semibold text-text-primary mt-1">
-                  Bàn số {currentDesk.desk_number} (Ghế {currentSeatSide === 'left' ? 'bên Trái' : 'bên Phải'})
+              <div className="p-4 rounded-xl bg-surface-muted/70 border border-border/80 text-center">
+                <span className="text-xs font-mono font-medium text-text-muted uppercase">Vị trí thực tế</span>
+                <p className="text-xl font-bold text-text-primary mt-1">
+                  Bàn số {currentDesk.desk_number} · Ghế {currentSeatSide === 'left' ? 'Trái' : 'Phải'}
                 </p>
                 <p className="text-xs text-text-secondary mt-1">
-                  Dãy {currentDesk.col_num} · Hàng {currentDesk.row_num}
+                  Dãy {currentDesk.col_num} · Hàng {currentDesk.row_num} (Khu vực học tập)
                 </p>
               </div>
 
               <div>
-                <span className="text-xs text-text-muted block">Bạn cùng bàn:</span>
+                <span className="text-xs font-medium text-text-muted block mb-1.5">Bạn ngồi cùng bàn:</span>
                 {deskPartner ? (
-                  <div className="flex items-center gap-2 mt-1.5 p-2.5 rounded-lg bg-surface-muted/50 border border-border/60">
-                    <div className="w-7 h-7 rounded-full bg-accent-subtle text-accent flex items-center justify-center font-medium text-xs">
-                      {deskPartner.full_name.split(' ').slice(-1)[0][0]}
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-subtle border border-border/80">
+                    <div className="w-9 h-9 rounded-full bg-accent-subtle text-accent flex items-center justify-center font-bold text-xs border border-accent/20 flex-shrink-0">
+                      {deskPartner.full_name.trim().split(' ').slice(-1)[0][0]}
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <Link
                         href={`/students/${deskPartner.id}`}
-                        className="text-xs font-medium text-text-primary hover:text-accent"
+                        className="text-sm font-semibold text-text-primary hover:text-accent truncate block"
                       >
                         {deskPartner.full_name}
                       </Link>
-                      <span className="text-[10px] text-text-muted block font-mono">
+                      <span className="text-xs text-text-muted font-mono block">
                         {deskPartner.student_code}
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-text-muted italic mt-1">
-                    Ngồi một mình (chỗ bên cạnh còn trống)
-                  </p>
+                  <div className="p-3 rounded-xl bg-surface-subtle border border-dashed border-border text-center">
+                    <p className="text-xs text-text-muted italic">
+                      Đang ngồi một mình (ghế bên cạnh còn trống)
+                    </p>
+                  </div>
                 )}
               </div>
 
-              <div className="pt-2">
+              <div className="pt-1">
                 <Link href="/seating">
-                  <Button variant="secondary" size="sm" className="w-full text-xs">
-                    Mở sơ đồ để đổi chỗ
+                  <Button variant="secondary" className="w-full text-xs gap-1.5 h-10">
+                    <span>Mở sơ đồ để chuyển chỗ</span>
                   </Button>
                 </Link>
               </div>
             </div>
           ) : (
-            <div className="py-6 text-center space-y-2">
-              <p className="text-xs text-text-muted italic">Học sinh này hiện chưa được xếp chỗ ngồi.</p>
+            <div className="py-8 text-center space-y-3">
+              <p className="text-sm text-text-muted italic">Học sinh này hiện chưa được xếp chỗ ngồi.</p>
               <Link href="/seating">
-                <Button variant="primary" size="sm" className="text-xs">
-                  Xếp chỗ ngay
+                <Button variant="primary" className="gap-2">
+                  <Armchair size={16} />
+                  <span>Xếp chỗ ngay</span>
                 </Button>
               </Link>
             </div>
@@ -287,41 +318,41 @@ export default function StudentDetailPage() {
         </div>
 
         {/* Col 3: Attendance Summary */}
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-text-primary border-b border-border pb-2 flex items-center gap-2">
-            <CalendarCheck size={16} className="text-accent" />
+        <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-text-muted border-b border-border pb-3 flex items-center gap-2">
+            <CalendarCheck size={18} className="text-accent" weight="duotone" />
             Thống kê chuyên cần
           </h2>
 
-          <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="p-2.5 rounded-lg bg-success-bg border border-success/20 shadow-2xs">
-              <span className="text-xs text-success font-medium block">Có mặt</span>
-              <span className="text-lg font-semibold text-success">{presentDays}</span>
-              <span className="text-[10px] text-text-muted block">buổi</span>
+          <div className="grid grid-cols-2 gap-2.5 text-center">
+            <div className="p-3 rounded-xl bg-success-bg border border-success/20 shadow-2xs">
+              <span className="text-xs text-success font-semibold block">Có mặt</span>
+              <span className="text-2xl font-bold text-success mt-0.5 block">{presentDays}</span>
+              <span className="text-[11px] text-text-muted block">buổi học</span>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-danger-bg border border-danger/20 shadow-2xs">
-              <span className="text-xs text-danger font-medium block">Vắng</span>
-              <span className="text-lg font-semibold text-danger">{absentDays}</span>
-              <span className="text-[10px] text-text-muted block">buổi</span>
+            <div className="p-3 rounded-xl bg-danger-bg border border-danger/20 shadow-2xs">
+              <span className="text-xs text-danger font-semibold block">Vắng</span>
+              <span className="text-2xl font-bold text-danger mt-0.5 block">{absentDays}</span>
+              <span className="text-[11px] text-text-muted block">buổi học</span>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-warning-bg border border-warning/20 shadow-2xs">
-              <span className="text-xs text-warning font-medium block">Đi muộn</span>
-              <span className="text-lg font-semibold text-warning">{lateDays}</span>
-              <span className="text-[10px] text-text-muted block">buổi</span>
+            <div className="p-3 rounded-xl bg-warning-bg border border-warning/20 shadow-2xs">
+              <span className="text-xs text-warning font-semibold block">Đi muộn</span>
+              <span className="text-2xl font-bold text-warning mt-0.5 block">{lateDays}</span>
+              <span className="text-[11px] text-text-muted block">lần</span>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-surface-muted border border-border shadow-2xs">
-              <span className="text-xs text-text-secondary font-medium block">Có phép</span>
-              <span className="text-lg font-semibold text-text-secondary">{excusedDays}</span>
-              <span className="text-[10px] text-text-muted block">buổi</span>
+            <div className="p-3 rounded-xl bg-surface-muted border border-border shadow-2xs">
+              <span className="text-xs text-text-secondary font-semibold block">Có phép</span>
+              <span className="text-2xl font-bold text-text-primary mt-0.5 block">{excusedDays}</span>
+              <span className="text-[11px] text-text-muted block">buổi</span>
             </div>
           </div>
 
-          <div className="pt-2 text-center">
-            <span className="text-xs text-text-muted">Tỉ lệ tham gia học tập:</span>
-            <div className="text-xl font-bold text-accent mt-0.5">{attendanceRate}%</div>
+          <div className="pt-3 border-t border-border text-center">
+            <span className="text-xs text-text-muted font-medium">Tỷ lệ tham gia học tập:</span>
+            <div className="text-2xl font-bold text-accent mt-0.5">{attendanceRate}%</div>
           </div>
         </div>
       </div>
@@ -329,11 +360,11 @@ export default function StudentDetailPage() {
       {/* Bottom Section: Notes & Attendance History */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Teacher's Notes on Student */}
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-border pb-3">
+        <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-border pb-3.5">
             <div className="flex items-center gap-2">
-              <NotePencil size={18} className="text-accent" />
-              <h2 className="text-base font-semibold text-text-primary">
+              <NotePencil size={20} className="text-accent" weight="duotone" />
+              <h2 className="text-base font-bold text-text-primary">
                 Sổ ghi chú của giáo viên
               </h2>
             </div>
@@ -342,21 +373,22 @@ export default function StudentDetailPage() {
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsAddingNote(!isAddingNote)}
+                className="gap-1.5"
               >
-                <Plus size={14} />
+                <Plus size={14} weight="bold" />
                 <span>Thêm ghi chú</span>
               </Button>
             )}
           </div>
 
           {isHomeroom && isAddingNote && (
-            <form onSubmit={handleAddNote} className="p-3 bg-surface-subtle rounded-lg border border-border space-y-2">
+            <form onSubmit={handleAddNote} className="p-4 bg-surface-subtle rounded-xl border border-border space-y-3">
               <textarea
                 value={newNoteContent}
                 onChange={(e) => setNewNoteContent(e.target.value)}
-                placeholder="Ghi chú về học lực, hành vi, sức khoẻ hoặc dặn dò phụ huynh..."
+                placeholder="Ghi chú về học lực, thái độ, sức khoẻ hoặc dặn dò phụ huynh..."
                 rows={3}
-                className="w-full text-xs p-2.5 bg-surface rounded-md border border-border focus:outline-none focus:border-accent"
+                className="w-full text-sm p-3 bg-surface rounded-xl border border-border focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 placeholder:text-text-muted text-text-primary transition-all"
                 required
               />
               <div className="flex justify-end gap-2">
@@ -377,29 +409,29 @@ export default function StudentDetailPage() {
 
           <div className="space-y-3">
             {notes.length === 0 ? (
-              <p className="text-xs text-text-muted py-6 text-center">
+              <p className="text-sm text-text-muted py-8 text-center italic">
                 Chưa có ghi chú nào về học sinh này.
               </p>
             ) : (
               notes.map((note) => (
                 <div
                   key={note.id}
-                  className="p-3 rounded-lg bg-surface-subtle border border-border/70 text-xs space-y-1 relative group"
+                  className="p-4 rounded-xl bg-surface-subtle border border-border/80 text-sm space-y-1.5 relative group hover:border-border transition-colors"
                 >
-                  <div className="flex items-center justify-between text-[11px] text-text-muted">
-                    <span>{formatDateVietnamese(note.created_at)}</span>
+                  <div className="flex items-center justify-between text-xs text-text-muted">
+                    <span className="font-medium">{formatDateVietnamese(note.created_at)}</span>
                     {isHomeroom && (
                       <button
                         type="button"
                         onClick={() => handleDeleteNote(note.id)}
-                        className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-danger transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-danger p-1 rounded transition-all cursor-pointer"
                         title="Xoá ghi chú"
                       >
-                        <Trash size={13} />
+                        <Trash size={15} />
                       </button>
                     )}
                   </div>
-                  <p className="text-text-primary leading-relaxed whitespace-pre-wrap">
+                  <p className="text-text-primary leading-relaxed whitespace-pre-wrap text-sm">
                     {note.content}
                   </p>
                 </div>
@@ -409,32 +441,32 @@ export default function StudentDetailPage() {
         </div>
 
         {/* Detailed Attendance Records */}
-        <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-border pb-3">
-            <h2 className="text-base font-semibold text-text-primary">
+        <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-border pb-3.5">
+            <h2 className="text-base font-bold text-text-primary">
               Lịch sử điểm danh gần đây
             </h2>
             <Link href="/history">
-              <Button variant="ghost" size="sm" className="text-xs text-accent">
-                Xem toàn lớp →
+              <Button variant="ghost" size="sm" className="text-xs text-accent font-semibold">
+                Xem toàn bộ lớp →
               </Button>
             </Link>
           </div>
 
-          <div className="divide-y divide-border overflow-y-auto max-h-80">
+          <div className="divide-y divide-border overflow-y-auto max-h-80 pr-1">
             {attendanceRecords.length === 0 ? (
-              <p className="text-xs text-text-muted py-6 text-center">
+              <p className="text-sm text-text-muted py-8 text-center italic">
                 Chưa có dữ liệu điểm danh cho học sinh này.
               </p>
             ) : (
               attendanceRecords.map((item) => (
-                <div key={item.id} className="py-2.5 flex items-center justify-between text-xs">
+                <div key={item.id} className="py-3 flex items-center justify-between text-sm">
                   <div>
-                    <span className="font-mono text-text-secondary">
+                    <span className="font-mono font-medium text-text-primary">
                       {formatDateVietnamese(item.date)}
                     </span>
                     {item.note && (
-                      <p className="text-[11px] text-text-muted italic mt-0.5">
+                      <p className="text-xs text-text-muted italic mt-0.5">
                         Lý do: {item.note}
                       </p>
                     )}

@@ -9,8 +9,8 @@ import { ConfirmDialog } from '@/components/ui/modal';
 import { toast } from 'sonner';
 
 export default function AdminSettingsPage() {
-  const [schoolName, setSchoolName] = useState('Trường THCS Chu Văn An');
-  const [currentYear, setCurrentYear] = useState('2025 - 2026');
+  const [schoolName, setSchoolName] = useState('Trường THCS Nguyễn Tất Thành');
+  const [currentYear, setCurrentYear] = useState('2026 - 2027');
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   const handleSaveSystemSettings = (e: React.FormEvent) => {
@@ -53,17 +53,17 @@ export default function AdminSettingsPage() {
               label="Tên đơn vị trường học"
               value={schoolName}
               onChange={(e) => setSchoolName(e.target.value)}
-              placeholder="VD: Trường THCS Chu Văn An"
+              placeholder="VD: Trường THCS Nguyễn Tất Thành"
             />
           </div>
 
           <div>
             <Input
               id="year"
-              label="Năm học chính thức"
+              label="Năm học hiện hành"
               value={currentYear}
               onChange={(e) => setCurrentYear(e.target.value)}
-              placeholder="2025 - 2026"
+              placeholder="2026 - 2027"
             />
           </div>
 

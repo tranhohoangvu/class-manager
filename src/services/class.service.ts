@@ -54,7 +54,7 @@ export const ClassService = {
     const updated = LocalStore.updateClass(classId, {
       name: data.name.trim(),
       room_name: data.room_name?.trim() || null,
-      school_year: data.school_year?.trim() || '2025 - 2026',
+      school_year: data.school_year?.trim() || '2026 - 2027',
     });
 
     if (!updated) {

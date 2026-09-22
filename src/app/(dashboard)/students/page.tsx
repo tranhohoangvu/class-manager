@@ -172,35 +172,35 @@ export default function StudentsPage() {
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
               Danh sách học sinh
             </h1>
-            <span className="px-2.5 py-0.5 text-xs font-semibold bg-accent-subtle text-accent rounded-full">
+            <span className="px-3 py-1 text-xs font-semibold bg-accent-subtle text-accent rounded-full border border-accent/20">
               {students.length} học sinh
             </span>
           </div>
-          <p className="text-sm text-text-muted mt-1">
-            Quản lý hồ sơ, thông tin liên lạc và vị trí chỗ ngồi của {currentClass?.name || 'lớp học'}
+          <p className="text-sm text-text-secondary mt-1.5">
+            Quản lý hồ sơ, thông tin liên lạc và vị trí chỗ ngồi của <span className="font-medium text-text-primary">{currentClass?.name || 'lớp học'}</span>
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap no-print">
-          <Button variant="secondary" onClick={handleExportExcel} className="gap-1.5" title="Xuất danh sách ra file Excel">
-            <FileXls size={16} className="text-emerald-600" />
+        <div className="flex items-center gap-2.5 flex-wrap no-print">
+          <Button variant="secondary" onClick={handleExportExcel} className="gap-2" title="Xuất danh sách ra file Excel">
+            <FileXls size={18} className="text-emerald-600" />
             <span>Xuất Excel</span>
           </Button>
 
-          <Button variant="secondary" onClick={handlePrint} className="gap-1.5" title="In danh sách học sinh khổ A4">
-            <Printer size={16} />
+          <Button variant="secondary" onClick={handlePrint} className="gap-2" title="In danh sách học sinh khổ A4">
+            <Printer size={18} />
             <span>In danh sách</span>
           </Button>
 
           {isHomeroom && (
-            <Button variant="primary" onClick={handleOpenAdd} className="gap-1.5">
-              <Plus size={16} />
+            <Button variant="primary" onClick={handleOpenAdd} className="gap-2">
+              <Plus size={18} weight="bold" />
               <span>Thêm học sinh</span>
             </Button>
           )}
@@ -209,35 +209,35 @@ export default function StudentsPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-3.5 bg-indigo-50 border border-indigo-200/80 rounded-xl flex items-center justify-between text-xs text-indigo-900 no-print shadow-2xs">
-          <span>
-            Bạn đang xem danh sách học sinh lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ tra cứu hồ sơ.
+        <div className="p-4 bg-indigo-50/80 border border-indigo-200/80 rounded-2xl flex items-center justify-between text-sm text-indigo-900 no-print shadow-2xs">
+          <span className="leading-relaxed">
+            Bạn đang xem danh sách học sinh lớp <strong className="font-semibold">{currentClass?.name}</strong> với vai trò <strong className="font-semibold">Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ tra cứu hồ sơ.
           </span>
-          <span className="px-2 py-0.5 rounded bg-indigo-100 font-medium text-[11px] text-indigo-800">Chỉ xem</span>
+          <span className="px-2.5 py-1 rounded-md bg-indigo-100 font-semibold text-xs text-indigo-800 ml-4 flex-shrink-0">Chỉ xem</span>
         </div>
       )}
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 no-print">
-        <div className="relative flex-1 w-full">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 no-print">
+        <div className="relative flex-1">
           <MagnifyingGlass
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
           />
           <input
             type="text"
-            placeholder="Tìm theo tên học sinh, mã HS hoặc số điện thoại..."
+            placeholder="Tìm theo tên học sinh, mã HS hoặc số điện thoại phụ huynh..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs bg-surface rounded-lg border border-border focus:outline-none focus:border-accent shadow-2xs placeholder:text-text-muted"
+            className="w-full pl-10 pr-4 h-[46px] text-sm bg-surface rounded-xl border border-border focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs placeholder:text-text-muted transition-all"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <select
             value={genderFilter}
             onChange={(e) => setGenderFilter(e.target.value)}
-            className="px-3 py-2 text-xs bg-surface rounded-lg border border-border text-text-secondary focus:outline-none focus:border-accent shadow-2xs cursor-pointer"
+            className="h-[46px] px-3.5 text-sm bg-surface rounded-xl border border-border text-text-primary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs cursor-pointer"
           >
             <option value="all">Tất cả giới tính</option>
             <option value="male">Nam</option>
@@ -247,35 +247,35 @@ export default function StudentsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs bg-surface rounded-lg border border-border text-text-secondary focus:outline-none focus:border-accent shadow-2xs cursor-pointer"
+            className="h-[46px] px-3.5 text-sm bg-surface rounded-xl border border-border text-text-primary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs cursor-pointer"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang học</option>
-            <option value="inactive">Đã chuyển lớp/nghỉ</option>
+            <option value="inactive">Đã chuyển/nghỉ</option>
           </select>
         </div>
       </div>
 
       {/* Student Table */}
-      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-xs printable-card">
+      <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs printable-card">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-surface-subtle text-xs text-text-muted uppercase border-b border-border tracking-wider">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-surface-subtle/80 text-xs font-semibold text-text-muted uppercase border-b border-border tracking-wider">
               <tr>
-                <th className="px-4 py-3 w-12 text-center">STT</th>
-                <th className="px-4 py-3 w-24">Mã HS</th>
-                <th className="px-4 py-3">Họ và tên</th>
-                <th className="px-4 py-3 w-24">Giới tính</th>
-                <th className="px-4 py-3 w-32">Ngày sinh</th>
-                <th className="px-4 py-3 w-36">Vị trí chỗ ngồi</th>
-                <th className="px-4 py-3 w-32">Trạng thái</th>
-                <th className="px-4 py-3 w-28 text-right no-print">Thao tác</th>
+                <th className="px-4 py-3.5 w-14 text-center">STT</th>
+                <th className="px-4 py-3.5 w-24">Mã HS</th>
+                <th className="px-5 py-3.5">Học sinh</th>
+                <th className="px-4 py-3.5 w-28">Giới tính</th>
+                <th className="px-4 py-3.5 w-32">Ngày sinh</th>
+                <th className="px-5 py-3.5 w-44">Vị trí chỗ ngồi</th>
+                <th className="px-4 py-3.5 w-32">Trạng thái</th>
+                <th className="px-4 py-3.5 w-28 text-right no-print">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8">
+                  <td colSpan={8} className="py-12">
                     <EmptyStateView
                       title="Không tìm thấy học sinh"
                       description="Không có học sinh nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc hiện tại."
@@ -287,89 +287,107 @@ export default function StudentsPage() {
               ) : (
                 filteredStudents.map((student, index) => {
                   const seatInfo = seatMap.get(student.id);
+                  const lastName = student.full_name.trim().split(' ').pop() || student.full_name;
+                  const initial = lastName.charAt(0).toUpperCase();
+
                   return (
                     <tr
                       key={student.id}
-                      className="hover:bg-surface-subtle/60 transition-colors group"
+                      className="hover:bg-surface-subtle/70 transition-colors group min-h-[60px]"
                     >
-                      <td className="px-4 py-3 text-center text-text-muted font-mono text-xs">
+                      <td className="px-4 py-4 text-center text-text-muted font-mono text-xs">
                         {index + 1}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs font-medium text-text-secondary">
+                      <td className="px-4 py-4 font-mono text-xs font-semibold text-text-secondary">
                         {student.student_code}
                       </td>
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/students/${student.id}`}
-                          className="font-medium text-text-primary hover:text-accent transition-colors block"
-                        >
-                          {student.full_name}
-                        </Link>
-                        {student.phone && (
-                          <span className="text-xs text-text-muted block mt-0.5">
-                            SĐT: {student.phone}
-                          </span>
-                        )}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-accent-subtle text-accent font-semibold text-sm flex items-center justify-center flex-shrink-0 border border-accent/20">
+                            {initial}
+                          </div>
+                          <div>
+                            <Link
+                              href={`/students/${student.id}`}
+                              className="font-semibold text-text-primary hover:text-accent transition-colors block text-sm"
+                            >
+                              {student.full_name}
+                            </Link>
+                            {student.phone ? (
+                              <a
+                                href={`tel:${student.phone}`}
+                                className="text-xs text-text-muted hover:text-text-primary block mt-0.5 transition-colors"
+                                title="Gọi điện cho phụ huynh"
+                              >
+                                SĐT: {student.phone}
+                              </a>
+                            ) : (
+                              <span className="text-xs text-text-muted/60 block mt-0.5">
+                                Chưa có SĐT
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-4">
                         {student.gender === 'male' ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-text-secondary">
-                            <GenderMale size={14} className="text-blue-500" />
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded-md border border-blue-200/60">
+                            <GenderMale size={14} weight="bold" className="text-blue-600" />
                             Nam
                           </span>
                         ) : student.gender === 'female' ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-text-secondary">
-                            <GenderFemale size={14} className="text-rose-500" />
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded-md border border-rose-200/60">
+                            <GenderFemale size={14} weight="bold" className="text-rose-600" />
                             Nữ
                           </span>
                         ) : (
                           <span className="text-xs text-text-muted">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-text-secondary">
+                      <td className="px-4 py-4 text-xs font-medium text-text-secondary">
                         {student.date_of_birth || '—'}
                       </td>
-                      <td className="px-4 py-3 text-xs">
+                      <td className="px-5 py-4 text-xs">
                         {seatInfo ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-primary font-medium">
-                            <Armchair size={13} className="text-accent" />
-                            {seatInfo}
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted text-text-primary font-medium border border-border/80">
+                            <Armchair size={14} weight="duotone" className="text-accent" />
+                            <span>{seatInfo}</span>
                           </span>
                         ) : (
-                          <span className="text-text-muted italic">Chưa xếp chỗ</span>
+                          <span className="text-text-muted italic px-2 py-1 text-xs">Chưa xếp chỗ</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-4">
                         <StudentStatusBadge status={student.status} />
                       </td>
-                      <td className="px-4 py-3 text-right no-print">
+                      <td className="px-4 py-4 text-right no-print">
                         <div className="flex items-center justify-end gap-1">
                           <Link href={`/students/${student.id}`}>
                             <button
                               type="button"
-                              title="Xem chi tiết"
-                              className="p-1.5 rounded text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
+                              title="Xem chi tiết hồ sơ"
+                              className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
                             >
-                              <Eye size={15} />
+                              <Eye size={17} />
                             </button>
                           </Link>
                           {isHomeroom && (
                             <>
                               <button
                                 type="button"
-                                title="Sửa thông tin"
+                                title="Sửa thông tin học sinh"
                                 onClick={() => handleOpenEdit(student)}
-                                className="p-1.5 rounded text-text-muted hover:text-accent hover:bg-surface-muted transition-colors cursor-pointer"
+                                className="p-2 rounded-lg text-text-muted hover:text-accent hover:bg-surface-muted transition-colors cursor-pointer"
                               >
-                                <PencilSimple size={15} />
+                                <PencilSimple size={17} />
                               </button>
                               <button
                                 type="button"
                                 title="Xoá học sinh"
                                 onClick={() => setStudentToDelete(student)}
-                                className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors cursor-pointer"
+                                className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors cursor-pointer"
                               >
-                                <Trash size={15} />
+                                <Trash size={17} />
                               </button>
                             </>
                           )}

@@ -106,13 +106,13 @@ export default function AttendanceHistoryPage() {
 
   const renderStatusCell = (status: AttendanceStatus | undefined) => {
     if (!status) {
-      return <span className="text-text-muted/40">—</span>;
+      return <span className="text-text-muted/30 font-mono">—</span>;
     }
     switch (status) {
       case 'present':
         return (
           <span
-            className="w-5 h-5 rounded-full bg-success/20 text-success text-[10px] font-bold inline-flex items-center justify-center"
+            className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold inline-flex items-center justify-center border border-emerald-300/60 shadow-2xs"
             title="Có mặt"
           >
             ✓
@@ -121,7 +121,7 @@ export default function AttendanceHistoryPage() {
       case 'absent':
         return (
           <span
-            className="w-5 h-5 rounded-full bg-danger text-white text-[10px] font-bold inline-flex items-center justify-center shadow-2xs"
+            className="w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold inline-flex items-center justify-center shadow-2xs"
             title="Vắng"
           >
             V
@@ -130,8 +130,8 @@ export default function AttendanceHistoryPage() {
       case 'late':
         return (
           <span
-            className="w-5 h-5 rounded-full bg-warning text-white text-[10px] font-bold inline-flex items-center justify-center shadow-2xs"
-            title="Muộn"
+            className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-bold inline-flex items-center justify-center shadow-2xs"
+            title="Đi muộn"
           >
             M
           </span>
@@ -139,7 +139,7 @@ export default function AttendanceHistoryPage() {
       case 'excused':
         return (
           <span
-            className="w-5 h-5 rounded-full bg-zinc-600 text-white text-[10px] font-bold inline-flex items-center justify-center shadow-2xs"
+            className="w-6 h-6 rounded-full bg-slate-600 text-white text-xs font-bold inline-flex items-center justify-center shadow-2xs"
             title="Có phép"
           >
             P
@@ -151,31 +151,36 @@ export default function AttendanceHistoryPage() {
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-            Lịch sử điểm danh {currentClass ? currentClass.name : 'lớp học'}
-          </h1>
-          <p className="text-sm text-text-muted mt-1">
-            Bảng theo dõi chuyên cần tổng thể qua các ngày học của {currentClass?.name || 'lớp'} ({dates.length} buổi đã ghi nhận)
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
+              Lịch sử điểm danh {currentClass ? currentClass.name : 'lớp học'}
+            </h1>
+            <span className="px-3 py-1 text-xs font-semibold bg-accent-subtle text-accent rounded-full border border-accent/20">
+              {dates.length} buổi đã học
+            </span>
+          </div>
+          <p className="text-sm text-text-secondary mt-1.5">
+            Bảng theo dõi chuyên cần tổng thể qua các ngày học của <strong className="text-text-primary font-medium">{currentClass?.name || 'lớp'}</strong>
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap no-print">
-          <Button variant="secondary" onClick={handleExportExcel} className="gap-1.5" title="Xuất ma trận điểm danh ra file Excel">
-            <FileXls size={16} className="text-emerald-600" />
+        <div className="flex items-center gap-2.5 flex-wrap no-print">
+          <Button variant="secondary" onClick={handleExportExcel} className="gap-2" title="Xuất ma trận điểm danh ra file Excel">
+            <FileXls size={18} className="text-emerald-600" />
             <span>Xuất Excel</span>
           </Button>
 
-          <Button variant="secondary" onClick={() => window.print()} className="gap-1.5" title="In bảng điểm danh A4">
-            <Printer size={16} />
+          <Button variant="secondary" onClick={() => window.print()} className="gap-2" title="In bảng điểm danh A4">
+            <Printer size={18} />
             <span>In báo cáo</span>
           </Button>
 
           <Link href="/attendance">
-            <Button variant="primary" className="gap-1.5">
+            <Button variant="primary" className="gap-2">
               <span>Điểm danh ngày mới</span>
-              <ArrowRight size={16} />
+              <ArrowRight size={18} />
             </Button>
           </Link>
         </div>
@@ -183,21 +188,23 @@ export default function AttendanceHistoryPage() {
 
       {/* Warning Alert if students absent */}
       {studentsNeedingAttention.length > 0 && (
-        <div className="p-4 rounded-xl bg-warning-bg border border-warning/30 flex items-start gap-3 no-print shadow-2xs">
-          <Warning size={20} className="text-warning flex-shrink-0 mt-0.5" />
-          <div className="space-y-1.5 text-xs">
-            <p className="font-semibold text-text-primary">
+        <div className="p-5 rounded-2xl bg-warning-bg/90 border border-warning/30 flex items-start gap-4 no-print shadow-2xs">
+          <div className="p-2 rounded-xl bg-amber-100 text-amber-800 flex-shrink-0">
+            <Warning size={22} weight="duotone" />
+          </div>
+          <div className="space-y-2 text-sm flex-1">
+            <p className="font-bold text-text-primary">
               Học sinh cần lưu ý về chuyên cần:
             </p>
-            <div className="flex flex-wrap gap-2 pt-0.5">
+            <div className="flex flex-wrap gap-2.5 pt-0.5">
               {studentsNeedingAttention.map((item) => (
                 <Link
                   key={item.student.id}
                   href={`/students/${item.student.id}`}
-                  className="px-2.5 py-1 rounded-md bg-surface border border-warning/40 hover:border-warning font-medium text-text-primary inline-flex items-center gap-1.5 shadow-2xs hover:shadow-xs transition-all"
+                  className="px-3 py-1.5 rounded-xl bg-surface border border-warning/40 hover:border-warning font-medium text-text-primary inline-flex items-center gap-2 shadow-2xs hover:shadow-xs transition-all text-xs"
                 >
-                  <span>{item.student.full_name}</span>
-                  <span className="text-danger font-semibold">({item.absent} vắng, {item.late} muộn)</span>
+                  <span className="font-semibold">{item.student.full_name}</span>
+                  <span className="text-danger font-bold">({item.absent} vắng, {item.late} muộn)</span>
                 </Link>
               ))}
             </div>
@@ -206,98 +213,109 @@ export default function AttendanceHistoryPage() {
       )}
 
       {/* Legend & Summary Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-text-muted px-1 no-print">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-text-secondary px-1 no-print">
         <div className="flex items-center gap-4 flex-wrap font-medium">
-          <span className="text-text-secondary font-semibold">Chú giải:</span>
-          <span className="inline-flex items-center gap-1">
-            <span className="w-4 h-4 rounded bg-success text-white text-[10px] font-bold inline-flex items-center justify-center">✓</span>
+          <span className="text-text-primary font-bold text-xs uppercase tracking-wider">Chú giải:</span>
+          <span className="inline-flex items-center gap-1.5 text-xs">
+            <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold inline-flex items-center justify-center border border-emerald-300">✓</span>
             <span>Có mặt</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="w-4 h-4 rounded bg-danger text-white text-[10px] font-bold inline-flex items-center justify-center">V</span>
+          <span className="inline-flex items-center gap-1.5 text-xs">
+            <span className="w-5 h-5 rounded-full bg-rose-600 text-white text-xs font-bold inline-flex items-center justify-center">V</span>
             <span>Vắng</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="w-4 h-4 rounded bg-warning text-white text-[10px] font-bold inline-flex items-center justify-center">M</span>
+          <span className="inline-flex items-center gap-1.5 text-xs">
+            <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-xs font-bold inline-flex items-center justify-center">M</span>
             <span>Đi muộn</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="w-4 h-4 rounded bg-zinc-600 text-white text-[10px] font-bold inline-flex items-center justify-center">P</span>
+          <span className="inline-flex items-center gap-1.5 text-xs">
+            <span className="w-5 h-5 rounded-full bg-slate-600 text-white text-xs font-bold inline-flex items-center justify-center">P</span>
             <span>Có phép</span>
           </span>
         </div>
-        <div>
-          <span>Hiển thị <strong>{dates.length}</strong> buổi học gần nhất</span>
+        <div className="text-xs text-text-muted">
+          <span>Hiển thị <strong className="text-text-primary font-semibold">{dates.length}</strong> buổi học gần nhất</span>
         </div>
       </div>
 
       {/* Main Matrix Table */}
       {dates.length === 0 ? (
         <EmptyStateView
-          icon={<CalendarBlank size={32} className="opacity-60" />}
+          icon={<CalendarBlank size={36} className="opacity-60" />}
           title="Chưa có dữ liệu điểm danh"
           description={`Lớp ${currentClass?.name || 'này'} chưa có buổi học nào được ghi nhận điểm danh.`}
           actionText="Điểm danh buổi đầu tiên"
           actionHref="/attendance"
         />
       ) : (
-        <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-xs printable-card">
+        <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs printable-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-surface-subtle text-xs text-text-muted border-b border-border">
+              <thead className="bg-surface-subtle/90 text-xs font-semibold text-text-muted border-b border-border">
                 <tr>
-                  <th className="px-4 py-3 font-semibold uppercase tracking-wider sticky left-0 bg-surface-subtle z-10 w-44">
+                  <th className="px-5 py-4 font-semibold uppercase tracking-wider sticky left-0 bg-surface-subtle z-10 w-52 shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
                     Học sinh ({students.length})
                   </th>
                   {dates.map((d) => (
-                    <th key={d} className="px-2 py-3 text-center font-mono text-[11px] whitespace-nowrap min-w-[48px]">
+                    <th key={d} className="px-2.5 py-4 text-center font-mono text-xs whitespace-nowrap min-w-[54px]">
                       {formatDateShort(d)}
                     </th>
                   ))}
-                  <th className="px-3 py-3 text-center font-semibold text-xs whitespace-nowrap">
+                  <th className="px-4 py-4 text-center font-bold text-xs whitespace-nowrap text-success">
                     Có mặt
                   </th>
-                  <th className="px-3 py-3 text-center font-semibold text-xs whitespace-nowrap">
+                  <th className="px-4 py-4 text-center font-bold text-xs whitespace-nowrap text-danger">
                     Vắng
                   </th>
-                  <th className="px-3 py-3 text-center font-semibold text-xs whitespace-nowrap">
+                  <th className="px-4 py-4 text-center font-bold text-xs whitespace-nowrap text-accent">
                     Tỷ lệ
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {studentStats.map((item) => (
-                  <tr key={item.student.id} className="hover:bg-surface-subtle/50 transition-colors">
-                    <td className="px-4 py-2.5 sticky left-0 bg-surface z-10 border-r border-border/50">
-                      <Link
-                        href={`/students/${item.student.id}`}
-                        className="font-medium text-text-primary hover:text-accent truncate block text-xs"
-                      >
-                        {item.student.full_name}
-                      </Link>
-                      <span className="text-[10px] text-text-muted font-mono block">
-                        {item.student.student_code}
-                      </span>
-                    </td>
-                    {dates.map((d) => {
-                      const st = attendanceMap.get(`${item.student.id}_${d}`);
-                      return (
-                        <td key={d} className="px-1 py-2 text-center">
-                          {renderStatusCell(st)}
-                        </td>
-                      );
-                    })}
-                    <td className="px-3 py-2 text-center text-xs font-semibold text-success">
-                      {item.present}
-                    </td>
-                    <td className="px-3 py-2 text-center text-xs font-semibold text-danger">
-                      {item.absent}
-                    </td>
-                    <td className="px-3 py-2 text-center text-xs font-bold text-text-primary">
-                      {item.rate}%
-                    </td>
-                  </tr>
-                ))}
+                {studentStats.map((item) => {
+                  const initial = item.student.full_name.trim().split(' ').slice(-1)[0][0];
+
+                  return (
+                    <tr key={item.student.id} className="hover:bg-surface-subtle/60 transition-colors h-[56px]">
+                      <td className="px-5 py-3 sticky left-0 bg-surface z-10 border-r border-border/60 shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-full bg-accent-subtle text-accent font-semibold text-xs flex items-center justify-center flex-shrink-0">
+                            {initial}
+                          </div>
+                          <div className="min-w-0">
+                            <Link
+                              href={`/students/${item.student.id}`}
+                              className="font-semibold text-text-primary hover:text-accent truncate block text-sm transition-colors"
+                            >
+                              {item.student.full_name}
+                            </Link>
+                            <span className="text-xs text-text-muted font-mono block">
+                              {item.student.student_code}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      {dates.map((d) => {
+                        const st = attendanceMap.get(`${item.student.id}_${d}`);
+                        return (
+                          <td key={d} className="px-1.5 py-3 text-center">
+                            {renderStatusCell(st)}
+                          </td>
+                        );
+                      })}
+                      <td className="px-4 py-3 text-center text-sm font-bold text-success">
+                        {item.present}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm font-bold text-danger">
+                        {item.absent}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm font-bold text-text-primary">
+                        {item.rate}%
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

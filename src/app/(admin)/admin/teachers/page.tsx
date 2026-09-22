@@ -15,6 +15,8 @@ import {
   Eye,
   BookOpen,
   GraduationCap,
+  ShieldCheck,
+  Chalkboard,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
 import { TeacherService, ClassService } from '@/services';
@@ -24,6 +26,35 @@ import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
+
+const getSubjectBadgeStyle = (code?: string) => {
+  switch (code) {
+    case 'TOAN':
+      return 'bg-blue-50 text-blue-700 border-blue-200/80';
+    case 'VAN':
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200/80';
+    case 'ANH':
+      return 'bg-purple-50 text-purple-700 border-purple-200/80';
+    case 'KHTN':
+      return 'bg-amber-50 text-amber-700 border-amber-200/80';
+    case 'LS_DL':
+      return 'bg-orange-50 text-orange-700 border-orange-200/80';
+    case 'TIN':
+      return 'bg-cyan-50 text-cyan-700 border-cyan-200/80';
+    case 'GDCD':
+      return 'bg-teal-50 text-teal-700 border-teal-200/80';
+    case 'CONG_NGHE':
+      return 'bg-stone-100 text-stone-700 border-stone-300';
+    case 'AM_NHAC':
+      return 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/80';
+    case 'MY_THUAT':
+      return 'bg-rose-50 text-rose-700 border-rose-200/80';
+    case 'GDTC':
+      return 'bg-lime-50 text-lime-800 border-lime-200/80';
+    default:
+      return 'bg-indigo-50 text-indigo-700 border-indigo-200/80';
+  }
+};
 
 export default function AdminTeachersPage() {
   const { user } = useAuth();
@@ -175,67 +206,117 @@ export default function AdminTeachersPage() {
     }
   };
 
+  const homeroomCount = classes.filter((c) => c.teacher_id).length;
+  const activeTeachersCount = teachers.filter((t) => t.status === 'active').length;
+  const subjectAssignedTeachersCount = new Set(subjectAssignments.map((sa) => sa.teacher_id)).size;
+
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-            Quản lý Giáo viên
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="px-2.5 py-1 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80 rounded-lg inline-flex items-center gap-1.5 shadow-2xs">
+              <ShieldCheck size={14} weight="bold" />
+              Trường THCS Nguyễn Tất Thành
+            </span>
+            <span className="px-2.5 py-1 text-xs font-semibold bg-surface-muted text-text-secondary border border-border rounded-lg">
+              Năm học: 2026 - 2027
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary mt-2">
+            Quản lý Đội ngũ Giáo viên
           </h1>
-          <p className="text-sm text-text-muted mt-1">
-            Quản lý danh sách, cấp tài khoản và phân công lớp cho giáo viên chủ nhiệm
+          <p className="text-sm text-text-secondary mt-1 font-medium">
+            Quản lý hồ sơ, cấp tài khoản và phân công chuyên môn giáo viên chủ nhiệm & bộ môn
           </p>
         </div>
 
-        <Button variant="primary" onClick={openAddModal}>
-          <Plus size={16} />
+        <Button variant="primary" size="sm" onClick={openAddModal} className="gap-2 self-start md:self-auto">
+          <Plus size={16} weight="bold" />
           <span>Thêm Giáo viên</span>
         </Button>
+      </div>
+
+      {/* KPI Stats Mini Bar */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs">
+          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Tổng số giáo viên</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-2xl font-extrabold text-text-primary">{teachers.length}</span>
+            <span className="text-xs text-text-muted">thầy cô</span>
+          </div>
+        </div>
+
+        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs">
+          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Phân công GVCN</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-2xl font-extrabold text-emerald-600">{homeroomCount}</span>
+            <span className="text-xs text-text-muted">/16 lớp (100%)</span>
+          </div>
+        </div>
+
+        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs">
+          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Giáo viên bộ môn</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-2xl font-extrabold text-indigo-600">{subjectAssignedTeachersCount}</span>
+            <span className="text-xs text-text-muted">đã nhận lớp</span>
+          </div>
+        </div>
+
+        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs">
+          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Đang hoạt động</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-2xl font-extrabold text-text-primary">{activeTeachersCount}</span>
+            <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded">
+              {Math.round((activeTeachersCount / (teachers.length || 1)) * 100)}%
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
           <MagnifyingGlass
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
           />
           <input
             type="text"
             placeholder="Tìm theo tên, email, số điện thoại..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+            className="w-full pl-10 pr-4 h-10 bg-surface border border-border rounded-xl text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 placeholder:text-text-muted shadow-2xs transition-all"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted">Trạng thái:</span>
+          <span className="text-xs font-semibold text-text-secondary">Trạng thái:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="bg-surface border border-border px-3 py-1.5 rounded-lg text-xs font-medium focus:outline-none focus:border-accent"
+            className="h-10 bg-surface border border-border px-3.5 rounded-xl text-sm font-medium focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs cursor-pointer text-text-primary"
           >
             <option value="all">Tất cả ({teachers.length})</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="disabled">Đã khóa</option>
+            <option value="active">Đang hoạt động ({activeTeachersCount})</option>
+            <option value="disabled">Đã khóa ({teachers.length - activeTeachersCount})</option>
           </select>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xs">
+      <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-surface-muted/50 border-b border-border text-xs text-text-muted uppercase tracking-wider font-semibold">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-surface-muted/60 border-b border-border text-[11px] text-text-muted uppercase tracking-wider font-bold">
               <tr>
-                <th className="px-4 py-3">Giáo viên</th>
-                <th className="px-4 py-3">Môn phụ trách</th>
-                <th className="px-4 py-3">Lớp GVCN</th>
-                <th className="px-4 py-3">Lớp GVBM</th>
-                <th className="px-4 py-3">Trạng thái</th>
-                <th className="px-4 py-3 text-right">Thao tác</th>
+                <th className="px-5 py-3.5 whitespace-nowrap">Giáo viên</th>
+                <th className="px-5 py-3.5 whitespace-nowrap">Môn phụ trách</th>
+                <th className="px-5 py-3.5 whitespace-nowrap">Lớp GVCN</th>
+                <th className="px-5 py-3.5 min-w-[220px]">Lớp GVBM</th>
+                <th className="px-5 py-3.5 whitespace-nowrap">Trạng thái</th>
+                <th className="px-5 py-3.5 text-right whitespace-nowrap">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-text-secondary">
@@ -255,114 +336,136 @@ export default function AdminTeachersPage() {
                     .map((sa) => classes.find((c) => c.id === sa.class_id))
                     .filter(Boolean) as ClassRow[];
 
+                  // Distinct grades taught
+                  const gradesTaught = Array.from(new Set(subjectClassList.map((c) => c.grade)));
+
                   return (
-                    <tr key={t.id} className="hover:bg-surface-muted/30 transition-colors">
-                      <td className="px-4 py-3.5">
+                    <tr key={t.id} className="hover:bg-surface-muted/40 transition-colors">
+                      <td className="px-5 py-3.5 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-accent/15 text-accent font-semibold text-xs flex items-center justify-center flex-shrink-0">
-                            {t.name.charAt(0)}
+                          <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-700 font-bold text-xs flex items-center justify-center flex-shrink-0 border border-indigo-200/80">
+                            {t.name.charAt(t.name.lastIndexOf(' ') + 1) || t.name.charAt(0)}
                           </div>
                           <div>
                             <button
                               type="button"
                               onClick={() => setSelectedTeacherDetail(t)}
-                              className="font-semibold text-text-primary hover:text-accent transition-colors block text-sm text-left"
+                              className="font-bold text-text-primary hover:text-accent transition-colors block text-sm text-left"
                             >
                               {t.name}
                             </button>
-                            <span className="text-[11px] text-text-muted block">{t.email}</span>
+                            <span className="text-xs text-text-muted block">{t.email}</span>
                           </div>
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5">
+                      <td className="px-5 py-3.5 whitespace-nowrap">
                         {subject ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent-subtle text-accent border border-accent/20">
-                            <BookOpen size={12} />
-                            {subject.name} ({subject.code})
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border shadow-2xs whitespace-nowrap ${getSubjectBadgeStyle(
+                              subject.code
+                            )}`}
+                          >
+                            <BookOpen size={13} weight="bold" />
+                            {subject.name}
                           </span>
                         ) : (
-                          <span className="text-xs text-text-muted italic">Chưa gán môn</span>
+                          <span className="text-xs text-text-muted italic bg-surface-muted px-2 py-0.5 rounded whitespace-nowrap">
+                            Chưa gán môn
+                          </span>
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5">
+                      <td className="px-5 py-3.5 whitespace-nowrap">
                         {homeroomClass ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                            {homeroomClass.name}
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs whitespace-nowrap">
+                            <Chalkboard size={14} weight="bold" />
+                            <span>{homeroomClass.name}</span>
                           </span>
                         ) : (
-                          <span className="text-xs text-text-muted italic">—</span>
+                          <span className="text-xs text-text-muted italic whitespace-nowrap">—</span>
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5">
-                        <div className="flex flex-wrap items-center gap-1 max-w-xs">
+                      <td className="px-5 py-3.5">
+                        <div className="flex flex-wrap items-center gap-1.5 max-w-sm">
                           {subjectClassList.length > 0 ? (
-                            subjectClassList.map((c) => (
-                              <span
-                                key={c.id}
-                                className="px-1.5 py-0.5 text-[11px] font-medium bg-surface-muted text-text-secondary rounded border border-border"
-                              >
-                                {c.name}
-                              </span>
-                            ))
+                            <>
+                              {subjectClassList.slice(0, 4).map((c) => (
+                                <span
+                                  key={c.id}
+                                  className="px-2 py-0.5 text-xs font-medium bg-surface-muted text-text-secondary rounded-md border border-border whitespace-nowrap"
+                                >
+                                  {c.name}
+                                </span>
+                              ))}
+                              {subjectClassList.length > 4 && (
+                                <span className="px-1.5 py-0.5 text-[11px] font-semibold bg-indigo-50 text-indigo-700 rounded whitespace-nowrap">
+                                  +{subjectClassList.length - 4}
+                                </span>
+                              )}
+                              {gradesTaught.length > 0 && (
+                                <span className="text-[10px] text-text-muted px-1 whitespace-nowrap">
+                                  ({gradesTaught.length}/2 khối)
+                                </span>
+                              )}
+                            </>
                           ) : (
                             <span className="text-xs text-text-muted italic">—</span>
                           )}
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5">
+                      <td className="px-5 py-3.5 whitespace-nowrap">
                         {t.status === 'active' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded-full">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full whitespace-nowrap">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             Đang hoạt động
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 rounded-full">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 rounded-full whitespace-nowrap">
                             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                             Đã khóa
                           </span>
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5 text-right">
+                      <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setSelectedTeacherDetail(t)}
                             title="Xem chi tiết phân công"
-                            className="p-1.5 text-text-muted hover:text-accent hover:bg-surface-muted rounded-md transition-colors"
+                            className="p-1.5 text-text-muted hover:text-accent hover:bg-surface-muted rounded-lg transition-colors cursor-pointer"
                           >
-                            <Eye size={16} />
+                            <Eye size={17} />
                           </button>
 
                           <button
                             onClick={() => openEditModal(t)}
                             title="Chỉnh sửa thông tin"
-                            className="p-1.5 text-text-muted hover:text-accent hover:bg-surface-muted rounded-md transition-colors"
+                            className="p-1.5 text-text-muted hover:text-accent hover:bg-surface-muted rounded-lg transition-colors cursor-pointer"
                           >
-                            <PencilSimple size={16} />
+                            <PencilSimple size={17} />
                           </button>
 
                           <button
                             onClick={() => setTargetResetUser(t)}
                             title="Đặt lại mật khẩu (password123)"
-                            className="p-1.5 text-text-muted hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                            className="p-1.5 text-text-muted hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
                           >
-                            <Key size={16} />
+                            <Key size={17} />
                           </button>
 
                           <button
                             onClick={() => setTargetToggleUser(t)}
                             title={t.status === 'active' ? 'Vô hiệu hóa tài khoản' : 'Mở khóa'}
-                            className={`p-1.5 rounded-md transition-colors ${
+                            className={`p-2 rounded-xl transition-colors cursor-pointer ${
                               t.status === 'active'
-                                ? 'text-text-muted hover:text-danger hover:bg-danger/10'
+                                ? 'text-text-muted hover:text-rose-600 hover:bg-rose-50'
                                 : 'text-emerald-600 hover:bg-emerald-50'
                             }`}
                           >
-                            {t.status === 'active' ? <Lock size={16} /> : <LockOpen size={16} />}
+                            {t.status === 'active' ? <Lock size={18} /> : <LockOpen size={18} />}
                           </button>
                         </div>
                       </td>

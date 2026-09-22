@@ -27,8 +27,8 @@ export function AttendanceBadge({ status, size = 'md', showIcon = true }: Attend
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 font-medium rounded-md',
-        size === 'sm' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-0.5 text-xs',
+        'inline-flex items-center gap-1.5 font-semibold rounded-lg transition-colors',
+        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-[13px]',
         status === 'present' && 'badge-present',
         status === 'absent' && 'badge-absent',
         status === 'late' && 'badge-late',
@@ -37,10 +37,10 @@ export function AttendanceBadge({ status, size = 'md', showIcon = true }: Attend
     >
       {showIcon && (
         <>
-          {status === 'present' && <Check size={12} weight="bold" />}
-          {status === 'absent' && <X size={12} weight="bold" />}
-          {status === 'late' && <Clock size={12} weight="bold" />}
-          {status === 'excused' && <ClipboardText size={12} weight="bold" />}
+          {status === 'present' && <Check size={14} weight="bold" />}
+          {status === 'absent' && <X size={14} weight="bold" />}
+          {status === 'late' && <Clock size={14} weight="bold" />}
+          {status === 'excused' && <ClipboardText size={14} weight="bold" />}
         </>
       )}
       <span>{label}</span>
@@ -57,12 +57,12 @@ interface AttendanceDotProps {
 }
 
 export function AttendanceDot({ status, title }: AttendanceDotProps) {
-  if (!status) return <span className="block w-5 h-5 rounded-md bg-border/80" title="Chưa điểm danh" />;
+  if (!status) return <span className="block w-6 h-6 rounded-md bg-border/80" title="Chưa điểm danh" />;
   return (
     <span
       title={title ?? ATTENDANCE_STATUS_LABELS[status]}
       className={cn(
-        'inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold',
+        'inline-flex items-center justify-center w-6 h-6 rounded-md text-[11px] font-bold',
         status === 'present' && 'bg-success text-white shadow-2xs',
         status === 'absent' && 'bg-danger text-white shadow-2xs',
         status === 'late' && 'bg-warning text-white shadow-2xs',
@@ -88,14 +88,14 @@ export function StudentStatusBadge({ status }: StudentStatusBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 font-medium rounded-md px-2 py-0.5 text-xs',
+        'inline-flex items-center gap-1.5 font-semibold rounded-lg px-2.5 py-1 text-[13px]',
         status === 'active' && 'bg-success-bg text-success border border-success/20',
         status === 'inactive' && 'bg-surface-muted text-text-muted border border-border'
       )}
     >
       <span
         className={cn(
-          'w-1.5 h-1.5 rounded-full',
+          'w-2 h-2 rounded-full',
           status === 'active' ? 'bg-success' : 'bg-text-muted'
         )}
       />
@@ -117,18 +117,18 @@ export function RoleBadge({ role, label, size = 'sm' }: RoleBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 font-medium rounded-md border',
-        size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs',
-        role === 'HOMEROOM' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        role === 'SUBJECT' && 'bg-indigo-50 text-indigo-700 border-indigo-200',
-        role === 'ADMIN' && 'bg-indigo-50 text-indigo-700 border-indigo-200',
-        role === 'DISABLED' && 'bg-rose-50 text-rose-700 border-rose-200'
+        'inline-flex items-center gap-1.5 font-semibold rounded-lg border',
+        size === 'sm' ? 'px-2.5 py-0.5 text-xs' : 'px-3 py-1 text-[13px]',
+        role === 'HOMEROOM' && 'bg-emerald-500/10 text-emerald-700 border-emerald-500/25',
+        role === 'SUBJECT' && 'bg-indigo-500/10 text-indigo-700 border-indigo-500/25',
+        role === 'ADMIN' && 'bg-indigo-500/10 text-indigo-700 border-indigo-500/25',
+        role === 'DISABLED' && 'bg-rose-500/10 text-rose-700 border-rose-500/25'
       )}
     >
-      {role === 'HOMEROOM' && <ChalkboardTeacher size={12} weight="duotone" />}
-      {role === 'SUBJECT' && <Eye size={12} weight="duotone" />}
-      {role === 'ADMIN' && <ShieldCheck size={12} weight="duotone" />}
-      {role === 'DISABLED' && <Lock size={12} weight="duotone" />}
+      {role === 'HOMEROOM' && <ChalkboardTeacher size={14} weight="duotone" />}
+      {role === 'SUBJECT' && <Eye size={14} weight="duotone" />}
+      {role === 'ADMIN' && <ShieldCheck size={14} weight="duotone" />}
+      {role === 'DISABLED' && <Lock size={14} weight="duotone" />}
       <span>
         {label ||
           (role === 'HOMEROOM'

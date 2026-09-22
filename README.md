@@ -18,15 +18,16 @@
 
 ## 📖 Overview
 
-**Class Manager** models the exact operational and pedagogical structure of a Vietnamese Middle School (**Trường THCS**). The system features an enterprise-grade **Application Service Layer** that completely abstracts UI components from storage, enforces **Domain-Level Role-Based Access Control (RBAC)** across all mutations, and protects critical data invariants.
+**Class Manager** models the exact operational and pedagogical structure of **Trường THCS Nguyễn Tất Thành** (Năm học: 2026 - 2027). The system features an enterprise-grade **Application Service Layer** that completely abstracts UI components from storage, enforces **Domain-Level Role-Based Access Control (RBAC)** across all mutations, and protects critical data invariants.
 
-### 🏫 School Scale & Deterministic Dataset
+### 🏫 School Scale & Deterministic Dataset (Năm học 2026 - 2027)
+- **Đơn vị**: Trường THCS Nguyễn Tất Thành
 - **4 Grades**: Khối 6, Khối 7, Khối 8, Khối 9
 - **16 Classes**: 6A1–6A4, 7A1–7A4, 8A1–8A4, 9A1–9A4
 - **480 Students**: Exactly 30 students per class with realistic demographic and contact data
 - **10 Core Subjects**: Mathematics, Literature, English, Physics, Chemistry, Biology, History, Geography, Informatics, Technology
-- **24 Teachers + 1 Administrator**: Every teacher teaches at most 2 grades according to THCS regulations
-- **400 Desks / 800 Seats**: 25 desks per class arranged in a 5×5 classroom grid
+- **28 Teachers + 1 Administrator**: Every teacher teaches at most 2 grades according to THCS regulations
+- **800 Seats**: 50 seats per class arranged in a 5×5 classroom layout
 
 ---
 
@@ -92,11 +93,15 @@ Permissions adapt dynamically based on the teacher's active class role:
 - **Export Attendance to Excel**: Download `.xlsx` monthly attendance matrix (Students × Dates) with summary totals.
 - **A4 Print Layout**: Specialized `@media print` CSS for printing classroom seating diagrams and class rosters directly.
 
-### 5. Mobile-First Responsive Shell & Modern UI/UX
-- **Education-First Aesthetic**: Calm, trustworthy, and distraction-free visual design (pure flat borders, subtle semantic backgrounds, no AI-generated gradients or decorative clutter).
-- **Responsive Off-Canvas Navigation**: Dedicated sticky `MobileNav` header with a smooth sliding drawer navigation overlay for mobile (<768px) and tablet devices.
-- **Accessible Dual-Coded Attendance**: High-contrast visual buttons with explicit icons and text (`✓ Có mặt`, `✕ Vắng`, `⏱ Muộn`, `📋 Phép`).
-- **Vietnamese Typography**: Fully calibrated Google Geist Sans typography stack with crisp diacritics and monospace tabular numbers for student IDs and dates.
+### 5. Premium Visual Redesign & Design System
+The visual language has been completely redesigned from the ground up to feel like a bespoke, professional education product rather than an AI-generated CRUD dashboard:
+
+- **True 16px Standard Typography & Hierarchy**: Restored standard 16px root scale with confident, editorial type hierarchy (Page titles: 28–36px bold, section titles: 20–24px, table rows: 15–16px, captions/badges: 13–14px). Monospace font for student codes, tabular numbers, and dates.
+- **Warm Paper Multi-Surface Architecture**: Built on OKLCH color spaces with a warm neutral paper canvas (`--bg`), crisp card surfaces (`--surface`), soft warm tints (`--surface-muted`), and scholastic indigo accents (`--accent: oklch(0.48 0.16 260)`).
+- **Tactile Inputs & Physical Scale**: Expanded interactive controls to 46–50px touch targets (`Button`, `Input`, `Select`, `Textarea`), 58–62px table rows with 16–18px cell padding, and micro-press physics (`active:scale-[0.98]`).
+- **Spatial Classroom Seating Chart**: Visual 25-desk (50-seat) grid facing a realistic slate chalkboard. Desks represent genuine 2-student wooden units with student initials, gender icons, unseated student drawer, and 2-click instant swapping with floating action banner.
+- **Fast, Accessible Attendance Workflow**: High-contrast, tactile status toggles (`● Có mặt`, `● Vắng`, `● Muộn`, `● Phép`) with distinct semantic colorings, sticky bottom summary bar, and 1-click "Tất cả có mặt" bulk action.
+- **Mobile-First Responsive Shell**: 260px desktop sidebar with active indicator pills, paired with an off-canvas drawer navigation overlay and sticky mobile top bar (`MobileNav`) for phone and tablet viewports.
 
 ---
 

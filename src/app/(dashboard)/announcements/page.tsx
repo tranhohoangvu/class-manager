@@ -95,24 +95,24 @@ export default function AnnouncementsPage() {
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-5xl mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
               Bảng thông báo lớp học
             </h1>
-            <span className="px-2.5 py-0.5 text-xs font-semibold bg-accent-subtle text-accent rounded-full">
+            <span className="px-3 py-1 text-xs font-semibold bg-accent-subtle text-accent rounded-full border border-accent/20">
               {announcements.length} thông báo
             </span>
           </div>
-          <p className="text-sm text-text-muted mt-1">
-            Gửi dặn dò, lịch thi cử, phân công và các sự kiện quan trọng tới học sinh và phụ huynh {currentClass?.name || 'lớp'}
+          <p className="text-sm text-text-secondary mt-1.5">
+            Gửi dặn dò, lịch thi cử, phân công và các sự kiện quan trọng tới học sinh và phụ huynh <strong className="font-semibold text-text-primary">{currentClass?.name || 'lớp'}</strong>
           </p>
         </div>
 
         {isHomeroom && (
-          <Button variant="primary" onClick={() => setIsAddOpen(true)}>
-            <Plus size={16} />
+          <Button variant="primary" onClick={() => setIsAddOpen(true)} className="gap-2">
+            <Plus size={18} weight="bold" />
             <span>Tạo thông báo mới</span>
           </Button>
         )}
@@ -120,11 +120,11 @@ export default function AnnouncementsPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-3.5 bg-indigo-50 border border-indigo-200/80 rounded-xl flex items-center justify-between text-xs text-indigo-900 shadow-2xs">
-          <span>
-            Bạn đang xem bảng thông báo lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ chỉ xem thông báo từ GVCN.
+        <div className="p-4 bg-indigo-50/80 border border-indigo-200/80 rounded-2xl flex items-center justify-between text-sm text-indigo-900 shadow-2xs">
+          <span className="leading-relaxed">
+            Bạn đang xem bảng thông báo lớp <strong className="font-semibold">{currentClass?.name}</strong> với vai trò <strong className="font-semibold">Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ chỉ xem thông báo từ GVCN.
           </span>
-          <span className="px-2 py-0.5 rounded bg-indigo-100 font-medium text-[11px] text-indigo-800">Chỉ xem</span>
+          <span className="px-2.5 py-1 rounded-md bg-indigo-100 font-semibold text-xs text-indigo-800 ml-4 flex-shrink-0">Chỉ xem</span>
         </div>
       )}
 
@@ -132,7 +132,7 @@ export default function AnnouncementsPage() {
       <div className="space-y-4">
         {announcements.length === 0 ? (
           <EmptyStateView
-            icon={<Megaphone size={32} className="opacity-60" />}
+            icon={<Megaphone size={36} className="opacity-60" />}
             title="Chưa có thông báo nào"
             description={`Lớp ${currentClass?.name || ''} chưa có tin thông báo nào được đăng.`}
             actionText={isHomeroom ? "Tạo thông báo mới" : undefined}
@@ -142,58 +142,58 @@ export default function AnnouncementsPage() {
           announcements.map((ann) => (
             <div
               key={ann.id}
-              className={`p-5 sm:p-6 rounded-xl border transition-all ${
+              className={`p-6 sm:p-7 rounded-2xl border transition-all ${
                 ann.is_pinned
-                  ? 'bg-surface border-accent/40 shadow-xs'
-                  : 'bg-surface border-border shadow-2xs'
+                  ? 'bg-surface border-accent/40 shadow-xs ring-1 ring-accent/15'
+                  : 'bg-surface border-border shadow-2xs hover:shadow-xs'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center gap-2.5 flex-wrap">
                     {ann.is_pinned && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-accent-subtle text-accent">
-                        <PushPin size={12} weight="fill" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-accent-subtle text-accent border border-accent/20">
+                        <PushPin size={13} weight="fill" />
                         Ghim ưu tiên
                       </span>
                     )}
-                    <h2 className="text-base font-semibold text-text-primary">
+                    <h2 className="text-lg font-bold text-text-primary tracking-tight">
                       {ann.title}
                     </h2>
                   </div>
 
-                  <p className="text-sm text-text-secondary leading-relaxed pt-1 whitespace-pre-wrap">
+                  <p className="text-sm sm:text-base text-text-secondary leading-relaxed pt-1 whitespace-pre-wrap">
                     {ann.content}
                   </p>
 
-                  <div className="flex items-center gap-2 text-xs text-text-muted pt-3">
-                    <Calendar size={13} />
+                  <div className="flex items-center gap-2 text-xs text-text-muted pt-3 border-t border-border/60 mt-3">
+                    <Calendar size={15} />
                     <span>Đăng ngày {formatDateVietnamese(ann.created_at)}</span>
                   </div>
                 </div>
 
                 {isHomeroom && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() => handleTogglePin(ann.id, ann.is_pinned)}
-                      className={`p-2 rounded-lg transition-colors ${
+                      className={`p-2 rounded-xl transition-colors cursor-pointer ${
                         ann.is_pinned
                           ? 'text-accent bg-accent-subtle hover:bg-accent/20'
                           : 'text-text-muted hover:text-text-primary hover:bg-surface-muted'
                       }`}
                       title={ann.is_pinned ? 'Bỏ ghim' : 'Ghim lên đầu'}
                     >
-                      <PushPin size={16} weight={ann.is_pinned ? 'fill' : 'regular'} />
+                      <PushPin size={18} weight={ann.is_pinned ? 'fill' : 'regular'} />
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setAnnouncementToDelete(ann)}
-                      className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors"
+                      className="p-2 rounded-xl text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors cursor-pointer"
                       title="Xoá thông báo"
                     >
-                      <Trash size={16} />
+                      <Trash size={18} />
                     </button>
                   </div>
                 )}
@@ -221,7 +221,7 @@ export default function AnnouncementsPage() {
           />
 
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1">
+            <label className="block text-xs font-semibold text-text-secondary mb-1.5">
               Nội dung thông báo
             </label>
             <textarea
@@ -229,23 +229,23 @@ export default function AnnouncementsPage() {
               onChange={(e) => setContent(e.target.value)}
               rows={4}
               placeholder="Nhập nội dung chi tiết thông báo..."
-              className="w-full text-xs p-3 bg-surface rounded-lg border border-border focus:outline-none focus:border-accent text-text-primary placeholder:text-text-muted"
+              className="w-full text-sm p-3.5 bg-surface rounded-xl border border-border focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 text-text-primary placeholder:text-text-muted transition-all"
             />
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer pt-1">
+          <label className="flex items-center gap-2.5 cursor-pointer pt-1">
             <input
               type="checkbox"
               checked={isPinned}
               onChange={(e) => setIsPinned(e.target.checked)}
-              className="rounded border-border text-accent focus:ring-accent w-4 h-4"
+              className="rounded border-border text-accent focus:ring-accent w-4 h-4 cursor-pointer"
             />
-            <span className="text-xs font-medium text-text-primary">
+            <span className="text-sm font-medium text-text-primary">
               Ghim thông báo này lên đầu trang
             </span>
           </label>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-border">
+          <div className="flex justify-end gap-2.5 pt-4 border-t border-border">
             <Button
               type="button"
               variant="secondary"

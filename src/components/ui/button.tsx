@@ -16,35 +16,35 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantStyles: Record<ButtonVariant, string> = {
   primary: [
     'bg-accent text-accent-text hover:bg-accent-hover',
-    'border border-transparent shadow-2xs',
-    'font-medium active:scale-[0.98]',
+    'border border-accent shadow-sm hover:shadow',
+    'font-semibold active:scale-[0.98] cursor-pointer',
   ].join(' '),
   secondary: [
     'bg-surface text-text-primary hover:bg-surface-muted',
-    'border border-border hover:border-border-strong shadow-2xs',
-    'font-medium active:scale-[0.98]',
+    'border border-border hover:border-border-strong shadow-sm hover:shadow',
+    'font-semibold active:scale-[0.98] cursor-pointer',
   ].join(' '),
   ghost: [
     'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-muted',
     'border border-transparent',
-    'font-medium active:scale-[0.98]',
+    'font-medium active:scale-[0.98] cursor-pointer',
   ].join(' '),
   outline: [
     'bg-transparent text-accent hover:bg-accent-subtle',
     'border border-accent/40 hover:border-accent',
-    'font-medium active:scale-[0.98]',
+    'font-semibold active:scale-[0.98] cursor-pointer',
   ].join(' '),
   danger: [
-    'bg-danger text-white hover:opacity-90',
-    'border border-transparent shadow-2xs',
-    'font-medium active:scale-[0.98]',
+    'bg-danger text-white hover:opacity-95',
+    'border border-danger shadow-sm',
+    'font-semibold active:scale-[0.98] cursor-pointer',
   ].join(' '),
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs rounded-lg',
-  md: 'h-9 px-4 text-xs rounded-lg',
-  lg: 'h-10 px-5 text-sm rounded-lg',
+  sm: 'h-8 px-3 text-xs font-medium rounded-lg gap-1.5',
+  md: 'h-9.5 px-4 text-sm font-medium rounded-xl gap-2',
+  lg: 'h-11 px-5 text-sm font-semibold rounded-xl gap-2.5',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

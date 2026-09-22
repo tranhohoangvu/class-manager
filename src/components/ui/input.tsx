@@ -16,14 +16,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, hint, className, id, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         {label && (
           <label
             htmlFor={inputId}
-            className="text-xs font-medium text-text-secondary"
+            className="text-[14px] font-semibold text-text-primary tracking-tight"
           >
             {label}
-            {props.required && <span className="text-danger ml-0.5">*</span>}
+            {props.required && <span className="text-danger ml-1">*</span>}
           </label>
         )}
         <input
@@ -31,16 +31,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           className={cn(
             'input-base',
-            error && 'border-danger focus:border-danger focus:shadow-[0_0_0_3px_oklch(0.52_0.180_25/0.12)]',
+            error && 'border-danger focus:border-danger focus:shadow-[0_0_0_3px_oklch(0.55_0.190_28/0.15)]',
             className
           )}
           {...props}
         />
         {error && (
-          <p className="text-xs text-danger">{error}</p>
+          <p className="text-[13px] font-medium text-danger">{error}</p>
         )}
         {hint && !error && (
-          <p className="text-xs text-text-muted">{hint}</p>
+          <p className="text-[13px] text-text-muted">{hint}</p>
         )}
       </div>
     );
@@ -62,22 +62,22 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, hint, className, id, children, ...props }, ref) => {
     const selectId = id || label?.toLowerCase().replace(/\s+/g, '-');
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         {label && (
           <label
             htmlFor={selectId}
-            className="text-xs font-medium text-text-secondary"
+            className="text-[14px] font-semibold text-text-primary tracking-tight"
           >
             {label}
-            {props.required && <span className="text-danger ml-0.5">*</span>}
+            {props.required && <span className="text-danger ml-1">*</span>}
           </label>
         )}
         <select
           ref={ref}
           id={selectId}
           className={cn(
-            'input-base appearance-none cursor-pointer',
-            'bg-[url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2212%27 viewBox=%270 0 12 12%27%3E%3Cpath fill=%27%23888%27 d=%27M6 8L1 3h10z%27/%3E%3C/svg%3E")] bg-no-repeat bg-[right_10px_center]',
+            'input-base appearance-none cursor-pointer pr-10',
+            'bg-[url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2714%27 height=%2714%27 viewBox=%270 0 14 14%27%3E%3Cpath fill=%27%23666%27 d=%27M7 9.5L2 4.5h10z%27/%3E%3C/svg%3E")] bg-no-repeat bg-[right_14px_center]',
             error && 'border-danger',
             className
           )}
@@ -85,8 +85,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         >
           {children}
         </select>
-        {error && <p className="text-xs text-danger">{error}</p>}
-        {hint && !error && <p className="text-xs text-text-muted">{hint}</p>}
+        {error && <p className="text-[13px] font-medium text-danger">{error}</p>}
+        {hint && !error && <p className="text-[13px] text-text-muted">{hint}</p>}
       </div>
     );
   }
@@ -107,28 +107,28 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, hint, className, id, ...props }, ref) => {
     const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-');
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         {label && (
           <label
             htmlFor={textareaId}
-            className="text-xs font-medium text-text-secondary"
+            className="text-[14px] font-semibold text-text-primary tracking-tight"
           >
             {label}
-            {props.required && <span className="text-danger ml-0.5">*</span>}
+            {props.required && <span className="text-danger ml-1">*</span>}
           </label>
         )}
         <textarea
           ref={ref}
           id={textareaId}
           className={cn(
-            'input-base resize-y min-h-[80px]',
+            'input-base resize-y min-h-[96px] py-3',
             error && 'border-danger',
             className
           )}
           {...props}
         />
-        {error && <p className="text-xs text-danger">{error}</p>}
-        {hint && !error && <p className="text-xs text-text-muted">{hint}</p>}
+        {error && <p className="text-[13px] font-medium text-danger">{error}</p>}
+        {hint && !error && <p className="text-[13px] text-text-muted">{hint}</p>}
       </div>
     );
   }

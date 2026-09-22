@@ -104,19 +104,19 @@ export default function SettingsPage() {
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-4xl mx-auto">
       {/* Top Header */}
-      <div className="pb-5 border-b border-border">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+      <div className="pb-6 border-b border-border">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
           Cài đặt lớp học
         </h1>
-        <p className="text-sm text-text-muted mt-1">
+        <p className="text-sm text-text-secondary mt-1.5">
           Tuỳ chỉnh thông số lớp học, thông tin phòng và quản trị cơ sở dữ liệu
         </p>
       </div>
 
       {/* Main Settings Form */}
-      <div className="bg-surface rounded-xl border border-border p-6 shadow-xs">
-        <h2 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-          <GraduationCap size={18} className="text-accent" />
+      <div className="bg-surface rounded-2xl border border-border p-6 sm:p-7 shadow-xs space-y-5">
+        <h2 className="text-base font-bold text-text-primary flex items-center gap-2.5 pb-2 border-b border-border">
+          <GraduationCap size={20} className="text-accent" weight="duotone" />
           Thông số lớp học
         </h2>
 
@@ -136,7 +136,7 @@ export default function SettingsPage() {
               label="Niên khoá"
               value={schoolYear}
               onChange={(e) => setSchoolYear(e.target.value)}
-              placeholder="2025 - 2026"
+              placeholder="2026 - 2027"
             />
           </div>
 
@@ -165,13 +165,13 @@ export default function SettingsPage() {
               label="Số lượng bàn học trong phòng"
               value={deskCount}
               disabled
-              hint="Cố định 25 bàn (50 chỗ ngồi) theo mô hình chuẩn 5 dãy × 5 hàng của trường"
+              hint="Cố định 50 chỗ ngồi theo mô hình chuẩn 5 dãy × 5 hàng của trường"
             />
           </div>
 
           <div className="pt-4 flex justify-end">
-            <Button type="submit" variant="primary">
-              <FloppyDisk size={16} />
+            <Button type="submit" variant="primary" className="gap-2">
+              <FloppyDisk size={18} />
               <span>Lưu thay đổi</span>
             </Button>
           </div>
@@ -179,37 +179,37 @@ export default function SettingsPage() {
       </div>
 
       {/* Database & Cloud Sync Status */}
-      <div className="bg-surface rounded-xl border border-border p-6 shadow-xs space-y-4">
-        <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
-          <Database size={18} className="text-accent" />
+      <div className="bg-surface rounded-2xl border border-border p-6 sm:p-7 shadow-xs space-y-4">
+        <h2 className="text-base font-bold text-text-primary flex items-center gap-2.5">
+          <Database size={20} className="text-accent" weight="duotone" />
           Trạng thái kết nối dữ liệu
         </h2>
 
-        <div className="p-4 rounded-lg bg-surface-subtle border border-border flex items-start gap-3">
+        <div className="p-5 rounded-xl bg-surface-subtle border border-border flex items-start gap-4">
           {isSupabaseConfigured ? (
             <>
-              <CheckCircle size={20} className="text-success flex-shrink-0 mt-0.5" />
-              <div className="text-xs space-y-1">
-                <p className="font-semibold text-text-primary">
+              <CheckCircle size={24} className="text-success flex-shrink-0 mt-0.5" weight="fill" />
+              <div className="text-sm space-y-1">
+                <p className="font-bold text-text-primary">
                   Đã kết nối cơ sở dữ liệu Supabase Cloud
                 </p>
-                <p className="text-text-secondary">
+                <p className="text-text-secondary leading-relaxed">
                   Dữ liệu lớp học của bạn đang được đồng bộ tự động lên đám mây bảo mật.
                 </p>
               </div>
             </>
           ) : (
             <>
-              <div className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse mt-1 flex-shrink-0" />
-              <div className="text-xs space-y-1">
-                <p className="font-semibold text-text-primary">
+              <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse mt-1.5 flex-shrink-0" />
+              <div className="text-sm space-y-1.5">
+                <p className="font-bold text-text-primary">
                   Đang hoạt động ở Chế độ Lưu trữ Cục bộ (Local Persistence)
                 </p>
                 <p className="text-text-secondary leading-relaxed">
                   Tất cả thao tác (thêm/sửa học sinh, xếp chỗ ngồi, điểm danh, tạo thông báo) đều được lưu trữ trực tiếp trên trình duyệt của bạn và bảo toàn sau khi tải lại trang.
                 </p>
-                <p className="text-text-muted pt-1">
-                  Để đồng bộ lên Supabase Cloud: Nhập URL và Anon Key vào file <code>.env.local</code> và chạy file SQL trong thư mục <code>supabase/migrations/</code>.
+                <p className="text-xs text-text-muted pt-1">
+                  Để đồng bộ lên Supabase Cloud: Nhập URL và Anon Key vào file <code className="px-1.5 py-0.5 rounded bg-surface-muted border border-border font-mono">.env.local</code> và chạy file SQL trong thư mục <code className="px-1.5 py-0.5 rounded bg-surface-muted border border-border font-mono">supabase/migrations/</code>.
                 </p>
               </div>
             </>
@@ -218,13 +218,13 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone: Reset Data */}
-      <div className="bg-surface rounded-xl border border-danger/30 p-6 shadow-xs space-y-4">
+      <div className="bg-surface rounded-2xl border border-rose-200/80 p-6 sm:p-7 shadow-xs space-y-4">
         <div>
-          <h2 className="text-base font-semibold text-danger flex items-center gap-2">
-            <Warning size={18} />
+          <h2 className="text-base font-bold text-danger flex items-center gap-2.5">
+            <Warning size={20} weight="duotone" />
             Khôi phục dữ liệu mẫu
           </h2>
-          <p className="text-xs text-text-muted mt-1">
+          <p className="text-sm text-text-secondary mt-1">
             Nếu bạn đã thay đổi dữ liệu và muốn quay lại 480 học sinh (16 lớp THCS) ban đầu cùng sơ đồ bàn ghế mẫu.
           </p>
         </div>
@@ -234,8 +234,9 @@ export default function SettingsPage() {
             type="button"
             variant="danger"
             onClick={() => setIsResetConfirmOpen(true)}
+            className="gap-2"
           >
-            <ArrowsCounterClockwise size={16} />
+            <ArrowsCounterClockwise size={18} />
             <span>Đặt lại toàn bộ dữ liệu mẫu</span>
           </Button>
         </div>

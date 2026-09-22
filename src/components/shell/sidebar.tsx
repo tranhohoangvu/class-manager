@@ -77,37 +77,37 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         {/* Brand & Mobile Close Button */}
         <div className="px-5 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <span className="text-sm font-semibold tracking-tight text-text-primary block leading-tight">
-              Class Manager
+            <span className="text-[15px] font-bold tracking-tight text-text-primary block leading-tight">
+              THCS Nguyễn Tất Thành
             </span>
-            <span className="text-[11px] text-text-muted block">
-              {isHomeroom ? 'Giáo viên chủ nhiệm' : 'Giáo viên bộ môn'}
+            <span className="text-[11px] text-text-muted block mt-0.5 font-medium">
+              Năm học 2026 - 2027 · {isHomeroom ? 'GV Chủ nhiệm' : 'GV Bộ môn'}
             </span>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Đóng bảng điều hướng"
-            className="md:hidden p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
+            className="md:hidden p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
         {/* Class Switcher */}
-        <div className="border-b border-border">
+        <div className="border-b border-border p-3">
           <ClassSwitcher />
           {isSubjectTeacher && (
-            <div className="px-3 pb-2 text-[10px] text-indigo-700 bg-indigo-50/70 mx-2 mb-2 rounded-md p-1.5 border border-indigo-100 flex items-center gap-1">
-              <Eye size={12} className="flex-shrink-0" />
-              <span>Chế độ Giáo viên bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</span>
+            <div className="mt-2.5 text-[11px] font-medium text-indigo-700 bg-indigo-50/80 rounded-lg p-2 border border-indigo-100 flex items-center gap-1.5">
+              <Eye size={14} className="flex-shrink-0" />
+              <span>Chế độ GVBM ({teacherSubjects.map((s) => s.name).join(', ')})</span>
             </div>
           )}
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex-1 px-2 py-3" aria-label="Điều hướng lớp học">
-          <ul className="space-y-0.5" role="list">
+        <nav className="flex-1 px-3 py-4" aria-label="Điều hướng lớp học">
+          <ul className="space-y-1.5" role="list">
             {navItems.map(({ href, label, icon: Icon, badge, highlight }) => {
               const isActive = pathname === href || pathname.startsWith(href + '/');
               return (
@@ -116,27 +116,27 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     href={href}
                     onClick={() => onClose?.()}
                     className={cn(
-                      'flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)]',
-                      'text-sm transition-colors duration-150',
+                      'flex items-center justify-between h-11 px-3.5 rounded-xl transition-all duration-150',
+                      'text-[15px] font-medium',
                       isActive
-                        ? 'bg-accent-subtle text-accent font-medium'
+                        ? 'bg-accent/10 text-accent font-semibold shadow-2xs'
                         : highlight
-                        ? 'text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50 font-medium'
+                        ? 'text-indigo-700 bg-indigo-50/60 hover:bg-indigo-50/90 font-medium'
                         : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted'
                     )}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <Icon
-                        size={16}
+                        size={20}
                         weight={isActive ? 'duotone' : 'regular'}
-                        className="flex-shrink-0"
+                        className={cn('flex-shrink-0', isActive ? 'text-accent' : 'text-text-muted')}
                       />
                       <span className="truncate">{label}</span>
                     </div>
 
                     {badge && (
-                      <span className="text-[10px] font-normal px-1.5 py-0.2 rounded bg-surface-muted text-text-muted">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-surface-muted text-text-muted border border-border/70">
                         {badge}
                       </span>
                     )}
@@ -148,49 +148,48 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
           {/* Back to Admin Portal for Admins */}
           {user?.role === 'ADMIN' && (
-            <div className="mt-5 pt-3 border-t border-border px-1">
+            <div className="mt-6 pt-4 border-t border-border px-1">
               <Link
                 href="/admin/dashboard"
                 onClick={() => onClose?.()}
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors group"
+                className="flex items-center justify-between h-11 px-3.5 rounded-xl text-[13px] font-semibold text-indigo-700 bg-indigo-50/90 border border-indigo-200 hover:bg-indigo-100 transition-colors group shadow-2xs"
               >
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck size={14} />
+                <span className="flex items-center gap-2">
+                  <ShieldCheck size={16} weight="duotone" />
                   <span>Trở lại Admin Portal</span>
                 </span>
-                <ArrowSquareOut size={14} />
+                <ArrowSquareOut size={16} />
               </Link>
             </div>
           )}
         </nav>
 
         {/* Bottom: Settings + User Profile + Sign Out */}
-        <div className="px-3 py-3 border-t border-border space-y-2">
+        <div className="px-3 py-3 border-t border-border space-y-2.5">
           {isHomeroom && (
             <Link
               href="/settings"
               onClick={() => onClose?.()}
               className={cn(
-                'flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-md)]',
-                'text-sm transition-colors duration-150',
+                'flex items-center gap-3 h-10 px-3.5 rounded-xl text-[14px] transition-colors',
                 pathname === '/settings'
-                  ? 'bg-accent-subtle text-accent font-medium'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted'
+                  ? 'bg-accent/10 text-accent font-semibold'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted font-medium'
               )}
             >
-              <GearSix size={16} weight={pathname === '/settings' ? 'duotone' : 'regular'} />
+              <GearSix size={18} weight={pathname === '/settings' ? 'duotone' : 'regular'} />
               <span>Cài đặt lớp</span>
             </Link>
           )}
 
           {/* Profile */}
-          <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg bg-surface-muted/60">
-            <div className="w-7 h-7 rounded-full bg-accent/20 text-accent font-semibold text-xs flex items-center justify-center flex-shrink-0">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-surface-muted/70 border border-border/60">
+            <div className="w-9 h-9 rounded-full bg-accent/15 text-accent font-bold text-sm flex items-center justify-center flex-shrink-0 border border-accent/20">
               {user?.name?.charAt(0) || 'G'}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-medium text-text-primary truncate">{user?.name}</div>
-              <div className="text-[10px] text-text-muted truncate">{user?.email}</div>
+              <div className="text-[13px] font-bold text-text-primary truncate">{user?.name}</div>
+              <div className="text-[11px] text-text-muted truncate">{user?.email}</div>
             </div>
           </div>
 
@@ -199,9 +198,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               onClose?.();
               logout();
             }}
-            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-text-muted hover:text-danger hover:bg-danger/10 transition-colors text-left cursor-pointer"
+            className="w-full flex items-center gap-2.5 h-9 px-3.5 rounded-xl text-[13px] font-medium text-text-muted hover:text-danger hover:bg-danger/10 transition-colors text-left cursor-pointer"
           >
-            <SignOut size={14} />
+            <SignOut size={16} />
             <span>Đăng xuất</span>
           </button>
         </div>

@@ -32,7 +32,7 @@ import {
   generateDesksForClass,
 } from './mock-data';
 
-const CURRENT_DATA_VERSION = '2026_thcs_16classes_v2';
+const CURRENT_DATA_VERSION = '2026_thcs_ntt_2026_2027_v3';
 
 const STORAGE_KEYS = {
   DATA_VERSION: 'cm_data_version',
