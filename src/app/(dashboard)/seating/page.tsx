@@ -23,14 +23,20 @@ import {
   ArrowsDownUp,
   CheckCircle,
   Sparkle,
+  CalendarCheck,
+  Eye,
+  EyeSlash,
 } from '@phosphor-icons/react';
-import { SeatingService, StudentService } from '@/services';
+import { SeatingService, StudentService, AttendanceService } from '@/services';
 import { LocalStore } from '@/lib/store';
 import { DeskWithSeats, StudentRow, SeatWithStudent } from '@/types';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
+import { getTodayISO, formatDateVietnamese, cn } from '@/lib/utils';
+
+const PERSISTENCE_KEY = 'cm_seating_perspective';
 
 export default function SeatingPage() {
   const { user } = useAuth();
@@ -39,12 +45,38 @@ export default function SeatingPage() {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [selectedSeatId, setSelectedSeatId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  // View mode:
-  // 'nhin_tu_duoi_len' (View A: Looking from back toward teaching platform - default matching reference)
+
+  // View mode with persistence:
+  // 'nhin_tu_duoi_len' (View A: Looking from back toward board - default)
   // 'nhin_tu_buc_giang' (View B: Looking from teaching platform down toward back)
   const [viewPerspective, setViewPerspective] = useState<'nhin_tu_duoi_len' | 'nhin_tu_buc_giang'>(
     'nhin_tu_duoi_len'
   );
+
+  // Enhancement: Attendance overlay state & data
+  const [showAttendanceOverlay, setShowAttendanceOverlay] = useState(false);
+  const [todayAttendanceMap, setTodayAttendanceMap] = useState<Map<string, string>>(new Map());
+
+  // Enhancement: Gender filter state
+  const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all');
+
+  // Load saved perspective from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(PERSISTENCE_KEY);
+      if (saved === 'nhin_tu_duoi_len' || saved === 'nhin_tu_buc_giang') {
+        setViewPerspective(saved);
+      }
+    }
+  }, []);
+
+  const handleTogglePerspective = () => {
+    const next = viewPerspective === 'nhin_tu_duoi_len' ? 'nhin_tu_buc_giang' : 'nhin_tu_duoi_len';
+    setViewPerspective(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(PERSISTENCE_KEY, next);
+    }
+  };
 
   const teacherName = useMemo(() => {
     if (!currentClass?.teacher_id) return null;
@@ -57,6 +89,16 @@ export default function SeatingPage() {
     setDesks(SeatingService.getDesks(currentClassId));
     setStudents(StudentService.getStudents(currentClassId));
     setSelectedSeatId(null);
+
+    // Load today's attendance records for overlay
+    const todayStr = getTodayISO();
+    const todayAtts = AttendanceService.getAttendanceForDate(todayStr, currentClassId);
+    const attMap = new Map<string, string>();
+    todayAtts.forEach((att) => {
+      attMap.set(att.student_id, att.status);
+    });
+    setTodayAttendanceMap(attMap);
+
     setIsLoaded(true);
   };
 
@@ -89,12 +131,30 @@ export default function SeatingPage() {
   // Total capacity: desks.length * 2
   const totalCapacity = desks.length * 2 || 40;
 
+  // Gender statistics
+  const genderStats = useMemo(() => {
+    const maleCount = students.filter((s) => s.gender === 'male').length;
+    const femaleCount = students.filter((s) => s.gender === 'female').length;
+    return { maleCount, femaleCount };
+  }, [students]);
+
+  // Today attendance counts for the class
+  const todayAbsentCount = useMemo(() => {
+    let absent = 0;
+    todayAttendanceMap.forEach((status) => {
+      if (status === 'absent' || status === 'late' || status === 'excused') absent++;
+    });
+    return absent;
+  }, [todayAttendanceMap]);
+
   // Handle seat click (for swap or assignment)
   const handleSeatClick = (seat: SeatWithStudent) => {
     if (!isHomeroom) {
       if (seat.student) {
+        const att = todayAttendanceMap.get(seat.student.id);
+        const attLabel = att === 'absent' ? ' (Hôm nay Vắng)' : att === 'late' ? ' (Hôm nay Đi muộn)' : '';
         toast.info(
-          `Vị trí: ${seat.side === 'left' ? 'Vị trí 01' : 'Vị trí 02'} · Học sinh: ${seat.student.full_name} (${seat.student.student_code})`
+          `Vị trí: ${seat.side === 'left' ? 'Vị trí 01' : 'Vị trí 02'} · Học sinh: ${seat.student.full_name} (${seat.student.student_code})${attLabel}`
         );
       } else {
         toast.info(`Ghế trống (${seat.side === 'left' ? 'Vị trí 01' : 'Vị trí 02'})`);
@@ -228,8 +288,8 @@ export default function SeatingPage() {
     return Array.from(set).sort((a, b) => a - b);
   }, [desks]);
 
-  // View A ("nhìn từ dưới lên"): Rows 1..N, Cols 1..4 (D1 near Teacher on Left, D4 near Door on Right)
-  // View B ("nhìn từ bục giảng xuống"): Rows N..1, Cols 4..1 (D4 near Door on Left, D1 near Teacher on Right)
+  // View A ("nhìn từ dưới lên"): Rows 1..N, Cols 1..4
+  // View B ("nhìn từ bục giảng xuống"): Rows N..1, Cols 4..1
   const orderedRowNumbers = useMemo(() => {
     return viewPerspective === 'nhin_tu_duoi_len'
       ? [...distinctRowNumbers]
@@ -252,9 +312,31 @@ export default function SeatingPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-7 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+      {/* ========================================================================= */}
+      {/* FORMAL PRINT HEADER (Displayed ONLY when printing) */}
+      {/* ========================================================================= */}
+      <div className="hidden print:block text-center border-b-2 border-black pb-4 mb-4">
+        <div className="flex justify-between items-start">
+          <div className="text-left">
+            <div className="font-bold text-xs uppercase tracking-wider text-black">TRƯỜNG THCS NGUYỄN TẤT THÀNH</div>
+            <div className="text-[11px] text-black">Năm học 2026 - 2027</div>
+          </div>
+          <div className="text-right text-[11px] text-black">
+            <div>Phòng học: {currentClass?.room_name || 'Phòng học chuẩn'}</div>
+            <div>Ngày in: {formatDateVietnamese(new Date())}</div>
+          </div>
+        </div>
+        <h1 className="text-xl font-bold uppercase mt-2.5 text-black tracking-tight">
+          SƠ ĐỒ CHỖ NGỒI LỚP {currentClass ? currentClass.name : ''}
+        </h1>
+        <p className="text-xs italic text-black mt-0.5">
+          Sĩ số: {students.length}/40 học sinh ({genderStats.maleCount} Nam · {genderStats.femaleCount} Nữ) · Đã xếp: {seatedCount} vị trí · GVCN: {teacherName || '...'}
+        </p>
+      </div>
+
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border no-print">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="px-2.5 py-1 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80 rounded-lg inline-flex items-center gap-1.5 shadow-2xs">
@@ -267,37 +349,95 @@ export default function SeatingPage() {
             <span className="px-2.5 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg">
               {seatedCount}/{totalCapacity} chỗ đã xếp
             </span>
+            <span className="px-2.5 py-1 text-xs font-medium text-text-muted bg-surface-muted rounded-lg border border-border">
+              {genderStats.maleCount} Nam · {genderStats.femaleCount} Nữ
+            </span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary mt-2">
             Sơ đồ Chỗ ngồi {currentClass ? currentClass.name : 'Lớp học'}
           </h1>
           <p className="text-sm text-text-muted mt-1 font-medium">
-            Sơ đồ phòng học: {distinctColNumbers.length || 4} dãy bàn đôi · {distinctRowNumbers.length || 5} hàng ({desks.length} bàn · sức chứa {totalCapacity} học sinh).
+            Sơ đồ phòng học: {distinctColNumbers.length || 4} dãy bàn đôi · {distinctRowNumbers.length || 5} hàng ({desks.length} bàn · sức chứa tối đa {totalCapacity} học sinh).
           </p>
         </div>
 
+        {/* Toolbar Controls */}
         <div className="flex items-center gap-2.5 flex-wrap no-print">
           {/* Perspective Switcher */}
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setViewPerspective((prev) =>
-                prev === 'nhin_tu_duoi_len' ? 'nhin_tu_buc_giang' : 'nhin_tu_duoi_len'
-              )
-            }
+            onClick={handleTogglePerspective}
             title="Đổi hướng nhìn lớp học: Nhìn từ dưới lên vs Nhìn từ bục giảng xuống"
             className="gap-1.5 whitespace-nowrap"
           >
             <ArrowsDownUp size={16} weight="bold" />
             <span>
               {viewPerspective === 'nhin_tu_duoi_len'
-                ? 'Hướng nhìn: Dưới lên (Bảng ở trên)'
-                : 'Hướng nhìn: Từ bục giảng (Bảng ở dưới)'}
+                ? 'Hướng nhìn: Dưới lên'
+                : 'Hướng nhìn: Bục giảng'}
             </span>
           </Button>
 
+          {/* Today Attendance Overlay Toggle */}
+          <Button
+            variant={showAttendanceOverlay ? 'primary' : 'outline'}
+            size="sm"
+            onClick={() => setShowAttendanceOverlay((prev) => !prev)}
+            title="Bật/Tắt đánh dấu học sinh vắng mặt hoặc đi muộn hôm nay trên sơ đồ"
+            className="gap-1.5 relative"
+          >
+            <CalendarCheck size={16} weight="bold" />
+            <span>Chuyên cần hôm nay</span>
+            {todayAbsentCount > 0 && (
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse absolute -top-1 -right-1" />
+            )}
+          </Button>
+
+          {/* Gender Filter Segmented Control */}
+          <div className="inline-flex items-center rounded-xl border border-border bg-surface p-0.5 gap-0.5 text-xs shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setGenderFilter('all')}
+              className={cn(
+                'px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer text-[12px]',
+                genderFilter === 'all'
+                  ? 'bg-accent text-white shadow-2xs'
+                  : 'text-text-muted hover:text-text-primary'
+              )}
+            >
+              Tất cả
+            </button>
+            <button
+              type="button"
+              onClick={() => setGenderFilter('male')}
+              className={cn(
+                'px-2 py-1 rounded-lg font-semibold transition-all flex items-center gap-1 cursor-pointer text-[12px]',
+                genderFilter === 'male'
+                  ? 'bg-blue-600 text-white shadow-2xs'
+                  : 'text-text-muted hover:text-blue-600'
+              )}
+            >
+              <GenderMale size={13} weight="bold" />
+              <span>Nam ({genderStats.maleCount})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setGenderFilter('female')}
+              className={cn(
+                'px-2 py-1 rounded-lg font-semibold transition-all flex items-center gap-1 cursor-pointer text-[12px]',
+                genderFilter === 'female'
+                  ? 'bg-rose-600 text-white shadow-2xs'
+                  : 'text-text-muted hover:text-rose-600'
+              )}
+            >
+              <GenderFemale size={13} weight="bold" />
+              <span>Nữ ({genderStats.femaleCount})</span>
+            </button>
+          </div>
+
+          {/* Print Button */}
           <Button
             variant="secondary"
             size="sm"
@@ -306,7 +446,7 @@ export default function SeatingPage() {
             className="gap-1.5"
           >
             <Printer size={16} weight="bold" />
-            <span>In sơ đồ</span>
+            <span>In sơ đồ A4</span>
           </Button>
 
           {isHomeroom && (
@@ -376,6 +516,25 @@ export default function SeatingPage() {
             <X size={16} />
             <span>Hủy chọn</span>
           </Button>
+        </div>
+      )}
+
+      {/* Helper notice when Attendance Overlay is active */}
+      {showAttendanceOverlay && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs text-amber-900 no-print">
+          <div className="flex items-center gap-2">
+            <CalendarCheck size={16} className="text-amber-700 flex-shrink-0" weight="bold" />
+            <span>
+              Đang bật lớp phủ <strong>Chuyên cần hôm nay ({formatDateVietnamese(new Date())})</strong>: Ghế học sinh Vắng được đánh dấu viền đỏ, Đi muộn viền vàng.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAttendanceOverlay(false)}
+            className="text-amber-700 hover:text-amber-900 font-semibold underline cursor-pointer"
+          >
+            Tắt lớp phủ
+          </button>
         </div>
       )}
 
@@ -495,6 +654,138 @@ export default function SeatingPage() {
                         ? [seat01, seat02]
                         : [seat02, seat01];
 
+                    // Helper to render individual seat with overlay and gender filtering
+                    const renderSeatItem = (seatItem: SeatWithStudent) => {
+                      const student = seatItem.student;
+                      const isSeatSelected = selectedSeatId === seatItem.id;
+                      const attStatus = student ? todayAttendanceMap.get(student.id) : null;
+                      const isMale = student?.gender === 'male';
+                      const isFemale = student?.gender === 'female';
+
+                      // Gender filter logic
+                      const isDimmedByGender =
+                        student &&
+                        ((genderFilter === 'male' && !isMale) ||
+                          (genderFilter === 'female' && !isFemale));
+
+                      const isHighlightedByGender =
+                        student &&
+                        ((genderFilter === 'male' && isMale) ||
+                          (genderFilter === 'female' && isFemale));
+
+                      // Styling rules based on active overlay / filter
+                      let containerClasses = 'bg-surface-muted/40 border-border/90 hover:border-indigo-400 hover:bg-surface shadow-2xs';
+
+                      if (isSeatSelected) {
+                        containerClasses = 'bg-indigo-50 border-indigo-600 ring-4 ring-indigo-200/80 shadow-xs';
+                      } else if (showAttendanceOverlay && student) {
+                        if (attStatus === 'absent') {
+                          containerClasses = 'bg-rose-50/90 border-rose-500 ring-2 ring-rose-300 shadow-xs';
+                        } else if (attStatus === 'late') {
+                          containerClasses = 'bg-amber-50/90 border-amber-500 ring-2 ring-amber-300 shadow-xs';
+                        } else if (attStatus === 'excused') {
+                          containerClasses = 'bg-slate-100 border-slate-500 ring-2 ring-slate-300 shadow-xs';
+                        } else {
+                          containerClasses = 'bg-emerald-50/40 border-emerald-300/80 shadow-2xs';
+                        }
+                      } else if (isHighlightedByGender) {
+                        if (isMale) {
+                          containerClasses = 'bg-blue-50/90 border-blue-400 ring-2 ring-blue-300 shadow-xs';
+                        } else if (isFemale) {
+                          containerClasses = 'bg-pink-50/90 border-pink-400 ring-2 ring-pink-300 shadow-xs';
+                        }
+                      } else if (!student) {
+                        containerClasses = 'bg-surface/50 border-dashed border-border/90 hover:bg-indigo-50/30 hover:border-indigo-300 text-text-muted';
+                      }
+
+                      return (
+                        <div
+                          onClick={() => handleSeatClick(seatItem)}
+                          className={cn(
+                            'p-2.5 rounded-xl border-2 text-xs cursor-pointer transition-all relative group min-h-[84px] flex flex-col justify-between',
+                            containerClasses,
+                            isDimmedByGender && 'opacity-25 filter grayscale'
+                          )}
+                        >
+                          {student ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-mono text-text-muted font-bold">
+                                  {student.student_code}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[9px] font-bold text-text-muted/70 bg-surface-muted px-1 rounded">
+                                    {seatItem === seat01 ? '01' : '02'}
+                                  </span>
+                                  {student.gender === 'male' ? (
+                                    <GenderMale size={13} weight="bold" className="text-blue-500" />
+                                  ) : (
+                                    <GenderFemale size={13} weight="bold" className="text-rose-500" />
+                                  )}
+                                </div>
+                              </div>
+
+                              <div
+                                className="font-bold text-text-primary text-[13px] leading-tight truncate"
+                                title={student.full_name}
+                              >
+                                {student.full_name.split(' ').slice(-1)[0]}
+                              </div>
+                              <div className="text-[11px] text-text-muted truncate leading-tight">
+                                {student.full_name.split(' ').slice(0, -1).join(' ')}
+                              </div>
+
+                              {/* Attendance Status Badge if Overlay is Active */}
+                              {showAttendanceOverlay && attStatus && (
+                                <div className="pt-0.5">
+                                  {attStatus === 'absent' && (
+                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-600 text-white tracking-wider">
+                                      VẮNG
+                                    </span>
+                                  )}
+                                  {attStatus === 'late' && (
+                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500 text-white tracking-wider">
+                                      MUỘN
+                                    </span>
+                                  )}
+                                  {attStatus === 'excused' && (
+                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-600 text-white tracking-wider">
+                                      PHÉP
+                                    </span>
+                                  )}
+                                  {attStatus === 'present' && (
+                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-600/90 text-white tracking-wider">
+                                      CÓ MẶT
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+
+                              {isHomeroom && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleRemoveFromSeat(e, seatItem.id)}
+                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm no-print cursor-pointer"
+                                  title="Gỡ khỏi ghế"
+                                >
+                                  <X size={11} weight="bold" />
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="py-3.5 text-center space-y-0.5">
+                              <div className="text-[11px] font-semibold text-text-muted">
+                                {seatItem === seat01 ? '+ Trống (01)' : '+ Trống (02)'}
+                              </div>
+                              <div className="text-[9px] text-text-muted/70">
+                                {seatItem === seat01 ? 'Vị trí 01' : 'Vị trí 02'}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    };
+
                     return (
                       <div
                         key={desk.id}
@@ -514,127 +805,8 @@ export default function SeatingPage() {
 
                         {/* 2 Seats with Viewpoint-dependent visual order */}
                         <div className="grid grid-cols-2 gap-2 pt-2.5">
-                          {/* Left Seat in current viewpoint */}
-                          <div
-                            onClick={() => handleSeatClick(seatDisplayLeft)}
-                            className={`p-2.5 rounded-xl border-2 text-xs cursor-pointer transition-all relative group min-h-[84px] flex flex-col justify-between ${
-                              selectedSeatId === seatDisplayLeft.id
-                                ? 'bg-indigo-50 border-indigo-600 ring-4 ring-indigo-200/80 shadow-xs'
-                                : seatDisplayLeft.student
-                                ? 'bg-surface-muted/40 border-border/90 hover:border-indigo-400 hover:bg-surface shadow-2xs'
-                                : 'bg-surface/50 border-dashed border-border/90 hover:bg-indigo-50/30 hover:border-indigo-300 text-text-muted'
-                            }`}
-                          >
-                            {seatDisplayLeft.student ? (
-                              <div className="space-y-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-mono text-text-muted font-bold">
-                                    {seatDisplayLeft.student.student_code}
-                                  </span>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-[9px] font-bold text-text-muted/70 bg-surface-muted px-1 rounded">
-                                      {seatDisplayLeft === seat01 ? '01' : '02'}
-                                    </span>
-                                    {seatDisplayLeft.student.gender === 'male' ? (
-                                      <GenderMale size={13} weight="bold" className="text-blue-500" />
-                                    ) : (
-                                      <GenderFemale size={13} weight="bold" className="text-rose-500" />
-                                    )}
-                                  </div>
-                                </div>
-                                <div
-                                  className="font-bold text-text-primary text-[13px] leading-tight truncate"
-                                  title={seatDisplayLeft.student.full_name}
-                                >
-                                  {seatDisplayLeft.student.full_name.split(' ').slice(-1)[0]}
-                                </div>
-                                <div className="text-[11px] text-text-muted truncate leading-tight">
-                                  {seatDisplayLeft.student.full_name.split(' ').slice(0, -1).join(' ')}
-                                </div>
-
-                                {isHomeroom && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => handleRemoveFromSeat(e, seatDisplayLeft.id)}
-                                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                                    title="Gỡ khỏi ghế"
-                                  >
-                                    <X size={11} weight="bold" />
-                                  </button>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="py-3.5 text-center space-y-0.5">
-                                <div className="text-[11px] font-semibold text-text-muted">
-                                  {seatDisplayLeft === seat01 ? '+ Trống (01)' : '+ Trống (02)'}
-                                </div>
-                                <div className="text-[9px] text-text-muted/70">
-                                  {seatDisplayLeft === seat01 ? 'Vị trí 01' : 'Vị trí 02'}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Right Seat in current viewpoint */}
-                          <div
-                            onClick={() => handleSeatClick(seatDisplayRight)}
-                            className={`p-2.5 rounded-xl border-2 text-xs cursor-pointer transition-all relative group min-h-[84px] flex flex-col justify-between ${
-                              selectedSeatId === seatDisplayRight.id
-                                ? 'bg-indigo-50 border-indigo-600 ring-4 ring-indigo-200/80 shadow-xs'
-                                : seatDisplayRight.student
-                                ? 'bg-surface-muted/40 border-border/90 hover:border-indigo-400 hover:bg-surface shadow-2xs'
-                                : 'bg-surface/50 border-dashed border-border/90 hover:bg-indigo-50/30 hover:border-indigo-300 text-text-muted'
-                            }`}
-                          >
-                            {seatDisplayRight.student ? (
-                              <div className="space-y-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-mono text-text-muted font-bold">
-                                    {seatDisplayRight.student.student_code}
-                                  </span>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-[9px] font-bold text-text-muted/70 bg-surface-muted px-1 rounded">
-                                      {seatDisplayRight === seat01 ? '01' : '02'}
-                                    </span>
-                                    {seatDisplayRight.student.gender === 'male' ? (
-                                      <GenderMale size={13} weight="bold" className="text-blue-500" />
-                                    ) : (
-                                      <GenderFemale size={13} weight="bold" className="text-rose-500" />
-                                    )}
-                                  </div>
-                                </div>
-                                <div
-                                  className="font-bold text-text-primary text-[13px] leading-tight truncate"
-                                  title={seatDisplayRight.student.full_name}
-                                >
-                                  {seatDisplayRight.student.full_name.split(' ').slice(-1)[0]}
-                                </div>
-                                <div className="text-[11px] text-text-muted truncate leading-tight">
-                                  {seatDisplayRight.student.full_name.split(' ').slice(0, -1).join(' ')}
-                                </div>
-
-                                {isHomeroom && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => handleRemoveFromSeat(e, seatDisplayRight.id)}
-                                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                                    title="Gỡ khỏi ghế"
-                                  >
-                                    <X size={11} weight="bold" />
-                                  </button>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="py-3.5 text-center space-y-0.5">
-                                <div className="text-[11px] font-semibold text-text-muted">
-                                  {seatDisplayRight === seat01 ? '+ Trống (01)' : '+ Trống (02)'}
-                                </div>
-                                <div className="text-[9px] text-text-muted/70">
-                                  {seatDisplayRight === seat01 ? 'Vị trí 01' : 'Vị trí 02'}
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                          {renderSeatItem(seatDisplayLeft)}
+                          {renderSeatItem(seatDisplayRight)}
                         </div>
                       </div>
                     );
@@ -722,6 +894,23 @@ export default function SeatingPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* FORMAL PRINT FOOTER (Displayed ONLY when printing) */}
+      {/* ========================================================================= */}
+      <div className="hidden print:grid grid-cols-2 mt-6 pt-4 border-t border-black text-center text-xs text-black">
+        <div>
+          <div className="font-bold uppercase tracking-wider">BAN GIÁM HIỆU PHÊ DUYỆT</div>
+          <div className="italic text-[10px] mt-1">(Ký và đóng dấu)</div>
+          <div className="h-16" />
+        </div>
+        <div>
+          <div className="font-bold uppercase tracking-wider">GIÁO VIÊN CHỦ NHIỆM</div>
+          <div className="italic text-[10px] mt-1">(Ký và ghi rõ họ tên)</div>
+          <div className="h-16" />
+          <div className="font-bold">{teacherName || ''}</div>
+        </div>
       </div>
 
       {/* ========================================================================= */}

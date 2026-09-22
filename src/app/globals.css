@@ -416,6 +416,7 @@ textarea {
   body {
     background: #ffffff !important;
     color: #000000 !important;
+    font-size: 10pt !important;
   }
 
   .app-sidebar,
@@ -433,17 +434,22 @@ textarea {
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .printable-card {
-    border: 1px solid #000 !important;
+    border: none !important;
     box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
     page-break-inside: avoid;
   }
 
   @page {
-    size: auto;
-    margin: 12mm;
+    size: landscape;
+    margin: 8mm;
   }
 }
 

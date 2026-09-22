@@ -1,556 +1,229 @@
-# Class Manager — Implementation Plan
+# Class Manager — Kế Hoạch Cải Tiến & Nâng Cấp Hệ Thống (Improvement Plan)
 
-## Overview
-
-**Class Manager** is a focused, practical classroom management web application for a single teacher managing one classroom. It is **not** a SaaS dashboard, LMS, or school platform — it is a calm, human, daily-use teacher tool.
-
-**Design Read:** Productivity web app for teachers, calm/practical/editorial language, light mode, leaning toward Next.js App Router + Supabase + Tailwind v4.
-
-**Dials (Taste Skill):**
-- `DESIGN_VARIANCE: 3` — restrained, consistent, practical
-- `MOTION_INTENSITY: 2` — hover states, subtle transitions only
-- `VISUAL_DENSITY: 5` — compact but readable, data tables, no card-soup
+> **Mục tiêu:** Nâng cấp, hoàn thiện và mở rộng hệ thống Class Manager hiện tại từ nền tảng đã chạy tốt lên chuẩn sản phẩm thực tế cho Trường THCS Nguyễn Tất Thành.  
+> **Quy chuẩn chốt:** 20 bàn / 40 học sinh / 4 dãy × 5 hàng / 2 góc nhìn / Đa lớp & Phân quyền RBAC.  
+> **Thời gian áp dụng:** Kế hoạch thực hiện tiếp theo (Bắt đầu từ 23/09/2026).  
 
 ---
 
-## User Review Required
+## I. HIỆN TRẠNG & ĐÁNH GIÁ ĐẦU VÀO
 
-> [!IMPORTANT]
-> **Supabase project**: You need a Supabase project with URL and anon key ready. Please provide these, or I'll use `.env.local` placeholders and you can fill them in after setup.
-
-> [!IMPORTANT]
-> **Authentication**: The spec requires Supabase Auth with RLS. This means the teacher must log in. Should I seed a demo teacher account (`giaovien@demo.edu.vn` / `Demo123456!`) as part of setup?
-
-> [!WARNING]
-> **Build time**: This is a 16-step implementation. I'll execute it fully in sequence. The initial scaffold takes ~3 minutes; each module will follow. Total estimated build: 45-90 minutes of agent work.
+Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi (Core MVP & Prototype):
+* **Đã chạy tốt:** 16 lớp THCS (6A1–9A4), 24 giáo viên, 10 môn học, 480 học sinh.
+* **Đã chuẩn hóa:** Sơ đồ lớp 20 bàn / 40 chỗ ngồi, 2 góc nhìn không gian, thuật toán Fisher-Yates, phân quyền RBAC (Admin, GVCN, GVBM), điểm danh buổi & theo môn, xuất Excel, trang Login chuẩn bảo mật trường học.
+* **Mục tiêu của Kế hoạch Cải tiến này:** Tập trung giải quyết các điểm chưa đồng bộ, nâng cao trải nghiệm thực tế cho giáo viên trong giờ dạy, tích hợp **Thời khóa biểu thông minh**, bổ sung các công cụ tự động hóa (Import Excel, in ấn A4, bộ lọc sơ đồ) và chuẩn hóa CSDL Supabase để sẵn sàng triển khai chính thức.
 
 ---
 
-## Open Questions
-
-> [!IMPORTANT]
-> **Font choice**: The spec calls for Vietnamese character support. I plan to use **Geist** (primary) + **IBM Plex Mono** (metadata/code). Both have excellent Vietnamese glyphs via Google Fonts self-hosted. Acceptable?
-
-> [!IMPORTANT]
-> **Accent color**: I plan to use a restrained **indigo-teal** (`oklch(0.52 0.11 220)` approx) — calm, educational, not AI-purple. Not blue, not green. Acceptable?
-
----
-
-## Tech Stack
-
-| Layer | Choice | Reason |
-|---|---|---|
-| Framework | **Next.js 14 App Router** | RSC, file-based routing, server actions |
-| Database | **Supabase (PostgreSQL)** | Auth, RLS, real-time if needed later |
-| Styling | **Tailwind CSS v4** | Design token system, utility-first |
-| Icons | **@phosphor-icons/react** | Consistent, single family |
-| Drag & Drop | **@dnd-kit/core** | Lightweight, accessible, no game-show |
-| Forms | **react-hook-form + Zod** | Validation, type-safe |
-| Dates | **date-fns** | Lightweight, no moment.js |
-| Toasts | **sonner** | Minimal, accessible |
-| Tables | **TanStack Table** | Sortable, filterable student list |
-
----
-
-## Project Structure
+## II. DANH MỤC CÁC HẠNG MỤC CẢI TIẾN TRỌNG TÂM
 
 ```
-d:\CODE\2026\class-manager\
-├── src/
-│   ├── app/
-│   │   ├── (auth)/
-│   │   │   ├── login/
-│   │   │   └── layout.tsx
-│   │   ├── (dashboard)/
-│   │   │   ├── layout.tsx          ← Shell with sidebar
-│   │   │   ├── dashboard/
-│   │   │   ├── students/
-│   │   │   │   ├── page.tsx        ← Student list
-│   │   │   │   └── [id]/page.tsx   ← Student detail
-│   │   │   ├── seating/
-│   │   │   ├── attendance/
-│   │   │   ├── history/
-│   │   │   ├── announcements/
-│   │   │   └── settings/
-│   │   ├── api/
-│   │   │   └── ...                 ← Route handlers if needed
-│   │   ├── globals.css
-│   │   └── layout.tsx
-│   ├── components/
-│   │   ├── ui/                     ← Primitive components
-│   │   │   ├── button.tsx
-│   │   │   ├── input.tsx
-│   │   │   ├── badge.tsx
-│   │   │   ├── modal.tsx
-│   │   │   ├── toast.tsx
-│   │   │   ├── skeleton.tsx
-│   │   │   └── table.tsx
-│   │   ├── shell/
-│   │   │   ├── sidebar.tsx
-│   │   │   └── header.tsx
-│   │   ├── dashboard/
-│   │   ├── students/
-│   │   ├── seating/
-│   │   ├── attendance/
-│   │   └── announcements/
-│   ├── services/
-│   │   ├── students.ts
-│   │   ├── seating.ts              ← randomize() lives here
-│   │   ├── attendance.ts
-│   │   └── announcements.ts
-│   ├── lib/
-│   │   ├── supabase/
-│   │   │   ├── client.ts
-│   │   │   ├── server.ts
-│   │   │   └── middleware.ts
-│   │   ├── validations/
-│   │   │   ├── student.ts
-│   │   │   ├── attendance.ts
-│   │   │   └── announcement.ts
-│   │   ├── constants.ts            ← MAX_STUDENTS=50, DESK_COUNT=25, etc.
-│   │   └── utils.ts
-│   ├── types/
-│   │   └── index.ts
-│   └── hooks/
-│       ├── use-students.ts
-│       ├── use-seating.ts
-│       └── use-attendance.ts
-├── supabase/
-│   ├── migrations/
-│   │   └── 001_initial_schema.sql
-│   └── seed.sql
-├── public/
-├── .env.local
-├── next.config.ts
-├── tailwind.config.ts
-└── package.json
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                          HỆ THỐNG CẢI TIẾN CLASS MANAGER                               │
+├───────────────────┬───────────────────┬──────────────────┬───────────────┬─────────────┤
+│ 1. SƠ ĐỒ LỚP HỌC  │ 2. CÀI ĐẶT & DATA │ 3. ĐIỂM DANH &   │ 4. THỜI KHÓA  │ 5. ADMIN &  │
+│    (SEATING MAP)  │    (CONSISTENCY)  │    HỌC SINH      │    BIỂU (TKB) │    HỆ THỐNG │
+├───────────────────┼───────────────────┼──────────────────┼───────────────┼─────────────┤
+│ • Lọc Chuyên cần  │ • Fix Settings    │ • Import Excel   │ • Lưới TKB    │ • Thống kê  │
+│ • Lọc Giới tính   │ • Lưu max_students│ • Lọc vắng mặt   │   Thứ 2 - 7   │   toàn trường│
+│ • In A4 chuẩn     │ • Đồng bộ Schema  │ • Lọc khoảng     │ • Tự động gắn │ • Báo cáo   │
+│ • Lưu góc nhìn    │   Supabase 20 bàn │   ngày lịch sử   │   môn điểm danh│  tổng hợp  │
+│   ưu thích        │ • Tối ưu Storage  │ • Thẻ liên hệ PH │ • In TKB dán  │ • Phân công │
+│                   │                   │                  │   bảng tin    │   GV bộ môn │
+└───────────────────┴───────────────────┴──────────────────┴───────────────┴─────────────┘
 ```
 
 ---
 
-## Proposed Changes
+## 1. CẢI TIẾN 1 — SƠ ĐỒ LỚP HỌC (SEATING MAP ENHANCEMENTS)
 
-### STEP 1 — Project Scaffold
+### 1.1. Lọc trực quan Chuyên cần hôm nay trên sơ đồ lớp
+* **Vấn đề:** Giáo viên khi đứng lớp nhìn vào sơ đồ chỉ thấy tên học sinh mà không biết ngay em nào hôm nay đang vắng mặt hoặc đi muộn.
+* **Giải pháp cải tiến:**
+  * Thêm nút bật/tắt: `[👁 Hiện trạng thái điểm danh hôm nay]`.
+  * Nếu học sinh hôm nay **Vắng mặt**: Hiển thị viền đỏ và chấm trạng thái `Vắng` nổi bật trên ghế ngồi.
+  * Nếu học sinh **Đi muộn**: Hiển thị viền vàng hổ phách và nhãn `Muộn`.
+  * Giúp giáo viên đứng trên bục giảng chỉ cần liếc sơ đồ là kiểm soát được chỗ trống thực tế trong phòng học.
 
-#### [NEW] `d:\CODE\2026\class-manager\` (entire Next.js app)
+### 1.2. Lọc trực quan Giới tính (Nam / Nữ)
+* **Giải pháp cải tiến:**
+  * Thêm bộ lọc: `Tất cả` | `Nam` | `Nữ`.
+  * Highlight nhẹ nhàng theo giới tính (Xanh dương nhạt cho Nam, Hồng phấn nhạt cho Nữ) giúp giáo viên dễ dàng cân bằng tỷ lệ nam/nữ khi sắp xếp chỗ ngồi giữa các dãy.
 
-Initialize with:
-```bash
-npx -y create-next-app@latest class-manager --typescript --tailwind --app --no-src-dir --import-alias "@/*" --use-npm
-```
+### 1.3. Chuẩn hóa tính năng In sơ đồ lớp học ra khổ giấy A4 (Print Optimization)
+* **Vấn đề:** Khi bấm nút "In sơ đồ", trình duyệt in kèm cả sidebar, thanh điều hướng và có thể bị co cụm vỡ trang.
+* **Giải pháp cải tiến:**
+  * Bổ sung CSS `@media print` chuyên biệt:
+    * Ẩn toàn bộ Sidebar, Header, thanh công cụ, nút bấm.
+    * Tự động ép xoay trang ngang (`@page { size: landscape; margin: 10mm; }`).
+    * Căn giữa bảng lớp, bàn giáo viên, 4 dãy bàn 20 ghế rõ nét chữ in đen trắng tương phản cao, chân trang có phần ký tên GVCN.
 
-Then restructure to use `src/` directory and install dependencies.
-
----
-
-### STEP 2 — Design System
-
-#### [NEW] [`globals.css`](file:///d:/CODE/2026/class-manager/src/app/globals.css)
-
-CSS custom property tokens:
-
-```css
-:root {
-  --bg: oklch(0.98 0.005 240);           /* very light cool-neutral page */
-  --surface: oklch(1 0 0);               /* white cards/surfaces */
-  --surface-muted: oklch(0.965 0.005 240); /* subtle secondary surface */
-  --border: oklch(0.88 0.008 240);       /* subtle border */
-  --border-strong: oklch(0.80 0.01 240);
-
-  --text-primary: oklch(0.18 0.01 240);  /* deep neutral, not pure black */
-  --text-secondary: oklch(0.40 0.01 240);
-  --text-muted: oklch(0.58 0.01 240);
-
-  --accent: oklch(0.52 0.11 220);        /* restrained teal-indigo */
-  --accent-hover: oklch(0.46 0.11 220);
-  --accent-subtle: oklch(0.95 0.03 220); /* very light tint for hover bg */
-
-  --success: oklch(0.52 0.14 148);       /* green — Present */
-  --warning: oklch(0.65 0.14 70);        /* amber — Late */
-  --danger: oklch(0.52 0.18 25);         /* red — Absent */
-  --neutral: oklch(0.65 0.01 240);       /* Excused */
-
-  --radius-sm: 6px;
-  --radius: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 12px;
-
-  --shadow-sm: 0 1px 2px 0 oklch(0.18 0.01 240 / 0.06);
-  --shadow: 0 1px 3px 0 oklch(0.18 0.01 240 / 0.08), 0 1px 2px -1px oklch(0.18 0.01 240 / 0.06);
-}
-```
-
-Font: **Geist** (Vietnamese-compatible modern sans) via `next/font/google`.
-
-Typography scale:
-- Page title: 26px / 700
-- Section heading: 18px / 600
-- Body: 14px / 400
-- Secondary: 13px / 400
-- Metadata: 12px / 400
+### 1.4. Tự động ghi nhớ Góc nhìn ưa thích (Perspective Persistence)
+* **Giải pháp:** Lưu trạng thái `nhin_tu_duoi_len` hoặc `nhin_tu_buc_giang` vào `localStorage` theo từng tài khoản giáo viên, không bị reset về mặc định sau mỗi lần F5.
 
 ---
 
-### STEP 3 — Database Schema
+## 2. CẢI TIẾN 2 — CÀI ĐẶT LỚP HỌC & TÍNH NHẤT QUÁN DỮ LIỆU
 
-#### [NEW] [`supabase/migrations/001_initial_schema.sql`](file:///d:/CODE/2026/class-manager/supabase/migrations/001_initial_schema.sql)
+### 2.1. Chuẩn hóa trang Cài đặt lớp (`src/app/(dashboard)/settings/page.tsx`)
+* **Các việc cần xử lý:**
+  1. Thay đổi state khởi tạo mặc định:
+     * `maxStudents = '40'` (thay vì `'45'`).
+     * `deskCount = '20'` (thay vì `'25'`).
+  2. Cập nhật `classSettingsSchema` trong `src/lib/validations/forms.ts`:
+     * Nhận thêm trường `max_students: z.coerce.number().min(1).max(40)`.
+  3. Cập nhật `ClassService.updateClassSettings` và `LocalStore.updateClass`:
+     * Lưu giá trị `max_students` thật vào kho dữ liệu khi giáo viên bấm "Lưu thay đổi".
+  4. Hiển thị khối thông số trực quan:
+     * Sĩ số hiện tại: `... / 40 học sinh`.
+     * Số chỗ còn trống: `... ghế`.
+     * Tỷ lệ lấp đầy phòng học: `...%`.
 
-Tables: `classes`, `students`, `desks`, `seats`, `attendance`, `announcements`, `student_notes`
-
-Key constraints:
-- `UNIQUE(student_id)` on seats → one student, one seat
-- `UNIQUE(desk_id, side)` on seats → one student per side
-- `CHECK(side IN ('left', 'right'))` on seats
-- `UNIQUE(student_id, date)` on attendance
-- `CHECK(status IN ('present', 'absent', 'late', 'excused'))` on attendance
-- `CHECK(status IN ('active', 'inactive'))` on students
-- Trigger or CHECK for max 50 active students per class
-
-#### [NEW] [`supabase/seed.sql`](file:///d:/CODE/2026/class-manager/supabase/seed.sql)
-
-Seed data:
-- 1 class: `9A1`, Room `A101`, Year `2026-2027`
-- 25 desks (5 rows × 5 columns)
-- 40 Vietnamese student names
-- 40 seats assigned
-- 10 empty seats
-- ~30 days of attendance history
-
----
-
-### STEP 4 — Authentication
-
-#### [NEW] [`src/app/(auth)/login/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(auth)/login/page.tsx)
-
-Clean login form — email + password. No social login for MVP.
-
-#### [NEW] [`src/middleware.ts`](file:///d:/CODE/2026/class-manager/src/middleware.ts)
-
-Protect all `/(dashboard)/*` routes. Redirect unauthenticated users to `/login`.
-
-Supabase RLS policies on all tables: user can only access rows where `class.teacher_id = auth.uid()`.
+### 2.2. Đồng bộ lược đồ CSDL Supabase Migration (`supabase/migrations/001_initial_schema.sql`)
+* **Các việc cần xử lý:**
+  * Cập nhật ràng buộc bảng `classes`: `max_students <= 40`, `desk_count = 20`.
+  * Cập nhật bảng `desks`: `desk_number BETWEEN 1 AND 20`, `row_num BETWEEN 1 AND 5`, `col_num BETWEEN 1 AND 4`.
+  * Bổ sung đầy đủ DDL cho các bảng quan hệ:
+    * `subjects` (id, code, name)
+    * `class_memberships` (id, teacher_id, class_id, role)
+    * `subject_assignments` (id, teacher_id, class_id, subject_id)
+    * `timetable_entries` (id, class_id, day_of_week, period, subject_id, teacher_id)
+  * Thiết lập các chính sách bảo mật hàng (Row Level Security - RLS) cho từng bảng theo đúng vai trò Admin / GVCN / GVBM.
 
 ---
 
-### STEP 5 — Application Shell
+## 3. CẢI TIẾN 3 — ĐIỂM DANH & QUẢN LÝ HỌC SINH
 
-#### [NEW] [`src/components/shell/sidebar.tsx`](file:///d:/CODE/2026/class-manager/src/components/shell/sidebar.tsx)
+### 3.1. Tính năng Nhập học sinh hàng loạt từ file Excel (Import Students via Excel/CSV)
+* **Vấn đề:** Đầu năm học, GVCN phải nhập từng học sinh một rất mất thời gian.
+* **Giải pháp cải tiến:**
+  * Thêm nút `[📥 Nhập từ Excel]` trên trang danh sách học sinh.
+  * Hỗ trợ tải file mẫu `mau_danh_sach_hoc_sinh.xlsx` (Cột: STT, Họ và tên, Mã HS, Giới tính, Ngày sinh, SĐT phụ huynh).
+  * Modal xem trước (Preview) dữ liệu trước khi lưu:
+    * Tự động kiểm tra trùng mã học sinh.
+    * Tự động kiểm tra nếu tổng số vượt quá 40 em (báo lỗi không cho nhập).
+    * Xác nhận và nạp nhanh toàn bộ vào lớp.
 
-Compact left sidebar:
-```
-CLASS MANAGER
-─────────────
-Dashboard
-Học sinh       (Students)
-Chỗ ngồi       (Seating)
-Điểm danh      (Attendance)
-Lịch sử        (History)
-Thông báo      (Announcements)
-─────────────
-Cài đặt        (Settings)
-```
+### 3.2. Cải tiến trải nghiệm Điểm danh nhanh (Attendance Quick Actions)
+* **Giải pháp:**
+  * Lọc danh sách điểm danh: Hỗ trợ tab xem nhanh danh sách những em "Chưa có mặt" (Vắng hoặc Muộn) để GVCN dễ gửi báo cáo đầu giờ cho Ban Giám hiệu.
 
-Width: 220px desktop. Icon + label. Collapses to icon-only on tablet.
+### 3.3. Bộ lọc thời gian nâng cao trong Lịch sử chuyên cần (`/history`)
+* **Giải pháp:**
+  * Bổ sung bộ chọn khoảng ngày: `Tuần này` | `Tháng này` | `Tất cả` | `Tùy chọn khoảng ngày`.
+  * Tính toán tỷ lệ chuyên cần theo đúng khoảng ngày đang được lọc thay vì chỉ tính toàn bộ niên khóa.
 
----
-
-### STEP 6 — Dashboard
-
-#### [NEW] [`src/app/(dashboard)/dashboard/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(dashboard)/dashboard/page.tsx)
-
-Structure (NOT cards everywhere):
-```
-9A1 · Phòng A101 · 2026–2027
-──────────────────────────────
-Hôm nay: 22/09/2026
-
-Học sinh   Điểm danh hôm nay      
-40/50      43 Có mặt · 2 Vắng · 1 Muộn
-           [Điểm danh] [Quản lý chỗ ngồi]
-──────────────────────────────
-Thông báo gần đây
-  📌 Kiểm tra Toán  22/09
-     Kiểm tra Toán chương 2 vào thứ 6
-──────────────────────────────
-Tổng quan lớp học
-  Sĩ số: 40   Vắng hôm nay: 2   Chỗ trống: 10
-```
-
-No fake KPI cards. Typography-driven hierarchy.
+### 3.4. Thẻ liên lạc phụ huynh trên trang Chi tiết học sinh (`/students/[id]`)
+* **Giải pháp:**
+  * Bổ sung nút gọi nhanh (`tel:`) và gửi tin nhắn Zalo/SMS mẫu thông báo tình hình học tập và chuyên cần của học sinh cho phụ huynh chỉ với 1 chạm.
 
 ---
 
-### STEP 7 — Students Module
+## 4. CẢI TIẾN 4 — THỜI KHÓA BIỂU LỚP HỌC (CLASS TIMETABLE MODULE)
 
-#### [NEW] [`src/app/(dashboard)/students/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(dashboard)/students/page.tsx)
+Đây là **mảnh ghép liên kết thực tế** giữa thời gian học, môn học, giáo viên phụ trách và luồng điểm danh hằng ngày.
 
-Clean table (TanStack Table):
-```
-STT  Họ và tên       Mã HS   Giới tính  Chỗ ngồi   Trạng thái
-1    Nguyễn Văn An   HS001   Nam        Bàn 07·T   Đang học
-2    Trần Minh Anh   HS002   Nữ         Bàn 03·P   Đang học
-```
+### 4.1. Bảng lưới Thời khóa biểu tương tác (`/timetable`)
+* **Cấu trúc chuẩn:** 6 ngày học (Thứ Hai $\rightarrow$ Thứ Bảy) × 5 tiết buổi sáng (Tiết 1 $\rightarrow$ Tiết 5).
+* **Nội dung mỗi ô tiết học:**
+  * Tên môn học kèm màu sắc đặc trưng (Toán - Xanh dương, Ngữ văn - Xanh lá, Tiếng Anh - Tím, KHTN - Vàng hổ phách...).
+  * Tên giáo viên bộ môn phụ trách (tự động lấy từ phân công giảng dạy `subject_assignments`).
+* **Thao tác nhanh:**
+  * GVCN hoặc Admin bấm vào ô để chọn nhanh môn học cho tiết đó.
+  * Hỗ trợ nút **[Xếp nhanh theo tuần]** hoặc **[Sao chép TKB]** sang tuần mới.
 
-Features: search, gender filter, status filter, sort by name/code, add, edit, inactivate.
+### 4.2. Điểm danh thông minh theo thời gian thực (Smart Contextual Attendance)
+* Khi giáo viên vào trang Điểm danh (`/attendance`), hệ thống tự động đối chiếu thứ trong tuần và giờ hiện tại:
+  * Ví dụ: *Thứ Ba lúc 08:30* $\rightarrow$ Hệ thống tự nhận diện đang là **Tiết 2: Môn Toán (Thầy Nguyễn Văn An)**.
+  * Tự động chọn sẵn môn học và giáo viên phụ trách mà không cần chọn thủ công từ dropdown.
 
-#### [NEW] [`src/app/(dashboard)/students/[id]/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(dashboard)/students/[id]/page.tsx)
+### 4.3. Widget "Lịch học hôm nay" trên Dashboard
+* Hiển thị ngay trên Dashboard của lớp:
+  * Thanh tiến trình các tiết học trong ngày (Đã học xong, Đang học, Tiết tiếp theo).
+  * Tiết học hiện tại nổi bật giúp giáo viên và học sinh nắm bắt nhịp độ buổi học.
 
-Student detail: identity, seat, attendance summary (30-day), recent notes.
-Uses typography and spacing, NOT a grid of colorful cards.
-
----
-
-### STEP 8 — Seating Module
-
-#### [NEW] [`src/app/(dashboard)/seating/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(dashboard)/seating/page.tsx)
-
-**The signature feature.** Classroom layout:
-
-```
-        BẢNG (BOARD)
-┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
-│  Bàn 01  │  │  Bàn 02  │  │  Bàn 03  │  │  Bàn 04  │  │  Bàn 05  │
-│ [Trái][P]│  │ [T] [P]  │  │ [T] [P]  │  │ [T] [P]  │  │ [T] [P]  │
-└──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘
-... (5 rows × 5 desks)
-```
-
-Desk = subtle bordered rectangle, not a card with shadow.
-Seat = small student nameplate or empty slot.
-
-Interactions (dnd-kit):
-- **Assign**: click empty seat → pick student
-- **Move**: drag student to empty seat
-- **Swap**: drag student to occupied seat → swap dialog
-- **Remove**: right-click or button → remove from seat
-- **Randomize**: button → `seatingService.randomize()` → confirm animation
+### 4.4. Bản in Thời khóa biểu A4 dán bảng tin lớp (Printable Timetable)
+* Hỗ trợ nút **[In Thời khóa biểu]**:
+  * Tự động căn chỉnh vừa vặn trên 1 trang giấy A4 ngang.
+  * Hiển thị rõ ràng tiêu đề: *Trường THCS Nguyễn Tất Thành · Thời khóa biểu Lớp 9A1 · Niên khóa 2026 - 2027*.
+  * Có phần phê duyệt của Ban Giám hiệu và chữ ký GVCN.
 
 ---
 
-### STEP 9 — Attendance Module
+## 5. CẢI TIẾN 5 — ADMIN PORTAL & BÁO CÁO TOÀN TRƯỜNG
 
-#### [NEW] [`src/app/(dashboard)/attendance/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(dashboard)/attendance/page.tsx)
+### 5.1. Bảng điều khiển Quản trị viên (Admin Executive Dashboard)
+* **Bổ sung chỉ số toàn trường:**
+  * Tỷ lệ học sinh đi học toàn trường hôm nay (ví dụ: `468/480 học sinh · 97.5%`).
+  * Danh sách các lớp có tỷ lệ vắng cao trong ngày để Ban Giám hiệu nắm tình hình.
+  * Biểu đồ phân bổ học sinh theo từng khối lớp (Khối 6, 7, 8, 9).
 
-Fast attendance workflow:
-```
-Điểm danh — Thứ Ba, 22/09/2026
-[Đánh dấu tất cả có mặt]
-
-01  Nguyễn Văn An    [Có mặt] [Vắng] [Muộn] [Phép]
-02  Trần Minh Anh    [Có mặt] [Vắng] [Muộn] [Phép]
-...
-
-Có mặt: 43  Vắng: 2  Muộn: 1  Phép: 0
-[Lưu điểm danh]
-```
-
-- Default: all present
-- Click to toggle status
-- "Mark all present" button
-- Save with server action + validation
-- Prevent duplicate for same date
+### 5.2. Báo cáo tổng hợp xuất file Excel cho Nhà trường
+* **Giải pháp:**
+  * Nút `[Xuất báo cáo trường]` tại Admin Portal: Tạo file Excel đa trang gồm:
+    * Sheet 1: Danh sách tổng hợp 16 lớp (GVCN, Sĩ số, Phòng học, Số bàn).
+    * Sheet 2: Danh sách 24 giáo viên và bảng phân công chuyên môn.
+    * Sheet 3: Bảng theo dõi chuyên cần toàn trường theo tháng.
+    * Sheet 4: Tổng hợp Thời khóa biểu toàn trường.
 
 ---
 
-### STEP 10 — Attendance History
+## III. KẾ HOẠCH TRIỂN KHAI THEO GIAI ĐOẠN (SPRINT ROADMAP)
 
-#### [NEW] [`src/app/(dashboard)/history/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(dashboard)/history/page.tsx)
-
-Grid view: students × dates
-
+```mermaid
+gantt
+    title LỘ TRÌNH TRIỂN KHAI CẢI TIẾN CLASS MANAGER
+    dateFormat  YYYY-MM-DD
+    section Giai đoạn 1 (Core Fixes)
+    Fix logic trang Settings & max_students       :a1, 2026-09-23, 1d
+    Đồng bộ SQL Supabase Migration 20 bàn         :a2, 2026-09-23, 1d
+    Lưu góc nhìn ưa thích & CSS in A4 sơ đồ      :a3, 2026-09-24, 1d
+    section Giai đoạn 2 (UX & Thời khóa biểu)
+    Lọc Chuyên cần & Giới tính trên sơ đồ lớp     :b1, 2026-09-24, 1d
+    Lọc học sinh vắng đầu giờ & lọc ngày Lịch sử  :b2, 2026-09-25, 1d
+    Xây dựng module Thời khóa biểu (/timetable)   :b3, 2026-09-25, 2d
+    section Giai đoạn 3 (Automation & Admin)
+    Tích hợp TKB thông minh vào Điểm danh         :c1, 2026-09-27, 1d
+    Import danh sách học sinh từ file Excel       :c2, 2026-09-28, 2d
+    Thống kê chuyên cần toàn trường Admin         :c3, 2026-09-29, 1d
+    Kiểm thử Vitest & Đóng gói hoàn thiện         :c4, 2026-09-30, 1d
 ```
-         01/09  02/09  03/09  04/09  05/09
-Nguyễn A   P      P      P      L      P
-Trần B     P      A      P      P      P
-```
 
-Color coding: P=green, A=red, L=amber, E=neutral.
-Filter by: day / week / month.
-Summary stats per student (in sidebar or row).
+### 📋 GIAI ĐOẠN 1: Chuẩn hóa Dữ liệu & Tính năng Thiết yếu (Ưu tiên làm ngay)
+- [ ] **Task 1.1:** Cập nhật `src/app/(dashboard)/settings/page.tsx`, `src/services/class.service.ts` và schema form để lưu và cập nhật chuẩn `max_students = 40` và `desk_count = 20`.
+- [ ] **Task 1.2:** Cập nhật file `supabase/migrations/001_initial_schema.sql` bổ sung các bảng quan hệ mới (`subjects`, `class_memberships`, `subject_assignments`, `timetable_entries`) và ràng buộc 20 bàn.
+- [x] **Task 1.3:** Tối ưu CSS Print `@media print` cho trang Sơ đồ lớp (`/seating`) để in A4 ngang chuẩn không viền thừa.
+- [x] **Task 1.4:** Lưu `viewPerspective` vào `localStorage`.
+
+### 📋 GIAI ĐOẠN 2: Nâng tầm Trải nghiệm Giảng dạy & Thời khóa biểu
+- [x] **Task 2.1:** Thêm layer hiển thị trạng thái điểm danh hôm nay trực tiếp trên ghế ngồi của sơ đồ lớp.
+- [x] **Task 2.2:** Thêm bộ lọc Giới tính (Nam/Nữ) highlight trên sơ đồ lớp.
+- [ ] **Task 2.3:** Bổ sung tab lọc nhanh học sinh vắng / muộn đầu giờ trong màn hình Điểm danh.
+- [ ] **Task 2.4:** Thêm bộ lọc khoảng ngày (Tuần / Tháng) trên trang Lịch sử chuyên cần.
+- [ ] **Task 2.5:** Xây dựng trang **Thời khóa biểu lớp học (`/timetable`)** dạng lưới tương tác (Thứ 2 $\rightarrow$ Thứ 7, Tiết 1 $\rightarrow$ Tiết 5), chọn môn và gán giáo viên phụ trách.
+- [ ] **Task 2.6:** Tối ưu in Thời khóa biểu A4 ngang dán bảng tin lớp học.
+
+### 📋 GIAI ĐOẠN 3: Tự động hóa & Báo cáo Quản trị
+- [ ] **Task 3.1:** Kết nối Thời khóa biểu thông minh vào trang Điểm danh (tự nhận diện môn và giáo viên theo giờ học hiện tại).
+- [ ] **Task 3.2:** Bổ sung widget "Lịch học hôm nay" trên Dashboard lớp học.
+- [ ] **Task 3.3:** Xây dựng tính năng Import danh sách học sinh từ file Excel `.xlsx` có modal xem trước và validate dữ liệu.
+- [ ] **Task 3.4:** Bổ sung widget thống kê chuyên cần toàn trường trên Admin Dashboard.
+- [ ] **Task 3.5:** Viết thêm các test cases Vitest kiểm thử giới hạn 40 học sinh, Thời khóa biểu và luồng import.
 
 ---
 
-### STEP 11 — Announcements
+## IV. TIÊU CHÍ NGHIỆM THU (ACCEPTANCE CRITERIA)
 
-#### [NEW] [`src/app/(dashboard)/announcements/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(dashboard)/announcements/page.tsx)
+Mỗi tính năng cải tiến được coi là hoàn thành khi đạt đủ các tiêu chuẩn sau:
 
-Clean notice board style. NOT social feed.
-
-```
-[+ Thêm thông báo]
-
-📌 Kiểm tra Toán chương 2          22/09/2026  [Sửa] [Xóa]
-   Kiểm tra vào thứ 6 tuần này.
-
-   Họp phụ huynh                   20/09/2026  [Sửa] [Xóa] [Ghim]
-   Cuộc họp phụ huynh vào 18:00...
-```
-
-CRUD + pin/unpin. No rich text editor for MVP — just textarea.
-
----
-
-### STEP 12 — Student Notes
-
-Notes appear within the Student Detail page. Simple list per student.
-
-```
-Ghi chú                            [+ Thêm ghi chú]
-──────────────────────────────
-"Tham gia tích cực trong buổi học nhóm."    22/09/2026  [Sửa] [Xóa]
-"Cần chú ý hơn trong giờ Toán."             18/09/2026  [Sửa] [Xóa]
-```
-
----
-
-### STEP 13 — Settings
-
-#### [NEW] [`src/app/(dashboard)/settings/page.tsx`](file:///d:/CODE/2026/class-manager/src/app/(dashboard)/settings/page.tsx)
-
-```
-Thông tin lớp học
-  Tên lớp:         9A1
-  Phòng học:       A101
-  Năm học:         2026–2027
-  Sĩ số tối đa:    50
-  Số bàn:          25
-  Chỗ ngồi/bàn:   2 (cố định)
-
-[Lưu thay đổi]
-```
-
----
-
-## Database Schema Detail
-
-```sql
--- classes
-CREATE TABLE classes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  teacher_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  room_name text,
-  school_year text,
-  max_students integer NOT NULL DEFAULT 50,
-  desk_count integer NOT NULL DEFAULT 25,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-
--- students
-CREATE TABLE students (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  class_id uuid REFERENCES classes(id) ON DELETE CASCADE,
-  student_code text NOT NULL,
-  full_name text NOT NULL,
-  gender text CHECK (gender IN ('male', 'female')),
-  date_of_birth date,
-  phone text,
-  email text,
-  avatar_url text,
-  status text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  UNIQUE(class_id, student_code)
-);
-
--- desks
-CREATE TABLE desks (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  class_id uuid REFERENCES classes(id) ON DELETE CASCADE,
-  desk_number integer NOT NULL,
-  row integer NOT NULL,
-  col integer NOT NULL,
-  created_at timestamptz DEFAULT now(),
-  UNIQUE(class_id, desk_number)
-);
-
--- seats
-CREATE TABLE seats (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  desk_id uuid REFERENCES desks(id) ON DELETE CASCADE,
-  side text NOT NULL CHECK (side IN ('left', 'right')),
-  student_id uuid REFERENCES students(id) ON DELETE SET NULL,
-  UNIQUE(desk_id, side),
-  UNIQUE(student_id)  -- one student, one seat
-);
-
--- attendance
-CREATE TABLE attendance (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id uuid REFERENCES students(id) ON DELETE CASCADE,
-  date date NOT NULL,
-  status text NOT NULL CHECK (status IN ('present', 'absent', 'late', 'excused')),
-  note text,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  UNIQUE(student_id, date)
-);
-
--- announcements
-CREATE TABLE announcements (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  class_id uuid REFERENCES classes(id) ON DELETE CASCADE,
-  title text NOT NULL,
-  content text,
-  is_pinned boolean NOT NULL DEFAULT false,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-
--- student_notes
-CREATE TABLE student_notes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id uuid REFERENCES students(id) ON DELETE CASCADE,
-  content text NOT NULL,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-```
-
----
-
-## Verification Plan
-
-### Automated (after build)
-- `npm run build` — no TypeScript errors
-- `npm run lint` — no ESLint errors
-
-### Business Rule Tests (manual)
-- [ ] Cannot add >50 active students to one class
-- [ ] Cannot assign same student to two seats (DB UNIQUE enforced)
-- [ ] Cannot record two attendance entries for same student+date
-- [ ] Inactive student removed from seating correctly
-- [ ] Randomize distributes all active students across available seats
-- [ ] Login → dashboard → all modules accessible
-- [ ] Data persists after logout/login
-
-### Visual Audit
-- [ ] Does NOT look like AI-generated SaaS dashboard
-- [ ] No card-soup
-- [ ] Typography hierarchy is clear
-- [ ] Seating page feels like a classroom
-- [ ] Attendance is fast to use (≤ 10 seconds to mark 40 students)
-- [ ] Light mode, consistent color system
-- [ ] Responsive: desktop, tablet, mobile
-
----
-
-## Implementation Order
-
-1. `npx create-next-app` → project scaffold
-2. Install dependencies
-3. Design system (`globals.css`, tokens, base components)
-4. Supabase client setup + types
-5. Database migrations + seed
-6. Auth (login page + middleware)
-7. App shell (sidebar + layout)
-8. Dashboard
-9. Students (list + detail)
-10. Seating (classroom map + DnD)
-11. Attendance (daily)
-12. Attendance History
-13. Announcements
-14. Student Notes (in student detail)
-15. Settings
-16. Final audit: responsive, loading/empty/error states, Vietnamese content
+1. **Hiển thị & Thẩm mỹ:**
+   * Đúng phong cách giáo dục thanh lịch: nền sáng (`bg-surface`), border tinh tế, font chữ chuẩn tiếng Việt không lỗi dấu, không dùng hiệu ứng gradient/neon lòe loẹt.
+2. **Quy chuẩn Lớp học:**
+   * Luôn đảm bảo bất biến: 20 bàn, 40 ghế, 4 dãy × 5 hàng, tối đa 40 học sinh/lớp.
+3. **Thời khóa biểu & Phân công:**
+   * Mỗi tiết trong ngày tại 1 lớp chỉ gán tối đa 1 môn học và 1 giáo viên; dữ liệu đồng bộ với phân công giảng dạy.
+4. **Hiệu năng & Khả năng truy cập:**
+   * Tải trang dưới 300ms, chuyển lớp tức thì, hỗ trợ đầy đủ phím tắt và nhãn trợ năng (ARIA).
+5. **Kiểm thử tự động:**
+   * Toàn bộ test suite Vitest chạy thành công 100% (`npm test`).
+   * Không có lỗi TypeScript (`npx tsc --noEmit`).
