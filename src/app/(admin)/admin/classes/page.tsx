@@ -13,13 +13,16 @@ import {
   BookOpen,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
+import { TeacherService, ClassService } from '@/services';
 import { ClassRow, UserRow, StudentRow, ClassFormData, SubjectRow, SubjectAssignmentRow } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function AdminClassesPage() {
+  const { user } = useAuth();
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [teachers, setTeachers] = useState<UserRow[]>([]);
   const [students, setStudents] = useState<StudentRow[]>([]);
@@ -63,7 +66,11 @@ export default function AdminClassesPage() {
   const handleAssignSubjectTeacher = (subjectId: string, teacherId: string) => {
     if (!selectedClassDetail) return;
     const tId = teacherId === '' ? null : teacherId;
-    LocalStore.assignSubjectTeacher(selectedClassDetail.id, subjectId, tId);
+    const res = TeacherService.assignSubjectTeacher(selectedClassDetail.id, subjectId, tId, user);
+    if (!res.success) {
+      toast.error(res.error || 'Phân công môn học thất bại');
+      return;
+    }
     const sub = subjects.find((s) => s.id === subjectId);
     const teacher = teachers.find((t) => t.id === tId);
     if (teacher) {
@@ -77,7 +84,11 @@ export default function AdminClassesPage() {
   const handleReassignHomeroom = (teacherId: string) => {
     if (!selectedClassDetail) return;
     const tId = teacherId === '' ? null : teacherId;
-    LocalStore.assignHomeroomTeacher(selectedClassDetail.id, tId);
+    const res = TeacherService.assignHomeroomTeacher(selectedClassDetail.id, tId, user);
+    if (!res.success) {
+      toast.error(res.error || 'Phân công GVCN thất bại');
+      return;
+    }
     const teacher = teachers.find((t) => t.id === tId);
     if (teacher) {
       toast.success(`Đã đổi GVCN lớp ${selectedClassDetail.name} thành ${teacher.name}`);
@@ -142,7 +153,11 @@ export default function AdminClassesPage() {
       toast.success('Đã cập nhật thông tin lớp học');
       setEditingClass(null);
     } else {
-      LocalStore.addClass(formData);
+      const res = ClassService.addClass(formData, user);
+      if (!res.success) {
+        toast.error(res.error || 'Tạo lớp thất bại');
+        return;
+      }
       toast.success('Đã tạo lớp học mới và thiết lập sơ đồ bàn ghế');
       setIsAddModalOpen(false);
     }
@@ -152,7 +167,11 @@ export default function AdminClassesPage() {
 
   const handleArchiveClass = () => {
     if (!targetArchiveClass) return;
-    LocalStore.archiveClass(targetArchiveClass.id);
+    const res = ClassService.archiveClass(targetArchiveClass.id, user);
+    if (!res.success) {
+      toast.error(res.error || 'Lưu trữ lớp học thất bại');
+      return;
+    }
     toast.success(`Đã chuyển lớp ${targetArchiveClass.name} vào kho lưu trữ`);
     setTargetArchiveClass(null);
     loadData();

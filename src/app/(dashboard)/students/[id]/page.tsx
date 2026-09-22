@@ -17,21 +17,30 @@ import {
   EnvelopeSimple,
   Calendar,
 } from '@phosphor-icons/react';
-import { LocalStore } from '@/lib/store';
-import { StudentRow, DeskWithSeats, StudentNoteRow, AttendanceRow } from '@/types';
+import {
+  StudentService,
+  SeatingService,
+  NoteService,
+  AttendanceService,
+  ClassService,
+} from '@/services';
+import { StudentRow, DeskWithSeats, StudentNoteRow, AttendanceRow, ClassRow } from '@/types';
 import { Button } from '@/components/ui/button';
 import { StudentStatusBadge, AttendanceBadge } from '@/components/ui/badge';
 import { formatDateVietnamese } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
 
 export default function StudentDetailPage() {
+  const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
   const studentId = params?.id as string;
   const { isHomeroom } = useCurrentClass();
 
   const [student, setStudent] = useState<StudentRow | null>(null);
+  const [studentClass, setStudentClass] = useState<ClassRow | null>(null);
   const [desks, setDesks] = useState<DeskWithSeats[]>([]);
   const [notes, setNotes] = useState<StudentNoteRow[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRow[]>([]);
@@ -40,18 +49,19 @@ export default function StudentDetailPage() {
 
   const loadData = () => {
     if (!studentId) return;
-    const stu = LocalStore.getStudentById(studentId);
+    const stu = StudentService.getStudentById(studentId);
     if (!stu) {
       toast.error('Không tìm thấy học sinh');
       router.push('/students');
       return;
     }
     setStudent(stu);
-    setDesks(LocalStore.getDesks(stu.class_id));
-    setNotes(LocalStore.getNotesForStudent(studentId));
+    setStudentClass(ClassService.getClassById(stu.class_id));
+    setDesks(SeatingService.getDesks(stu.class_id));
+    setNotes(NoteService.getNotesForStudent(studentId));
 
     // Get attendance records for this student
-    const allAtt = LocalStore.getAttendanceRecords(stu.class_id);
+    const allAtt = AttendanceService.getAttendanceRecords(stu.class_id);
     const stuAtt = allAtt.filter((a) => a.student_id === studentId);
     // Sort descending by date
     stuAtt.sort((a, b) => b.date.localeCompare(a.date));
@@ -106,17 +116,25 @@ export default function StudentDetailPage() {
     e.preventDefault();
     if (!newNoteContent.trim()) return;
 
-    LocalStore.addNoteForStudent(student.id, newNoteContent.trim(), student.class_id);
+    const res = NoteService.addNote(student.id, newNoteContent.trim(), user);
+    if (!res.success) {
+      toast.error(res.error || 'Thêm ghi chú thất bại');
+      return;
+    }
     toast.success('Đã thêm ghi chú về học sinh');
     setNewNoteContent('');
     setIsAddingNote(false);
-    setNotes(LocalStore.getNotesForStudent(student.id));
+    setNotes(NoteService.getNotesForStudent(student.id));
   };
 
   const handleDeleteNote = (noteId: string) => {
-    LocalStore.deleteNote(student.id, noteId);
+    const res = NoteService.deleteNote(student.id, noteId, user);
+    if (!res.success) {
+      toast.error(res.error || 'Xoá ghi chú thất bại');
+      return;
+    }
     toast.success('Đã xoá ghi chú');
-    setNotes(LocalStore.getNotesForStudent(student.id));
+    setNotes(NoteService.getNotesForStudent(student.id));
   };
 
   return (
@@ -143,7 +161,7 @@ export default function StudentDetailPage() {
                 <StudentStatusBadge status={student.status} />
               </div>
               <p className="text-xs text-text-muted font-mono mt-0.5">
-                Mã học sinh: {student.student_code} · Lớp 9A1
+                Mã học sinh: {student.student_code} · Lớp {studentClass?.name || '—'}
               </p>
             </div>
           </div>

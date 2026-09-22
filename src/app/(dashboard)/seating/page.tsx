@@ -13,15 +13,17 @@ import {
   Armchair,
   GenderMale,
   GenderFemale,
+  Printer,
 } from '@phosphor-icons/react';
-import { LocalStore } from '@/lib/store';
+import { SeatingService, StudentService } from '@/services';
 import { DeskWithSeats, StudentRow, SeatWithStudent } from '@/types';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-
+import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
 
 export default function SeatingPage() {
+  const { user } = useAuth();
   const { currentClassId, currentClass, isHomeroom, isSubjectTeacher, teacherSubjects } = useCurrentClass();
   const [desks, setDesks] = useState<DeskWithSeats[]>([]);
   const [students, setStudents] = useState<StudentRow[]>([]);
@@ -30,8 +32,8 @@ export default function SeatingPage() {
 
   const loadData = () => {
     if (!currentClassId) return;
-    setDesks(LocalStore.getDesks(currentClassId));
-    setStudents(LocalStore.getStudents(currentClassId));
+    setDesks(SeatingService.getDesks(currentClassId));
+    setStudents(StudentService.getStudents(currentClassId));
     setSelectedSeatId(null);
     setIsLoaded(true);
   };
@@ -86,7 +88,11 @@ export default function SeatingPage() {
       setSelectedSeatId(null);
     } else {
       // Second selection: SWAP
-      LocalStore.swapSeats(selectedSeatId, seat.id, currentClassId || undefined);
+      const res = SeatingService.swapSeats(selectedSeatId, seat.id, currentClassId || '', user);
+      if (!res.success) {
+        toast.error(res.error || 'Hoán đổi chỗ ngồi thất bại');
+        return;
+      }
       toast.success('Đã hoán đổi vị trí chỗ ngồi!');
       setSelectedSeatId(null);
       loadData();
@@ -113,11 +119,19 @@ export default function SeatingPage() {
         return;
       }
 
-      LocalStore.assignSeat(emptySeatId, studentId, currentClassId || undefined);
+      const res = SeatingService.assignSeat(emptySeatId, studentId, currentClassId || '', user);
+      if (!res.success) {
+        toast.error(res.error || 'Xếp chỗ thất bại');
+        return;
+      }
       toast.success('Đã xếp học sinh vào ghế trống đầu tiên');
       loadData();
     } else {
-      LocalStore.assignSeat(selectedSeatId, studentId, currentClassId || undefined);
+      const res = SeatingService.assignSeat(selectedSeatId, studentId, currentClassId || '', user);
+      if (!res.success) {
+        toast.error(res.error || 'Xếp chỗ thất bại');
+        return;
+      }
       toast.success('Đã xếp học sinh vào ghế đã chọn');
       setSelectedSeatId(null);
       loadData();
@@ -127,11 +141,11 @@ export default function SeatingPage() {
   // Remove student from seat
   const handleRemoveFromSeat = (e: React.MouseEvent, seatId: string) => {
     e.stopPropagation();
-    if (!isHomeroom) {
-      toast.error('Chỉ Giáo viên Chủ nhiệm mới có quyền gỡ học sinh khỏi chỗ ngồi');
+    const res = SeatingService.assignSeat(seatId, null, currentClassId || '', user);
+    if (!res.success) {
+      toast.error(res.error || 'Gỡ học sinh thất bại');
       return;
     }
-    LocalStore.assignSeat(seatId, null, currentClassId || undefined);
     if (selectedSeatId === seatId) setSelectedSeatId(null);
     toast.success('Đã đưa học sinh ra khỏi chỗ ngồi');
     loadData();
@@ -139,22 +153,24 @@ export default function SeatingPage() {
 
   // Randomize all seats
   const handleRandomize = () => {
-    if (!isHomeroom) return;
-    const updated = LocalStore.randomizeSeating(currentClassId || undefined);
-    setDesks(updated);
+    const res = SeatingService.randomizeSeating(currentClassId || '', user);
+    if (!res.success) {
+      toast.error(res.error || 'Xáo trộn chỗ ngồi thất bại');
+      return;
+    }
+    if (res.data) setDesks(res.data);
     setSelectedSeatId(null);
     toast.success('Đã xáo trộn ngẫu nhiên chỗ ngồi cho cả lớp!');
   };
 
   // Clear all seats
   const handleClearAll = () => {
-    if (!isHomeroom) return;
-    const cleared = desks.map((d) => ({
-      ...d,
-      seats: d.seats.map((s) => ({ ...s, student_id: null, student: null })),
-    }));
-    LocalStore.saveDesks(currentClassId || undefined, cleared);
-    setDesks(cleared);
+    const res = SeatingService.clearAllSeats(currentClassId || '', user);
+    if (!res.success) {
+      toast.error(res.error || 'Xếp lại từ đầu thất bại');
+      return;
+    }
+    if (res.data) setDesks(res.data);
     setSelectedSeatId(null);
     toast.success('Đã xoá toàn bộ sơ đồ chỗ ngồi');
   };
@@ -199,24 +215,31 @@ export default function SeatingPage() {
           </p>
         </div>
 
-        {isHomeroom && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="secondary" onClick={handleRandomize} title="Xáo trộn ngẫu nhiên bằng thuật toán Fisher-Yates">
-              <Shuffle size={16} />
-              <span>Đổi chỗ ngẫu nhiên</span>
-            </Button>
+        <div className="flex items-center gap-2 flex-wrap no-print">
+          <Button variant="secondary" onClick={() => window.print()} className="gap-1.5" title="In sơ đồ chỗ ngồi khổ A4 ngang">
+            <Printer size={16} />
+            <span>In sơ đồ</span>
+          </Button>
 
-            <Button variant="ghost" onClick={handleClearAll} className="text-text-muted hover:text-danger">
-              <ArrowsClockwise size={16} />
-              <span>Xếp lại từ đầu</span>
-            </Button>
-          </div>
-        )}
+          {isHomeroom && (
+            <>
+              <Button variant="secondary" onClick={handleRandomize} title="Xáo trộn ngẫu nhiên bằng thuật toán Fisher-Yates">
+                <Shuffle size={16} />
+                <span>Đổi chỗ ngẫu nhiên</span>
+              </Button>
+
+              <Button variant="ghost" onClick={handleClearAll} className="text-text-muted hover:text-danger">
+                <ArrowsClockwise size={16} />
+                <span>Xếp lại từ đầu</span>
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 no-print">
           <span>
             Bạn đang xem sơ đồ chỗ ngồi lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ tra cứu vị trí học sinh khi vào lớp dạy.
           </span>
@@ -226,7 +249,7 @@ export default function SeatingPage() {
 
       {/* Notice / Action bar when seat is selected */}
       {selectedSeatId && (
-        <div className="p-3 bg-accent-subtle border border-accent/30 rounded-lg flex items-center justify-between text-xs text-accent">
+        <div className="p-3 bg-accent-subtle border border-accent/30 rounded-lg flex items-center justify-between text-xs text-accent no-print">
           <div className="flex items-center gap-2">
             <ArrowsLeftRight size={16} className="animate-pulse" />
             <span>
@@ -237,7 +260,7 @@ export default function SeatingPage() {
           <button
             type="button"
             onClick={() => setSelectedSeatId(null)}
-            className="p-1 hover:bg-accent/10 rounded transition-colors"
+            className="p-1 hover:bg-accent/10 rounded transition-colors cursor-pointer"
           >
             <X size={15} />
           </button>
@@ -245,7 +268,7 @@ export default function SeatingPage() {
       )}
 
       {/* Main Grid: Classroom Layout */}
-      <div className="bg-surface rounded-2xl border border-border p-6 shadow-xs space-y-8">
+      <div className="bg-surface rounded-2xl border border-border p-6 shadow-xs space-y-8 printable-card">
         {/* Blackboard area */}
         <div className="w-full max-w-2xl mx-auto py-2.5 bg-zinc-800 text-zinc-100 rounded-lg text-center shadow-inner">
           <div className="text-xs font-semibold tracking-widest uppercase">
@@ -399,7 +422,7 @@ export default function SeatingPage() {
       </div>
 
       {/* Unseated Students Section (if any) */}
-      <div className="bg-surface rounded-xl border border-border p-5 space-y-3">
+      <div className="bg-surface rounded-xl border border-border p-5 space-y-3 no-print">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <UserPlus size={18} className="text-accent" />

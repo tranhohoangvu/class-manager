@@ -11,15 +11,17 @@ import {
   Calendar,
   WarningCircle,
   ChatText,
+  BookOpen,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
+import { AttendanceService, StudentService } from '@/services';
 import { StudentRow, AttendanceStatus, SubjectRow } from '@/types';
 import { Button } from '@/components/ui/button';
-import { formatDateVietnamese } from '@/lib/utils';
+import { formatDateVietnamese, getTodayISO } from '@/lib/utils';
+import { EmptyStateView } from '@/components/ui/state-views';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
-import { BookOpen } from '@phosphor-icons/react';
 
 interface StudentAttendanceState {
   student_id: string;
@@ -35,9 +37,7 @@ export default function AttendancePage() {
   const [allSubjects, setAllSubjects] = useState<SubjectRow[]>([]);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [students, setStudents] = useState<StudentRow[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayISO());
   const [attendanceData, setAttendanceData] = useState<Record<string, StudentAttendanceState>>({});
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -56,10 +56,10 @@ export default function AttendancePage() {
   // Load students & existing attendance for selected date and subject
   const loadData = () => {
     if (!currentClassId) return;
-    const stus = LocalStore.getStudents(currentClassId).filter((s) => s.status === 'active');
+    const stus = StudentService.getStudents(currentClassId).filter((s) => s.status === 'active');
     setStudents(stus);
 
-    const existingRecords = LocalStore.getAttendanceForDate(
+    const existingRecords = AttendanceService.getAttendanceForDate(
       selectedDate,
       currentClassId,
       selectedSubjectId || undefined
@@ -128,13 +128,19 @@ export default function AttendancePage() {
       note: item.note,
     }));
 
-    LocalStore.saveAttendanceBatch(
+    const res = AttendanceService.saveAttendanceBatch(
       selectedDate,
       entries,
-      currentClassId || undefined,
+      currentClassId || '',
       selectedSubjectId || undefined,
-      user?.id
+      user
     );
+
+    if (!res.success) {
+      toast.error(res.error || 'Lưu điểm danh thất bại');
+      return;
+    }
+
     const subName = allSubjects.find((s) => s.id === selectedSubjectId)?.name;
     const scopeLabel = subName ? `tiết môn ${subName}` : 'buổi học';
     toast.success(`Đã lưu điểm danh ${scopeLabel} ngày ${formatDateVietnamese(selectedDate)}`);

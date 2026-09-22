@@ -10,11 +10,16 @@ import {
   XCircle,
   Clock,
   ArrowRight,
+  FileXls,
+  Printer,
 } from '@phosphor-icons/react';
-import { LocalStore } from '@/lib/store';
+import { AttendanceService, StudentService } from '@/services';
 import { StudentRow, AttendanceRow, AttendanceStatus } from '@/types';
 import { formatDateShort } from '@/lib/utils';
+import { exportAttendanceToExcel } from '@/lib/export';
+import { EmptyStateView } from '@/components/ui/state-views';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { useCurrentClass } from '@/contexts/class-context';
 
 export default function AttendanceHistoryPage() {
@@ -25,8 +30,8 @@ export default function AttendanceHistoryPage() {
 
   useEffect(() => {
     if (!currentClassId) return;
-    setStudents(LocalStore.getStudents(currentClassId).filter((s) => s.status === 'active'));
-    setAttendanceRecords(LocalStore.getAttendanceRecords(currentClassId));
+    setStudents(StudentService.getStudents(currentClassId).filter((s) => s.status === 'active'));
+    setAttendanceRecords(AttendanceService.getAttendanceRecords(currentClassId));
     setIsLoaded(true);
   }, [currentClassId]);
 
@@ -80,6 +85,15 @@ export default function AttendanceHistoryPage() {
   const studentsNeedingAttention = useMemo(() => {
     return studentStats.filter((s) => s.absent > 0 || s.late >= 2).slice(0, 5);
   }, [studentStats]);
+
+  const handleExportExcel = () => {
+    if (students.length === 0 || dates.length === 0) {
+      toast.error('Chưa có dữ liệu điểm danh để xuất file!');
+      return;
+    }
+    exportAttendanceToExcel(students, dates, attendanceMap, currentClass?.name || 'Lớp học');
+    toast.success('Đã xuất file Excel bảng theo dõi điểm danh!');
+  };
 
   if (!isLoaded) {
     return (
@@ -143,21 +157,33 @@ export default function AttendanceHistoryPage() {
             Lịch sử điểm danh {currentClass ? currentClass.name : 'lớp học'}
           </h1>
           <p className="text-sm text-text-muted mt-1">
-            Bảng theo dõi chuyên cần tổng thể qua các ngày học của {currentClass?.name || 'lớp'}
+            Bảng theo dõi chuyên cần tổng thể qua các ngày học của {currentClass?.name || 'lớp'} ({dates.length} buổi đã ghi nhận)
           </p>
         </div>
 
-        <Link href="/attendance">
-          <Button variant="primary">
-            <span>Điểm danh ngày mới</span>
-            <ArrowRight size={16} />
+        <div className="flex items-center gap-2 flex-wrap no-print">
+          <Button variant="secondary" onClick={handleExportExcel} className="gap-1.5" title="Xuất ma trận điểm danh ra file Excel">
+            <FileXls size={16} className="text-emerald-600" />
+            <span>Xuất Excel</span>
           </Button>
-        </Link>
+
+          <Button variant="secondary" onClick={() => window.print()} className="gap-1.5" title="In bảng điểm danh A4">
+            <Printer size={16} />
+            <span>In báo cáo</span>
+          </Button>
+
+          <Link href="/attendance">
+            <Button variant="primary" className="gap-1.5">
+              <span>Điểm danh ngày mới</span>
+              <ArrowRight size={16} />
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Warning Alert if students absent */}
       {studentsNeedingAttention.length > 0 && (
-        <div className="p-4 rounded-xl bg-warning-subtle/50 border border-warning/30 flex items-start gap-3">
+        <div className="p-4 rounded-xl bg-warning-subtle/50 border border-warning/30 flex items-start gap-3 no-print">
           <Warning size={20} className="text-warning flex-shrink-0 mt-0.5" />
           <div className="space-y-1 text-xs">
             <p className="font-semibold text-text-primary">
@@ -179,100 +205,78 @@ export default function AttendanceHistoryPage() {
         </div>
       )}
 
-      {/* Legend */}
-      <div className="flex items-center gap-4 text-xs text-text-secondary">
-        <span className="text-text-muted font-medium">Ký hiệu:</span>
-        <div className="flex items-center gap-1.5">
-          <span className="w-4 h-4 rounded-full bg-success/20 text-success text-[9px] font-bold inline-flex items-center justify-center">
-            ✓
-          </span>
-          <span>Có mặt</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-4 h-4 rounded-full bg-danger text-white text-[9px] font-bold inline-flex items-center justify-center">
-            V
-          </span>
-          <span>Vắng mặt</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-4 h-4 rounded-full bg-warning text-white text-[9px] font-bold inline-flex items-center justify-center">
-            M
-          </span>
-          <span>Đi muộn</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-4 h-4 rounded-full bg-zinc-600 text-white text-[9px] font-bold inline-flex items-center justify-center">
-            P
-          </span>
-          <span>Có phép</span>
-        </div>
-      </div>
-
-      {/* Matrix Table */}
-      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-surface-subtle border-b border-border tracking-wider text-text-muted font-mono">
-              <tr>
-                <th className="px-4 py-3 w-10 text-center">STT</th>
-                <th className="px-4 py-3 w-20">Mã HS</th>
-                <th className="px-4 py-3 min-w-[160px] sticky left-0 bg-surface-subtle z-10">
-                  Họ và tên
-                </th>
-                {dates.slice(0, 10).map((d) => (
-                  <th key={d} className="px-2.5 py-3 text-center min-w-[50px]">
-                    {formatDateShort(d)}
+      {/* Main Matrix Table */}
+      {dates.length === 0 ? (
+        <EmptyStateView
+          icon={<CalendarBlank size={32} className="opacity-60" />}
+          title="Chưa có dữ liệu điểm danh"
+          description={`Lớp ${currentClass?.name || 'này'} chưa có buổi học nào được ghi nhận điểm danh.`}
+          actionText="Điểm danh buổi đầu tiên"
+          actionHref="/attendance"
+        />
+      ) : (
+        <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-xs printable-card">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead className="bg-surface-subtle text-xs text-text-muted border-b border-border">
+                <tr>
+                  <th className="px-4 py-3 font-semibold uppercase tracking-wider sticky left-0 bg-surface-subtle z-10 w-44">
+                    Học sinh ({students.length})
                   </th>
-                ))}
-                <th className="px-3 py-3 text-center w-16 text-success">Có mặt</th>
-                <th className="px-3 py-3 text-center w-16 text-danger">Vắng</th>
-                <th className="px-3 py-3 text-center w-16 text-warning">Muộn</th>
-                <th className="px-4 py-3 text-right w-24">Tỉ lệ</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {studentStats.map((item, idx) => (
-                <tr key={item.student.id} className="hover:bg-surface-subtle/50 transition-colors">
-                  <td className="px-4 py-2.5 text-center text-text-muted font-mono">
-                    {idx + 1}
-                  </td>
-                  <td className="px-4 py-2.5 font-mono text-text-secondary">
-                    {item.student.student_code}
-                  </td>
-                  <td className="px-4 py-2.5 font-medium text-text-primary sticky left-0 bg-surface z-10">
-                    <Link
-                      href={`/students/${item.student.id}`}
-                      className="hover:text-accent transition-colors"
-                    >
-                      {item.student.full_name}
-                    </Link>
-                  </td>
-                  {dates.slice(0, 10).map((d) => {
-                    const status = attendanceMap.get(`${item.student.id}_${d}`);
-                    return (
-                      <td key={d} className="px-2.5 py-2.5 text-center">
-                        {renderStatusCell(status)}
-                      </td>
-                    );
-                  })}
-                  <td className="px-3 py-2.5 text-center font-semibold text-success">
-                    {item.present}
-                  </td>
-                  <td className="px-3 py-2.5 text-center font-semibold text-danger">
-                    {item.absent}
-                  </td>
-                  <td className="px-3 py-2.5 text-center font-semibold text-warning">
-                    {item.late}
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-bold text-accent">
-                    {item.rate}%
-                  </td>
+                  {dates.map((d) => (
+                    <th key={d} className="px-2 py-3 text-center font-mono text-[11px] whitespace-nowrap min-w-[48px]">
+                      {formatDateShort(d)}
+                    </th>
+                  ))}
+                  <th className="px-3 py-3 text-center font-semibold text-xs whitespace-nowrap">
+                    Có mặt
+                  </th>
+                  <th className="px-3 py-3 text-center font-semibold text-xs whitespace-nowrap">
+                    Vắng
+                  </th>
+                  <th className="px-3 py-3 text-center font-semibold text-xs whitespace-nowrap">
+                    Tỷ lệ
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {studentStats.map((item) => (
+                  <tr key={item.student.id} className="hover:bg-surface-subtle/50 transition-colors">
+                    <td className="px-4 py-2.5 sticky left-0 bg-surface z-10 border-r border-border/50">
+                      <Link
+                        href={`/students/${item.student.id}`}
+                        className="font-medium text-text-primary hover:text-accent truncate block text-xs"
+                      >
+                        {item.student.full_name}
+                      </Link>
+                      <span className="text-[10px] text-text-muted font-mono block">
+                        {item.student.student_code}
+                      </span>
+                    </td>
+                    {dates.map((d) => {
+                      const st = attendanceMap.get(`${item.student.id}_${d}`);
+                      return (
+                        <td key={d} className="px-1 py-2 text-center">
+                          {renderStatusCell(st)}
+                        </td>
+                      );
+                    })}
+                    <td className="px-3 py-2 text-center text-xs font-semibold text-success">
+                      {item.present}
+                    </td>
+                    <td className="px-3 py-2 text-center text-xs font-semibold text-danger">
+                      {item.absent}
+                    </td>
+                    <td className="px-3 py-2 text-center text-xs font-bold text-text-primary">
+                      {item.rate}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

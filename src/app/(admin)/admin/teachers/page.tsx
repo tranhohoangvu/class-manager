@@ -17,13 +17,16 @@ import {
   GraduationCap,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
+import { TeacherService, ClassService } from '@/services';
 import { UserRow, ClassRow, TeacherFormData, SubjectRow, SubjectAssignmentRow } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function AdminTeachersPage() {
+  const { user } = useAuth();
   const [teachers, setTeachers] = useState<UserRow[]>([]);
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [subjects, setSubjects] = useState<SubjectRow[]>([]);
@@ -50,8 +53,8 @@ export default function AdminTeachersPage() {
   });
 
   const loadData = () => {
-    setTeachers(LocalStore.getTeachers());
-    setClasses(LocalStore.getClasses().filter((c) => c.status === 'active'));
+    setTeachers(TeacherService.getTeachers());
+    setClasses(ClassService.getClasses().filter((c) => c.status === 'active'));
     setSubjects(LocalStore.getSubjects());
     setSubjectAssignments(LocalStore.getSubjectAssignments());
     setIsLoaded(true);
@@ -106,19 +109,19 @@ export default function AdminTeachersPage() {
     }
 
     if (editingTeacher) {
-      LocalStore.updateTeacher(editingTeacher.id, formData);
+      const res = TeacherService.updateTeacher(editingTeacher.id, formData, user);
+      if (!res.success) {
+        toast.error(res.error || 'Cập nhật giáo viên thất bại');
+        return;
+      }
       toast.success('Đã cập nhật thông tin giáo viên');
       setEditingTeacher(null);
     } else {
-      // Check duplicate email
-      const existing = teachers.some(
-        (t) => t.email.toLowerCase() === formData.email.trim().toLowerCase()
-      );
-      if (existing) {
-        toast.error('Email này đã tồn tại trong hệ thống!');
+      const res = TeacherService.createTeacher(formData, user);
+      if (!res.success) {
+        toast.error(res.error || 'Tạo tài khoản thất bại');
         return;
       }
-      LocalStore.addTeacher(formData);
       toast.success('Đã tạo tài khoản giáo viên mới');
       setIsAddModalOpen(false);
     }
@@ -128,7 +131,13 @@ export default function AdminTeachersPage() {
 
   const handleToggleStatus = () => {
     if (!targetToggleUser) return;
-    const updated = LocalStore.toggleTeacherStatus(targetToggleUser.id);
+    const res = TeacherService.toggleTeacherStatus(targetToggleUser.id, user);
+    if (!res.success) {
+      toast.error(res.error || 'Thao tác thất bại');
+      setTargetToggleUser(null);
+      return;
+    }
+    const updated = res.data;
     if (updated) {
       toast.success(
         updated.status === 'active'
@@ -142,8 +151,10 @@ export default function AdminTeachersPage() {
 
   const handleResetPassword = () => {
     if (!targetResetUser) return;
-    const ok = LocalStore.resetTeacherPassword(targetResetUser.id, 'password123');
-    if (ok) {
+    const res = TeacherService.resetPassword(targetResetUser.id, user);
+    if (!res.success) {
+      toast.error(res.error || 'Đặt lại mật khẩu thất bại');
+    } else {
       toast.success(`Đã reset mật khẩu của ${targetResetUser.name} về mặc định: password123`);
     }
     setTargetResetUser(null);

@@ -12,15 +12,17 @@ import {
   GraduationCap,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
+import { ClassService } from '@/services';
 import { ClassRow } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/ui/modal';
 import { toast } from 'sonner';
-
+import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
 
 export default function SettingsPage() {
+  const { user } = useAuth();
   const { currentClassId, currentClass, refreshClasses } = useCurrentClass();
   const [classInfo, setClassInfo] = useState<ClassRow | null>(null);
   const [name, setName] = useState('');
@@ -34,7 +36,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!currentClassId) return;
-    const cls = currentClass || LocalStore.getClass(currentClassId);
+    const cls = currentClass || ClassService.getClassById(currentClassId);
     if (cls) {
       setClassInfo(cls);
       setName(cls.name);
@@ -59,15 +61,23 @@ export default function SettingsPage() {
     }
     if (!currentClassId) return;
 
-    const updated = LocalStore.updateClass(currentClassId, {
-      name: name.trim(),
-      room_name: roomName.trim() || null,
-      school_year: schoolYear.trim(),
-      max_students: parseInt(maxStudents, 10) || 45,
-    });
+    const res = ClassService.updateClassSettings(
+      currentClassId,
+      {
+        name: name.trim(),
+        room_name: roomName.trim() || undefined,
+        school_year: schoolYear.trim(),
+      },
+      user
+    );
 
-    if (updated) {
-      setClassInfo(updated);
+    if (!res.success) {
+      toast.error(res.error || 'Cập nhật cài đặt thất bại');
+      return;
+    }
+
+    if (res.data) {
+      setClassInfo(res.data);
       refreshClasses();
       toast.success('Đã lưu thông tin cài đặt lớp học');
     }
@@ -75,7 +85,7 @@ export default function SettingsPage() {
 
   const handleResetData = () => {
     LocalStore.resetToDefaults();
-    toast.success('Đã khôi phục toàn bộ dữ liệu mẫu ban đầu của lớp 9A1');
+    toast.success('Đã khôi phục toàn bộ dữ liệu mẫu trường THCS (16 lớp, 480 học sinh)');
     setIsResetConfirmOpen(false);
     setTimeout(() => {
       window.location.reload();
@@ -216,7 +226,7 @@ export default function SettingsPage() {
             Khôi phục dữ liệu mẫu
           </h2>
           <p className="text-xs text-text-muted mt-1">
-            Nếu bạn đã thay đổi dữ liệu và muốn quay lại 40 học sinh ban đầu cùng sơ đồ bàn ghế mẫu của lớp 9A1.
+            Nếu bạn đã thay đổi dữ liệu và muốn quay lại 480 học sinh (16 lớp THCS) ban đầu cùng sơ đồ bàn ghế mẫu.
           </p>
         </div>
 
@@ -238,7 +248,7 @@ export default function SettingsPage() {
         onClose={() => setIsResetConfirmOpen(false)}
         onConfirm={handleResetData}
         title="Đặt lại dữ liệu mẫu"
-        description="Toàn bộ học sinh, chỗ ngồi, điểm danh và thông báo tự tạo sẽ được khôi phục về trạng thái 40 học sinh lớp 9A1 ban đầu. Bạn có muốn tiếp tục?"
+        description="Toàn bộ học sinh, chỗ ngồi, điểm danh và thông báo tự tạo sẽ được khôi phục về trạng thái 16 lớp THCS (480 học sinh) ban đầu. Bạn có muốn tiếp tục?"
         confirmText="Xác nhận đặt lại"
         variant="danger"
       />

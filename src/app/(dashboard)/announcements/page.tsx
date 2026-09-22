@@ -9,17 +9,19 @@ import {
   CheckCircle,
   Calendar,
 } from '@phosphor-icons/react';
-import { LocalStore } from '@/lib/store';
+import { AnnouncementService } from '@/services';
 import { AnnouncementRow } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
+import { EmptyStateView } from '@/components/ui/state-views';
 import { formatDateVietnamese } from '@/lib/utils';
 import { toast } from 'sonner';
-
+import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
 
 export default function AnnouncementsPage() {
+  const { user } = useAuth();
   const { currentClassId, currentClass, isHomeroom, isSubjectTeacher, teacherSubjects } = useCurrentClass();
   const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -32,15 +34,7 @@ export default function AnnouncementsPage() {
 
   const loadData = () => {
     if (!currentClassId) return;
-    const list = LocalStore.getAnnouncements(currentClassId);
-    // Sort: pinned first, then by date descending
-    list.sort((a, b) => {
-      if (a.is_pinned === b.is_pinned) {
-        return b.created_at.localeCompare(a.created_at);
-      }
-      return a.is_pinned ? -1 : 1;
-    });
-    setAnnouncements(list);
+    setAnnouncements(AnnouncementService.getAnnouncements(currentClassId));
   };
 
   useEffect(() => {
@@ -54,7 +48,19 @@ export default function AnnouncementsPage() {
       return;
     }
 
-    LocalStore.addAnnouncement(title.trim(), content.trim(), isPinned, currentClassId || undefined);
+    const res = AnnouncementService.createAnnouncement(
+      title.trim(),
+      content.trim(),
+      isPinned,
+      currentClassId || '',
+      user
+    );
+
+    if (!res.success) {
+      toast.error(res.error || 'Tạo thông báo thất bại');
+      return;
+    }
+
     toast.success('Đã tạo thông báo mới');
     setTitle('');
     setContent('');
@@ -64,14 +70,22 @@ export default function AnnouncementsPage() {
   };
 
   const handleTogglePin = (id: string, currentlyPinned: boolean) => {
-    LocalStore.togglePinAnnouncement(id);
+    const res = AnnouncementService.togglePin(id, currentClassId || '', user);
+    if (!res.success) {
+      toast.error(res.error || 'Thao tác ghim thất bại');
+      return;
+    }
     toast.success(currentlyPinned ? 'Đã bỏ ghim thông báo' : 'Đã ghim thông báo lên đầu');
     loadData();
   };
 
   const handleConfirmDelete = () => {
     if (announcementToDelete) {
-      LocalStore.deleteAnnouncement(announcementToDelete.id);
+      const res = AnnouncementService.deleteAnnouncement(announcementToDelete.id, currentClassId || '', user);
+      if (!res.success) {
+        toast.error(res.error || 'Xoá thông báo thất bại');
+        return;
+      }
       toast.success('Đã xoá thông báo');
       setAnnouncementToDelete(null);
       loadData();
@@ -117,15 +131,13 @@ export default function AnnouncementsPage() {
       {/* Announcements List */}
       <div className="space-y-4">
         {announcements.length === 0 ? (
-          <div className="bg-surface rounded-xl border border-border p-12 text-center">
-            <Megaphone size={36} className="mx-auto text-text-muted opacity-40 mb-3" />
-            <p className="text-sm font-medium text-text-secondary">
-              Chưa có thông báo nào
-            </p>
-            <p className="text-xs text-text-muted mt-1">
-              Bấm "Tạo thông báo mới" để đăng tin đầu tiên cho lớp.
-            </p>
-          </div>
+          <EmptyStateView
+            icon={<Megaphone size={32} className="opacity-60" />}
+            title="Chưa có thông báo nào"
+            description={`Lớp ${currentClass?.name || ''} chưa có tin thông báo nào được đăng.`}
+            actionText={isHomeroom ? "Tạo thông báo mới" : undefined}
+            onAction={isHomeroom ? () => setIsAddOpen(true) : undefined}
+          />
         ) : (
           announcements.map((ann) => (
             <div

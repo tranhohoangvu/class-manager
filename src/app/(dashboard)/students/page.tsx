@@ -11,18 +11,23 @@ import {
   Armchair,
   GenderMale,
   GenderFemale,
+  FileXls,
+  Printer,
 } from '@phosphor-icons/react';
-import { LocalStore } from '@/lib/store';
+import { StudentService, SeatingService } from '@/services';
 import { StudentRow, DeskWithSeats, StudentFormData } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Input, Select } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
 import { StudentStatusBadge } from '@/components/ui/badge';
+import { EmptyStateView } from '@/components/ui/state-views';
+import { exportStudentsToExcel } from '@/lib/export';
 import { toast } from 'sonner';
-
+import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
 
 export default function StudentsPage() {
+  const { user } = useAuth();
   const { currentClassId, currentClass, isHomeroom, isSubjectTeacher, teacherSubjects } = useCurrentClass();
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [desks, setDesks] = useState<DeskWithSeats[]>([]);
@@ -47,8 +52,8 @@ export default function StudentsPage() {
 
   const loadData = () => {
     if (!currentClassId) return;
-    setStudents(LocalStore.getStudents(currentClassId));
-    setDesks(LocalStore.getDesks(currentClassId));
+    setStudents(StudentService.getStudents(currentClassId));
+    setDesks(SeatingService.getDesks(currentClassId));
   };
 
   useEffect(() => {
@@ -119,10 +124,18 @@ export default function StudentsPage() {
     }
 
     if (editingStudent) {
-      LocalStore.updateStudent(editingStudent.id, formData);
+      const res = StudentService.updateStudent(editingStudent.id, formData, user);
+      if (!res.success) {
+        toast.error(res.error || 'Cập nhật học sinh thất bại');
+        return;
+      }
       toast.success(`Đã cập nhật thông tin học sinh ${formData.full_name}`);
     } else {
-      LocalStore.addStudent(formData, currentClassId || undefined);
+      const res = StudentService.createStudent(formData, currentClassId || '', user);
+      if (!res.success) {
+        toast.error(res.error || 'Thêm học sinh thất bại');
+        return;
+      }
       toast.success(`Đã thêm học sinh ${formData.full_name} vào lớp`);
     }
 
@@ -132,11 +145,28 @@ export default function StudentsPage() {
 
   const handleConfirmDelete = () => {
     if (studentToDelete) {
-      LocalStore.deleteStudent(studentToDelete.id);
+      const res = StudentService.deleteStudent(studentToDelete.id, user);
+      if (!res.success) {
+        toast.error(res.error || 'Không thể xoá học sinh');
+        return;
+      }
       toast.success(`Đã xoá học sinh ${studentToDelete.full_name}`);
       setStudentToDelete(null);
       loadData();
     }
+  };
+
+  const handleExportExcel = () => {
+    if (filteredStudents.length === 0) {
+      toast.error('Không có dữ liệu học sinh để xuất file!');
+      return;
+    }
+    exportStudentsToExcel(filteredStudents, currentClass?.name || 'Lớp học', seatMap);
+    toast.success('Đã xuất file Excel danh sách học sinh!');
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
@@ -157,17 +187,29 @@ export default function StudentsPage() {
           </p>
         </div>
 
-        {isHomeroom && (
-          <Button variant="primary" onClick={handleOpenAdd}>
-            <Plus size={16} />
-            <span>Thêm học sinh</span>
+        <div className="flex items-center gap-2 flex-wrap no-print">
+          <Button variant="secondary" onClick={handleExportExcel} className="gap-1.5" title="Xuất danh sách ra file Excel">
+            <FileXls size={16} className="text-emerald-600" />
+            <span>Xuất Excel</span>
           </Button>
-        )}
+
+          <Button variant="secondary" onClick={handlePrint} className="gap-1.5" title="In danh sách học sinh khổ A4">
+            <Printer size={16} />
+            <span>In danh sách</span>
+          </Button>
+
+          {isHomeroom && (
+            <Button variant="primary" onClick={handleOpenAdd} className="gap-1.5">
+              <Plus size={16} />
+              <span>Thêm học sinh</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 no-print">
           <span>
             Bạn đang xem danh sách học sinh lớp <strong>{currentClass?.name}</strong> với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ chỉ xem hồ sơ.
           </span>
@@ -176,7 +218,7 @@ export default function StudentsPage() {
       )}
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-center gap-3 no-print">
         <div className="relative flex-1 w-full">
           <MagnifyingGlass
             size={16}
@@ -215,7 +257,7 @@ export default function StudentsPage() {
       </div>
 
       {/* Student Table */}
-      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-xs">
+      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-xs printable-card">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-surface-subtle text-xs text-text-muted uppercase border-b border-border tracking-wider">
@@ -227,14 +269,19 @@ export default function StudentsPage() {
                 <th className="px-4 py-3 w-32">Ngày sinh</th>
                 <th className="px-4 py-3 w-36">Vị trí chỗ ngồi</th>
                 <th className="px-4 py-3 w-32">Trạng thái</th>
-                <th className="px-4 py-3 w-28 text-right">Thao tác</th>
+                <th className="px-4 py-3 w-28 text-right no-print">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-text-muted">
-                    Không tìm thấy học sinh nào phù hợp với bộ lọc
+                  <td colSpan={8} className="py-8">
+                    <EmptyStateView
+                      title="Không tìm thấy học sinh"
+                      description="Không có học sinh nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc hiện tại."
+                      actionText={isHomeroom ? "Thêm học sinh mới" : undefined}
+                      onAction={isHomeroom ? handleOpenAdd : undefined}
+                    />
                   </td>
                 </tr>
               ) : (
@@ -295,13 +342,13 @@ export default function StudentsPage() {
                       <td className="px-4 py-3">
                         <StudentStatusBadge status={student.status} />
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right no-print">
                         <div className="flex items-center justify-end gap-1">
                           <Link href={`/students/${student.id}`}>
                             <button
                               type="button"
                               title="Xem chi tiết"
-                              className="p-1.5 rounded text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors"
+                              className="p-1.5 rounded text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
                             >
                               <Eye size={15} />
                             </button>
@@ -312,7 +359,7 @@ export default function StudentsPage() {
                                 type="button"
                                 title="Sửa thông tin"
                                 onClick={() => handleOpenEdit(student)}
-                                className="p-1.5 rounded text-text-muted hover:text-accent hover:bg-surface-muted transition-colors"
+                                className="p-1.5 rounded text-text-muted hover:text-accent hover:bg-surface-muted transition-colors cursor-pointer"
                               >
                                 <PencilSimple size={15} />
                               </button>
@@ -320,7 +367,7 @@ export default function StudentsPage() {
                                 type="button"
                                 title="Xoá học sinh"
                                 onClick={() => setStudentToDelete(student)}
-                                className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors"
+                                className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors cursor-pointer"
                               >
                                 <Trash size={15} />
                               </button>
@@ -342,7 +389,7 @@ export default function StudentsPage() {
         isOpen={isAddEditOpen}
         onClose={() => setIsAddEditOpen(false)}
         title={editingStudent ? 'Sửa thông tin học sinh' : 'Thêm học sinh mới'}
-        description="Điền đầy đủ thông tin hồ sơ học sinh lớp 9A1"
+        description={`Điền đầy đủ thông tin hồ sơ học sinh lớp ${currentClass?.name || 'lớp học'}`}
       >
         <form onSubmit={handleSaveStudent} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -425,7 +472,7 @@ export default function StudentsPage() {
         onClose={() => setStudentToDelete(null)}
         onConfirm={handleConfirmDelete}
         title="Xoá học sinh"
-        description={`Bạn có chắc chắn muốn xoá học sinh "${studentToDelete?.full_name}" khỏi danh sách lớp 9A1? Vị trí ghế ngồi và dữ liệu liên quan sẽ bị xoá.`}
+        description={`Bạn có chắc chắn muốn xoá học sinh "${studentToDelete?.full_name}" khỏi danh sách lớp ${currentClass?.name || 'lớp'}? Vị trí ghế ngồi và dữ liệu liên quan sẽ bị xoá.`}
         confirmText="Xoá học sinh"
         variant="danger"
       />
