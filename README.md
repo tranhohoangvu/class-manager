@@ -1,8 +1,8 @@
 <div align="center">
 
 # 🏫 Class Manager (THCS Scale)
-### Hệ Thống Quản Lý Lớp Học & Chuyên Cần Trường THCS Nguyễn Tất Thành
-**Niên khóa: 2026 - 2027**
+### Classroom & Attendance Management Platform for THCS Nguyễn Tất Thành
+**Academic Year: 2026 - 2027**
 
 [![Next.js 16](https://img.shields.io/badge/Frontend-Next.js%2016%20(App%20Router)-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)](https://react.dev/)
@@ -16,72 +16,72 @@
 
 ---
 
-## 📖 Giới Thiệu (Overview)
+## 📖 Overview
 
-**Class Manager** là hệ thống quản lý học sinh, sơ đồ lớp học, chuyên cần và thời khóa biểu thông minh được thiết kế theo đúng quy chuẩn trường THCS Việt Nam, lấy mô hình thực tế từ **Trường THCS Nguyễn Tất Thành** (Năm học: 2026 - 2027).
+**Class Manager** is an enterprise-grade school management platform engineered specifically for Vietnamese secondary schools (Trường THCS), with its reference operational model based on **Trường THCS Nguyễn Tất Thành** (Academic Year: 2026 - 2027).
 
-Dự án được tổ chức theo kiến trúc **Monorepo chuẩn mực**:
-* **[Frontend (`/frontend`)](frontend/README.md):** Ứng dụng Next.js 16 (App Router), React 19, TailwindCSS v4, Vitest.
-* **[Backend (`/backend`)](backend/README.md):** REST API độc lập viết bằng Node.js, Express, TypeScript, PostgreSQL.
-* **[Documentation (`/docs`)](docs/README.md):** 30 file đặc tả kỹ thuật, kiến trúc, sơ đồ thực thể và workflows.
+The repository is structured as a clean, standardized **Monorepo**:
+* **[Frontend (`/frontend`)](frontend/README.md):** Next.js 16 (App Router), React 19, TailwindCSS v4, Vitest.
+* **[Backend (`/backend`)](backend/README.md):** Standalone REST API service built with Node.js, Express, TypeScript, and PostgreSQL.
+* **[Documentation (`/docs`)](docs/README.md):** Comprehensive technical specifications, architectural diagrams, ER schemas, and workflows.
 
-### 🏫 Quy mô dữ liệu chuẩn THCS (Năm học 2026 - 2027)
-- **Đơn vị**: Trường THCS Nguyễn Tất Thành
-- **4 Khối học**: Khối 6, Khối 7, Khối 8, Khối 9
-- **16 Lớp học**: 6A1–6A4, 7A1–7A4, 8A1–8A4, 9A1–9A4
-- **480 Học sinh**: 30 học sinh/lớp với đầy đủ thông tin nhân khẩu và phụ huynh liên lạc
-- **24 Giáo viên**: Phân công rõ ràng vai trò GVCN và GVBM
-- **10 Môn học cốt lõi**: Toán, Ngữ văn, Tiếng Anh, Vật lí, Hóa học, Sinh học, Lịch sử, Địa lí, Tin học, Công nghệ
-- **20 Bàn / 40 Chỗ ngồi mỗi lớp**: Bố cục chuẩn 4 dãy × 5 hàng, hỗ trợ 2 góc nhìn không gian
+### 🏫 Standard Secondary School Dataset Scale (2026 - 2027)
+- **Institution**: Trường THCS Nguyễn Tất Thành
+- **4 Grades**: Grade 6, Grade 7, Grade 8, Grade 9
+- **16 Classes**: 6A1–6A4, 7A1–7A4, 8A1–8A4, 9A1–9A4
+- **480 Students**: 30 students per class with realistic demographic and parent contact profiles
+- **24 Teachers**: Role separation between Homeroom (GVCN) and Subject Teachers (GVBM)
+- **10 Core Subjects**: Mathematics, Literature, English, Physics, Chemistry, Biology, History, Geography, Informatics, Technology
+- **20 Desks / 40 Seats per Class**: Standard 4 columns × 5 rows classroom geometry supporting dual visual perspectives
 
 ---
 
-## 📁 Cấu Trúc Monorepo (Monorepo Directory Structure)
+## 📁 Monorepo Directory Structure
 
 ```text
 class-manager/
-├── frontend/                 # Ứng dụng Web Next.js 16 (App Router)
-│   ├── src/                  # Mã nguồn UI, components, contexts, services, lib
-│   ├── tests/                # Bộ kiểm thử Vitest (8 files, 91 tests)
+├── frontend/                 # Next.js 16 Web Application (App Router)
+│   ├── src/                  # Application source code (UI, components, contexts, services, lib)
+│   ├── tests/                # Automated Vitest test suite (8 files, 91 unit tests)
 │   ├── next.config.ts        # Next.js config & API proxy rewrites (/api/* -> :4000)
-│   ├── tsconfig.json         # TypeScript config (@/* alias)
-│   ├── package.json          # Dependencies frontend (name: "class-manager-frontend")
-│   └── README.md             # 📖 Tài liệu chi tiết cho Frontend
+│   ├── tsconfig.json         # TypeScript compiler config (@/* path alias)
+│   ├── package.json          # Frontend dependencies (package: "class-manager-frontend")
+│   └── README.md             # 📖 Detailed Frontend Documentation
 │
-├── backend/                  # REST API Service Express + TypeScript + PostgreSQL
+├── backend/                  # Dedicated REST API Service (Express + TypeScript + PostgreSQL)
 │   ├── src/                  # Controllers, services, repositories, routes, middleware
-│   ├── migrations/           # 6 files migration SQL (001 -> 006)
+│   ├── migrations/           # 6 sequenced PostgreSQL SQL migration files (001 -> 006)
 │   ├── scripts/              # Migration runner script (migrate.ts)
-│   ├── package.json          # Dependencies backend (name: "class-manager-backend")
-│   └── README.md             # 📖 Tài liệu chi tiết cho Backend
+│   ├── package.json          # Backend dependencies (package: "class-manager-backend")
+│   └── README.md             # 📖 Detailed Backend Documentation
 │
-├── docs/                     # Hệ thống tài liệu kỹ thuật hoàn chỉnh
-│   ├── architecture/         # Kiến trúc hệ thống, module, deployment
-│   ├── requirements/         # Phân rã chức năng, use cases, business rules
-│   ├── data/                 # Thiết kế CSDL PostgreSQL, ER diagrams
-│   ├── api/                  # Đặc tả API contracts & method signatures
-│   ├── security/             # Cơ chế xác thực JWT & phân quyền RBAC
-│   ├── workflows/            # Tài liệu luồng nghiệp vụ chi tiết
-│   ├── diagrams/             # Sơ đồ C4, sequence, class, activity, state diagrams
-│   ├── design/               # Ghi chú kỹ thuật & quyết định thiết kế
-│   ├── traceability/         # Ma trận truy vết tính năng sang code
-│   └── README.md             # 📖 Chỉ mục tài liệu kỹ thuật
+├── docs/                     # Master Technical Documentation Suite
+│   ├── architecture/         # System, module, and deployment architecture specifications
+│   ├── requirements/         # Functional tree, use cases, and auditable business rules
+│   ├── data/                 # PostgreSQL schema design and ER diagrams
+│   ├── api/                  # Application service layer method signatures and contracts
+│   ├── security/             # JWT authentication mechanisms and dynamic RBAC matrices
+│   ├── workflows/            # Operational workflow documentation
+│   ├── diagrams/             # C4 context, sequence, class, activity, and state diagrams
+│   ├── design/               # Architectural decisions, design tokens, and technical notes
+│   ├── traceability/         # Full Feature-to-Code traceability matrix
+│   └── README.md             # 📖 Technical Documentation Master Index
 │
-├── package.json              # Monorepo Root Workspace (npm workspaces)
-├── .gitignore                # Quản lý ignore cho toàn bộ repository
-└── README.md                 # 📖 Tổng quan dự án (file này)
+├── package.json              # Monorepo Root Workspace Configuration (npm workspaces)
+├── .gitignore                # Global workspace ignore rules
+└── README.md                 # 📖 Master Repository Overview (this file)
 ```
 
 ---
 
-## 🏛️ Kiến Trúc Hệ Thống (Architecture)
+## 🏛️ System Architecture
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                 Frontend: Next.js 16 (Port 3000)            │
-│  - App Router (18 routes tĩnh & động)                       │
+│  - App Router (18 static and dynamic routes)                │
 │  - Centralized API Client (frontend/src/lib/api-client.ts)  │
-│  - Client Layouts & Route Guards (RBAC)                     │
+│  - Client Layouts & Dynamic RBAC Route Guards               │
 └──────────────────────────────┬──────────────────────────────┘
                                │ HTTP / REST API (/api/*, /health)
                                ▼
@@ -99,124 +99,124 @@ class-manager/
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                     PostgreSQL Database                     │
-│  - 12 Relational Tables với constraints, triggers, indexes │
+│  - 12 Relational Tables with constraints, triggers, indexes │
 │  - Migrations: backend/migrations/ (001 -> 006)             │
-│  - Hỗ trợ triển khai: Native PostgreSQL / Render Postgres   │
+│  - Deployment Targets: Native PostgreSQL / Render Postgres  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ✨ Tính Năng Nổi Bật (Key Features)
+## ✨ Key Features
 
-### 1. Phân Quyền Động Theo Lớp (Per-Class RBAC Matrix)
-Quyền hạn tự động thích ứng theo vai trò thực tế của giáo viên đối với từng lớp:
+### 1. Dynamic Per-Class RBAC Matrix
+Permissions adapt automatically based on the teacher's active assignment in each specific class:
 
-| Chức Năng | Giáo Viên Chủ Nhiệm (GVCN) | Giáo Viên Bộ Môn (GVBM) | Quản Trị Viên (Admin) |
+| Feature | Homeroom Teacher (GVCN) | Subject Teacher (GVBM) | Administrator |
 | :--- | :---: | :---: | :---: |
-| **Quản lý học sinh** | Toàn quyền (Thêm, Sửa, Import Excel) | Chỉ xem hồ sơ học sinh | Toàn quyền toàn trường |
-| **Sơ đồ chỗ ngồi** | Đổi chỗ, Xáo trộn ngẫu nhiên, Xếp chỗ | Chỉ xem sơ đồ | Chỉ xem sơ đồ |
-| **Điểm danh** | Điểm danh môn mình dạy; xem toàn bộ lớp | Chỉ điểm danh môn mình dạy | Toàn quyền điểm danh & xem tất cả |
-| **Thời khóa biểu** | Chỉ xem lịch các lớp được phân công | Chỉ xem lịch các lớp được phân công | Cấu hình & sửa TKB cả 16 lớp |
-| **Ghi chú học sinh** | Tạo & Xóa ghi chú | Không có quyền | Xem ghi chú |
-| **Thông báo lớp** | Tạo, Ghim, Xóa thông báo | Chỉ xem | Quản lý toàn trường |
-| **Cài đặt lớp** | Đổi tên, phòng học, sĩ số tối đa | Không có quyền | Đổi thông tin mọi lớp |
-| **Phân công GV** | Xem danh sách giáo viên của lớp | Xem danh sách | Phân công GVCN & 10 GVBM |
+| **Student Management** | Full CRUD & Excel Import | Read-Only Profile View | Full School-Wide Governance |
+| **Seating Arrangement** | Swap, Randomize, Assign, Clear | Read-Only Layout | Read-Only Layout |
+| **Attendance Recording** | Mark Assigned Subject; View All Records | Mark & View Assigned Subject Only | Full School-Wide Attendance Access |
+| **Timetable Management** | View Assigned Classes | View Assigned Classes | Full 16-Class Timetable Mutation |
+| **Student Notes** | Create & Delete Notes | Access Denied | Read-Only View |
+| **Class Announcements** | Create, Pin, Delete | Read-Only View | Full System Management |
+| **Class Settings** | Rename, Room Name, Max Capacity | Access Denied | Manage All Classes |
+| **Teacher Allocations** | View Class Teaching Team | View Class Teaching Team | Assign GVCN & 10 GVBM |
 
-### 2. Sơ Đồ Lớp Học Thông Minh (4×5 / 20 Bàn / 40 Chỗ)
-- **Quy chuẩn hình học THCS**: 20 bàn đôi xếp thành 4 dãy × 5 hàng.
-- **2 Góc nhìn linh hoạt**: Chuyển đổi giữa *Nhìn từ cuối lớp* và *Nhìn từ bục giảng*.
-- **Live Attendance Overlay**: Huy hiệu trạng thái điểm danh trực tiếp trên bàn (`✓ Có mặt`, `✕ Vắng`, `⏰ Muộn`, `📋 Phép`).
-- **Xáo trộn ngẫu nhiên (Fisher-Yates)**: Hoán vị ngẫu nhiên đảm bảo tính công bằng và bảo toàn chỗ ngồi.
-- **Chế độ In A4**: Định dạng trang in ngang tiêu chuẩn phục vụ dán cửa lớp học.
+### 2. Intelligent Seating Grid (4×5 / 20 Desks / 40 Seats)
+- **Standard Geometry**: 20 double desks arranged in a 4-column × 5-row classroom floor plan.
+- **Dual Visual Perspectives**: Toggle seamlessly between *View from Back* (Nhìn từ cuối lớp) and *View from Podium* (Nhìn từ bục giảng).
+- **Live Attendance Overlay**: Visual badges directly on desks (`✓ Present`, `✕ Absent`, `⏰ Late`, `📋 Excused`).
+- **Fisher-Yates Randomization**: Uniform permutation algorithm preserving seat invariants.
+- **Standard A4 Print Engine**: Dedicated landscape print stylesheet for classroom door posting (`@media print`).
 
-### 3. Điểm Danh Tự Động Theo Tiết
-- **Nhận diện tiết học theo thời gian thực**: Đồng bộ theo đồng hồ thực và lịch TKB để chọn sẵn môn và giáo viên đang đứng lớp.
-- **Báo cáo nhanh 1-Click**: Nút sao chép nội dung vắng mặt sáng/chiều định dạng chuẩn để gửi Ban Giám hiệu qua Zalo/Tin nhắn.
+### 3. Subject-Aware Period Attendance
+- **Real-Time Context Synchronization**: Automatically detects active period, subject, and assigned teacher based on real-time clock.
+- **1-Click Executive Summary**: Formats morning and afternoon absence reports ready for instant copying to school administrators via Zalo/SMS.
 
-### 4. Thời Khóa Biểu 2 Ca Chuẩn THCS
-- **Phân ca sáng / chiều**:
-  - Khối 6 & 9 ➔ Ca Sáng: Tiết 1–5 (Thứ 2–6), Tiết 1–3 (Thứ 7).
-  - Khối 7 & 8 ➔ Ca Chiều: Tiết 6–10 (Thứ 2–6), Tiết 6–8 (Thứ 7).
-- **Chống trùng lịch toàn trường**: Tự động chặn khi phân công một giáo viên dạy 2 lớp cùng một tiết.
+### 4. 2-Shift Secondary School Timetable
+- **Strict Morning / Afternoon Session Shifts**:
+  - Grade 6 & 9 ➔ Morning Shift: Periods 1–5 (Mon–Fri), Periods 1–3 (Sat).
+  - Grade 7 & 8 ➔ Afternoon Shift: Periods 6–10 (Mon–Fri), Periods 6–8 (Sat).
+- **School-Wide Conflict Prevention**: Automatically rejects timetable assignments that place a teacher in two locations simultaneously.
 
 ---
 
-## 🚀 Khởi Chạy Dự Án (Quick Start)
+## 🚀 Quick Start & Running Locally
 
-### 1. Yêu cầu môi trường
+### 1. Prerequisites
 * Node.js >= 20
-* PostgreSQL 16 (Cục bộ hoặc dịch vụ Cloud như Render)
+* PostgreSQL 16 (Local instance or Cloud database such as Render PostgreSQL)
 
-### 2. Cài đặt toàn bộ Workspace (từ thư mục gốc `class-manager/`)
+### 2. Install Workspace Dependencies (from root `class-manager/`)
 ```bash
 npm install
 ```
-Lệnh trên sẽ cài đặt và liên kết toàn bộ dependencies của cả `frontend` và `backend`.
+This single command installs and links all dependencies across both `frontend` and `backend` packages via npm workspaces.
 
-### 3. Cấu hình & Chạy Backend
+### 3. Configure & Run Backend
 ```bash
 cd backend
 cp .env.example .env
-# Chỉnh sửa file .env và điền chuỗi kết nối DATABASE_URL của bạn
+# Edit .env and supply your DATABASE_URL
 
-# Chạy migration tạo bảng và nạp dữ liệu mẫu
+# Run migrations to build tables and load seed dataset
 npm run migrate
 
-# Khởi chạy backend (Port 4000)
+# Start backend dev server (Port 4000)
 npm run dev
 ```
 
-### 4. Chạy Frontend
-Từ thư mục gốc `class-manager/`:
+### 4. Start Frontend
+From the root workspace `class-manager/`:
 ```bash
-# Khởi chạy frontend (Port 3000)
+# Start frontend dev server (Port 3000)
 npm run dev:frontend
 
-# Hoặc khởi chạy từ thư mục frontend:
+# Alternatively, directly within the frontend directory:
 # cd frontend && npm run dev
 ```
 
-Truy cập giao diện tại: **`http://localhost:3000`**
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 5. Chạy Kiểm Thử (Unit Tests)
+### 5. Run Automated Tests
 ```bash
-# Chạy Vitest test suite từ root workspace:
+# Run Vitest test suite across workspace:
 npm test
 ```
 
 ---
 
-## 👥 Tài Khoản Trải Nghiệm (1-Click Login Personas)
+## 👥 Demo Personas (1-Click Login)
 
-Trang `/login` tích hợp sẵn các tài khoản demo giúp kiểm thử nhanh:
+The `/login` view provides quick-access preconfigured test accounts:
 
-| Vai Trò Trải Nghiệm | Họ Tên | Email | Mật Khẩu | Ngữ Cảnh Thử Nghiệm |
+| Persona | Name | Email | Password | Test Scenario |
 | :--- | :--- | :--- | :--- | :--- |
-| **Quản trị viên** | Admin Hệ thống | `admin@classmanager.local` | `admin` | Quản trị toàn trường, xếp TKB 16 lớp |
-| **Vai trò kép (GVCN + GVBM)** | Thầy Nguyễn Văn An | `an.nguyen@classmanager.local` | `teacher1` | **GVCN lớp 6A1** & **GVBM Toán lớp 6A2, 7A1, 7A2** |
-| **Giáo viên bộ môn thuần** | Thầy Hoàng Văn Cường | `cuong.hoang@classmanager.local` | `teacher23` | GVBM Công nghệ, chỉ điểm danh môn mình dạy |
-| **Giáo viên chủ nhiệm thuần** | Cô Nguyễn Thị Hương | `huong.nguyen@classmanager.local` | `teacher16` | GVCN lớp 6A4 |
-| **Giáo viên chưa phân công** | Thầy Đỗ Văn Tân | `unassigned@classmanager.local` | `unassigned` | Kiểm tra trạng thái rỗng khi chưa nhận lớp |
-| **Tài khoản bị khóa** | Thầy Vũ Đình Trọng | `disabled@classmanager.local` | `disabled` | Kiểm tra cơ chế chặn đăng nhập |
+| **System Administrator** | Admin Hệ thống | `admin@classmanager.local` | `admin` | Full school-wide governance & timetable scheduling |
+| **Dual Role (GVCN + GVBM)** | Thầy Nguyễn Văn An | `an.nguyen@classmanager.local` | `teacher1` | **GVCN of Class 6A1** & **GVBM (Math) in 6A2, 7A1, 7A2** |
+| **Subject Teacher Only** | Thầy Hoàng Văn Cường | `cuong.hoang@classmanager.local` | `teacher23` | Pure GVBM (Technology), marks only assigned subject |
+| **Homeroom Teacher Only** | Cô Nguyễn Thị Hương | `huong.nguyen@classmanager.local` | `teacher16` | Pure GVCN of Class 6A4 |
+| **Unassigned Staff** | Thầy Đỗ Văn Tân | `unassigned@classmanager.local` | `unassigned` | Verifies empty state when staff has no active classes |
+| **Disabled Account** | Thầy Vũ Đình Trọng | `disabled@classmanager.local` | `disabled` | Verifies security rejection on deactivated accounts |
 
 ---
 
-## 📚 Tài Liệu Kỹ Thuật Chi Tiết
+## 📚 Technical Documentation
 
-Toàn bộ tài liệu kiến trúc kỹ thuật chi tiết được lưu trữ tại thư mục [`/docs`](docs/README.md):
+Comprehensive documentation is organized inside [`/docs`](docs/README.md):
 
-* **[Chỉ mục tài liệu kỹ thuật (Master Index)](docs/README.md)**
+* **[Master Technical Documentation Index](docs/README.md)**
 * **[Frontend README](frontend/README.md)** & **[Backend README](backend/README.md)**
-* [Kiến trúc hệ thống (System Architecture)](docs/architecture/system-architecture.md) & [Kiến trúc module (Module Architecture)](docs/architecture/module-architecture.md)
-* [Thiết kế CSDL (Database Design)](docs/data/database-design.md) & [Sơ đồ thực thể ERD](docs/data/er-diagram.md)
-* [Đặc tả API Contracts (API Reference)](docs/api/api-reference.md)
-* [Kiến trúc xác thực (Authentication)](docs/security/authentication.md) & [Ma trận phân quyền (Authorization/RBAC)](docs/security/authorization.md)
-* [Quy tắc nghiệp vụ THCS (Business Rules Catalog)](docs/requirements/business-rules.md)
-* [Ma trận truy vết tính năng (Feature-to-Code Traceability)](docs/traceability/feature-to-code.md)
+* [System Architecture](docs/architecture/system-architecture.md) & [Module Architecture](docs/architecture/module-architecture.md)
+* [Database Design Specification](docs/data/database-design.md) & [Entity-Relationship Diagram](docs/data/er-diagram.md)
+* [Application Service API Contracts](docs/api/api-reference.md)
+* [Authentication Architecture](docs/security/authentication.md) & [Authorization / RBAC Matrix](docs/security/authorization.md)
+* [Business Rules Catalog](docs/requirements/business-rules.md)
+* [Feature-to-Code Traceability Matrix](docs/traceability/feature-to-code.md)
 
 ---
 
 ## 📄 License
 
-Dự án được phân phối dưới giấy phép [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).

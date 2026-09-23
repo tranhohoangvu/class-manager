@@ -1,32 +1,32 @@
 # Class Manager — REST API Backend
 
-Dịch vụ backend REST API độc lập cho hệ thống Class Manager, xây dựng trên nền tảng **Node.js**, **Express**, **TypeScript** và cơ sở dữ liệu quan hệ **PostgreSQL**.
+A dedicated REST API service for the Class Manager platform, built on **Node.js**, **Express**, **TypeScript**, and a relational **PostgreSQL** database.
 
 ---
 
-## 🛠️ Công Nghệ Sử Dụng (Tech Stack)
+## 🛠️ Technology Stack
 
 * **Runtime:** Node.js (>= 20)
 * **Framework:** Express 4.21
-* **Ngôn ngữ:** TypeScript 5.8
-* **Database:** PostgreSQL 16 (Render PostgreSQL hoặc Local DB)
-* **Client DB:** `pg` (node-postgres connection pool)
-* **Bảo mật & Xác thực:** `bcryptjs` (băm mật khẩu), `jsonwebtoken` (JWT token & HttpOnly cookies)
-* **Validation:** Zod 3.24 (Kiểm tra dữ liệu đầu vào request params, query, body)
-* **Dev Tooling:** `tsx` (TypeScript execute & hot reload watch)
+* **Language:** TypeScript 5.8
+* **Database:** PostgreSQL 16 (Native PostgreSQL or Render PostgreSQL)
+* **Database Client:** `pg` (node-postgres connection pool)
+* **Security & Auth:** `bcryptjs` (password hashing), `jsonwebtoken` (signed JWT tokens & HttpOnly cookies)
+* **Request Validation:** Zod 3.24 (runtime validation on request parameters, query strings, and body payloads)
+* **Development Tooling:** `tsx` (TypeScript runtime execution & watch mode)
 
 ---
 
-## 📁 Cấu Trúc Thư Mục (Directory Structure)
+## 📁 Directory Structure
 
 ```text
 backend/
 ├── src/
-│   ├── config/               # Cấu hình kết nối DB Pool và biến môi trường
-│   │   ├── database.ts       # Kết nối pg Pool & hàm thực thi SQL
-│   │   └── env.ts            # Đọc và xác thực biến môi trường (dotenv)
+│   ├── config/               # Database pool and environment configuration
+│   │   ├── database.ts       # pg Pool client initialization & query helper
+│   │   └── env.ts            # Environment variable validation & typing (dotenv)
 │   │
-│   ├── controllers/          # Nhận HTTP request, gọi service, trả JSON response
+│   ├── controllers/          # HTTP request handlers & response formatters
 │   │   ├── announcement.controller.ts
 │   │   ├── attendance.controller.ts
 │   │   ├── auth.controller.ts
@@ -38,13 +38,13 @@ backend/
 │   │   ├── teacher.controller.ts
 │   │   └── timetable.controller.ts
 │   │
-│   ├── middleware/           # Tầng chặn lọc & bảo vệ request
-│   │   ├── auth.middleware.ts     # Xác thực JWT token từ cookie hoặc Bearer header
-│   │   ├── error.middleware.ts    # Bắt và chuẩn hóa lỗi (AppError)
-│   │   ├── rbac.middleware.ts     # Kiểm tra quyền: requireRole, requireClassAccess
-│   │   └── validate.middleware.ts # Validate schema Zod cho body/params/query
+│   ├── middleware/           # Request interception, authentication & guards
+│   │   ├── auth.middleware.ts     # JWT token verification from HttpOnly cookie or Bearer header
+│   │   ├── error.middleware.ts    # Centralized AppError handling & standardized JSON errors
+│   │   ├── rbac.middleware.ts     # Permission guards: requireRole, requireClassAccess
+│   │   └── validate.middleware.ts # Zod schema validation for body, query, and params
 │   │
-│   ├── repositories/         # Tầng truy xuất dữ liệu SQL tham số hóa (pg Pool)
+│   ├── repositories/         # Parameterized PostgreSQL data access layer (pg Pool)
 │   │   ├── announcement.repo.ts
 │   │   ├── attendance.repo.ts
 │   │   ├── class.repo.ts
@@ -57,8 +57,8 @@ backend/
 │   │   ├── timetable.repo.ts
 │   │   └── user.repo.ts
 │   │
-│   ├── routes/               # Khai báo endpoints và gắn middleware
-│   │   ├── index.ts          # Root API router (prefix /api và /health)
+│   ├── routes/               # Endpoint route definitions & middleware chaining
+│   │   ├── index.ts          # Master API router (prefixes /api and /health)
 │   │   ├── auth.routes.ts
 │   │   ├── class.routes.ts
 │   │   ├── student.routes.ts
@@ -71,7 +71,7 @@ backend/
 │   │   ├── report.routes.ts
 │   │   └── health.routes.ts
 │   │
-│   ├── services/             # Logic nghiệp vụ, kiểm tra ràng buộc & xử lý transaction
+│   ├── services/             # Domain business logic, invariant enforcement & transactions
 │   │   ├── announcement.service.ts
 │   │   ├── attendance.service.ts
 │   │   ├── auth.service.ts
@@ -83,24 +83,24 @@ backend/
 │   │   ├── teacher.service.ts
 │   │   └── timetable.service.ts
 │   │
-│   ├── types/                # TypeScript types & Express Request mở rộng
-│   ├── utils/                # Bcrypt hash, JWT sign/verify, AppError class
-│   ├── validators/           # Định nghĩa Zod schemas cho tất cả endpoints
-│   ├── app.ts                # Thiết lập Express app, CORS, CookieParser
-│   └── server.ts             # Khởi động HTTP server & graceful shutdown
+│   ├── types/                # TypeScript type definitions & Express Request extensions
+│   ├── utils/                # Bcrypt helpers, JWT utilities, AppError error classes
+│   ├── validators/           # Zod schema definitions for all endpoint payloads
+│   ├── app.ts                # Express application configuration, CORS, and cookie parsing
+│   └── server.ts             # HTTP server listener bootstrapper & graceful shutdown handling
 │
-├── migrations/               # 6 file SQL migration đánh số thứ tự
-│   ├── 001_initial_schema.sql  # 12 bảng chuẩn hóa CSDL THCS
-│   ├── 002_constraints.sql     # Ràng buộc toàn vẹn khóa ngoại & sĩ số
-│   ├── 003_indexes.sql         # Đánh chỉ mục tăng tốc độ truy vấn
-│   ├── 004_functions.sql       # PostgreSQL stored functions
-│   ├── 005_triggers.sql        # Triggers tự động cập nhật audit timestamp
-│   └── 006_seed.sql            # Dữ liệu mẫu ban đầu (16 lớp, 24 GV, 480 HS)
+├── migrations/               # Sequenced PostgreSQL SQL migration files
+│   ├── 001_initial_schema.sql  # 12 normalized secondary school database tables
+│   ├── 002_constraints.sql     # Foreign keys, check constraints, and capacity limits
+│   ├── 003_indexes.sql         # Query acceleration indexes on frequent lookups
+│   ├── 004_functions.sql       # PostgreSQL stored procedures & utility functions
+│   ├── 005_triggers.sql        # Automated timestamp update triggers
+│   └── 006_seed.sql            # Deterministic baseline data (16 classes, 24 teachers, 480 students)
 │
-├── scripts/                  # Kịch bản chạy cơ sở dữ liệu
-│   └── migrate.ts            # Tự động thực thi tuần tự các file migrations
+├── scripts/                  # Administrative database scripts
+│   └── migrate.ts            # Migration runner applying SQL files in sequence
 │
-├── .env.example              # Mẫu cấu hình môi trường backend
+├── .env.example              # Backend environment variable template
 ├── .gitignore
 ├── tsconfig.json
 └── package.json
@@ -108,19 +108,20 @@ backend/
 
 ---
 
-## 🚀 Khởi Chạy Ứng Dụng (Running Locally)
+## 🚀 Running Locally
 
-### 1. Cài đặt dependencies (từ thư mục `backend/`):
+### 1. Install Dependencies (from within `backend/`):
 ```bash
 npm install
 ```
 
-### 2. Cấu hình biến môi trường:
-Tạo file `.env` từ mẫu `.env.example`:
+### 2. Configure Environment Variables:
+Copy `.env.example` to create your local `.env`:
 ```bash
 cp .env.example .env
 ```
-Nội dung cấu hình trong `.env`:
+
+Required settings in `.env`:
 ```env
 PORT=4000
 NODE_ENV=development
@@ -130,20 +131,20 @@ SESSION_SECRET=super_secret_session_key_change_in_production
 CORS_ORIGIN=http://localhost:3000
 ```
 
-### 3. Chạy Database Migrations:
-Tạo cấu trúc bảng, ràng buộc và nạp dữ liệu seed vào PostgreSQL:
+### 3. Run Database Migrations:
+Create database schema, apply constraints, and load seed data:
 ```bash
 npm run migrate
 ```
 
-### 4. Khởi chạy Backend ở chế độ Development:
+### 4. Start Development Server:
 ```bash
 npm run dev
 ```
-Server sẽ chạy tại: **`http://localhost:4000`**  
-Kiểm tra sức khỏe endpoint: **`http://localhost:4000/health`**
+The REST API will be accessible at: **`http://localhost:4000`**  
+Health check endpoint: **`http://localhost:4000/health`**
 
-### 5. Biên dịch & Chạy Production:
+### 5. Compile & Run Production:
 ```bash
 npm run build
 npm run start
@@ -151,19 +152,19 @@ npm run start
 
 ---
 
-## 📡 Danh Mục Endpoints Chính (REST API Matrix)
+## 📡 REST API Endpoint Catalog
 
-| Endpoint | Method | Quyền hạn | Mô tả |
+| Endpoint | Method | Authorization | Description |
 | :--- | :---: | :--- | :--- |
-| `/health` | GET | Public | Health check server status |
-| `/api/auth/login` | POST | Public | Đăng nhập tài khoản, cấp JWT cookie |
-| `/api/auth/logout` | POST | Authenticated | Xóa cookie, kết thúc phiên làm việc |
-| `/api/auth/me` | GET | Authenticated | Lấy thông tin user hiện tại |
-| `/api/classes` | GET | Authenticated | Danh sách lớp học kèm thông tin GVCN |
-| `/api/classes/:classId/students` | GET, POST | GVCN / Admin | Quản lý học sinh trong lớp |
-| `/api/classes/:classId/students/import` | POST | GVCN / Admin | Import danh sách học sinh từ file Excel |
-| `/api/classes/:classId/seating` | GET, POST | GVCN / Admin | Lấy và cập nhật sơ đồ chỗ ngồi |
-| `/api/classes/:classId/attendance` | GET, POST | GVBM / GVCN / Admin | Điểm danh theo tiết / điểm danh buổi |
-| `/api/classes/:classId/timetable` | GET, POST | Authenticated (POST: Admin) | Lấy và cập nhật lịch thời khóa biểu |
-| `/api/teachers` | GET, POST | Admin | Quản lý giáo viên và phân công giảng dạy |
-| `/api/reports/school-summary` | GET | Admin | Thống kê chuyên cần và báo cáo toàn trường |
+| `/health` | GET | Public | Server health status check |
+| `/api/auth/login` | POST | Public | Authenticates credentials, sets HttpOnly JWT cookie |
+| `/api/auth/logout` | POST | Authenticated | Clears auth cookie, terminates session |
+| `/api/auth/me` | GET | Authenticated | Returns current authenticated user record |
+| `/api/classes` | GET | Authenticated | Retrieves classes list with homeroom assignments |
+| `/api/classes/:classId/students` | GET, POST | GVCN / Admin | Retrieves or enrolls students in a class |
+| `/api/classes/:classId/students/import` | POST | GVCN / Admin | Bulk imports student records from Excel data |
+| `/api/classes/:classId/seating` | GET, POST | GVCN / Admin | Fetches seating chart or updates seat assignments |
+| `/api/classes/:classId/attendance` | GET, POST | GVBM / GVCN / Admin | Retrieves history or submits period/daily attendance |
+| `/api/classes/:classId/timetable` | GET, POST | Authenticated (POST: Admin) | Fetches weekly timetable or mutates slots |
+| `/api/teachers` | GET, POST | Admin | Manages teacher profiles and teaching assignments |
+| `/api/reports/school-summary` | GET | Admin | School-wide attendance KPIs and executive analytics |

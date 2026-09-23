@@ -1,68 +1,68 @@
 # Class Manager — Frontend Application
 
-Giao diện web ứng dụng quản lý trường THCS, xây dựng trên nền tảng **Next.js 16 (App Router)** và **React 19**.
+A modern web application engineered for secondary school management (Trường THCS), built on **Next.js 16 (App Router)** and **React 19**.
 
 ---
 
-## 🛠️ Công Nghệ Sử Dụng (Tech Stack)
+## 🛠️ Technology Stack
 
 * **Framework:** Next.js 16.3.5 (App Router, Turbopack)
-* **Core:** React 19.2.8, TypeScript 5
-* **Styling:** TailwindCSS v4 (@tailwindcss/postcss), Lucide / Phosphor Icons (`@phosphor-icons/react`)
-* **State Management:** React Context (`AuthContext`, `ClassContext`) + Domain Service Layer
+* **Core Library:** React 19.2.8, TypeScript 5
+* **Styling:** TailwindCSS v4 (@tailwindcss/postcss), Phosphor Icons (`@phosphor-icons/react`)
+* **State Management:** React Context (`AuthContext`, `ClassContext`) + Layered Domain Service Architecture
 * **Validation & Forms:** Zod 3.25
-* **Testing:** Vitest 5.0 (8 test suites, 91 unit tests)
-* **Data & Export:** SheetJS (`xlsx`) cho nhập/xuất bảng tính Excel
+* **Testing:** Vitest 5.0 (8 test suites, 91 passing unit tests)
+* **Data Processing & Export:** SheetJS (`xlsx`) for bidirectional Excel import and export
 * **UI Feedback:** Sonner (Toast notifications)
 
 ---
 
-## 📁 Cấu Trúc Thư Mục (Directory Structure)
+## 📁 Directory Structure
 
 ```text
 frontend/
 ├── src/
 │   ├── app/                      # Next.js App Router (Pages, Layouts, Route Groups)
-│   │   ├── (admin)/admin/        # Quản trị hệ thống (Lớp học, Giáo viên, Báo cáo toàn trường)
-│   │   ├── (auth)/login/         # Trang đăng nhập & 1-click test personas
-│   │   ├── (dashboard)/          # Nghiệp vụ giáo viên (Sơ đồ lớp, Điểm danh, TKB, Học sinh)
-│   │   │   ├── announcements/    # Thông báo lớp
-│   │   │   ├── attendance/       # Điểm danh theo tiết thông minh
-│   │   │   ├── dashboard/        # Bảng điều khiển lớp học
-│   │   │   ├── history/          # Lịch sử chuyên cần theo khoảng ngày
-│   │   │   ├── seating/          # Sơ đồ lớp 20 bàn / 40 học sinh (Click-to-Swap, Fisher-Yates)
-│   │   │   ├── settings/         # Cài đặt sĩ số & thông tin lớp
-│   │   │   ├── students/         # Quản lý học sinh & import Excel
-│   │   │   │   └── [id]/         # Hồ sơ học sinh & liên lạc phụ huynh
-│   │   │   └── timetable/        # Lưới thời khóa biểu 2 ca (Sáng / Chiều)
-│   │   ├── access-denied/        # Màn hình chặn truy cập 403 Forbidden
-│   │   ├── globals.css           # OKLCH CSS variables & in ấn A4 (@media print)
-│   │   ├── layout.tsx            # Root HTML & Auth Provider wrapper
-│   │   └── page.tsx              # Điều hướng root theo role
+│   │   ├── (admin)/admin/        # Administrative governance (Classes, Teachers, School-wide Reports)
+│   │   ├── (auth)/login/         # Authentication view & 1-click test personas
+│   │   ├── (dashboard)/          # Operational views (Seating, Attendance, Timetable, Students)
+│   │   │   ├── announcements/    # Class announcements board
+│   │   │   ├── attendance/       # Smart period-based attendance tracking
+│   │   │   ├── dashboard/        # Homeroom classroom overview
+│   │   │   ├── history/          # Attendance history across custom date ranges
+│   │   │   ├── seating/          # 20 Desks / 40 Students grid (Click-to-Swap, Fisher-Yates shuffle)
+│   │   │   ├── settings/         # Class capacity & room settings
+│   │   │   ├── students/         # Student roster management & Excel import
+│   │   │   │   └── [id]/         # Student profile & 1-touch parent contact cards
+│   │   │   └── timetable/        # 2-shift weekly timetable matrix (Morning / Afternoon)
+│   │   ├── access-denied/        # 403 Forbidden roadblock view
+│   │   ├── globals.css           # OKLCH design tokens & landscape A4 print styles (@media print)
+│   │   ├── layout.tsx            # Root HTML shell & Auth Provider wrapper
+│   │   └── page.tsx              # Root redirector based on authenticated role
 │   │
 │   ├── components/
-│   │   ├── shell/                # Chrome giao diện (Sidebar, AdminSidebar, MobileNav, ClassSwitcher)
-│   │   └── ui/                   # Atoms UI (Button, Input, Modal, Badge, StateViews)
+│   │   ├── shell/                # Chrome navigation (Sidebar, AdminSidebar, MobileNav, ClassSwitcher)
+│   │   └── ui/                   # Design system primitives (Button, Input, Modal, Badge, StateViews)
 │   │
 │   ├── contexts/
-│   │   ├── auth-context.tsx      # Quản lý phiên đăng nhập và thông tin giáo viên
-│   │   └── class-context.tsx     # Quản lý lớp đang chọn và phân giải vai trò ngữ cảnh (GVCN/GVBM)
+│   │   ├── auth-context.tsx      # Session lifecycle & authenticated staff state
+│   │   └── class-context.tsx     # Active class selection & dynamic role resolver (GVCN vs GVBM)
 │   │
 │   ├── lib/
-│   │   ├── api-client.ts         # REST API Client kết nối Express Backend
-│   │   ├── auth.ts               # Xác thực và quản lý tài khoản giáo viên
-│   │   ├── constants.ts          # Hằng số chuẩn THCS (Ca học, môn học, bảng màu)
-│   │   ├── export.ts             # Xuất báo cáo và mẫu import Excel
-│   │   ├── mock-data.ts          # Bộ dữ liệu mẫu trường THCS (16 lớp, 480 học sinh)
+│   │   ├── api-client.ts         # Centralized REST API client for Express backend communication
+│   │   ├── auth.ts               # Local authentication service & persona accounts
+│   │   ├── constants.ts          # Core domain numbers (shifts, subjects, palette constants)
+│   │   ├── export.ts             # Excel generator & import template definitions
+│   │   ├── mock-data.ts          # Deterministic seed data (16 classes, 480 students)
 │   │   ├── store.ts              # LocalStore (Client-side persistence singleton)
-│   │   ├── utils.ts              # Helpers định dạng ngày tháng tiếng Việt, classnames
-│   │   └── validations/          # Zod schema cho học sinh, giáo viên, lớp học
+│   │   ├── utils.ts              # Formatting utilities (Vietnamese dates, cn helper)
+│   │   └── validations/          # Zod runtime validation schemas
 │   │
-│   ├── services/                 # Tầng nghiệp vụ trừu tượng hóa
+│   ├── services/                 # Business logic & invariant enforcement layer
 │   │   ├── admin-report.service.ts
 │   │   ├── announcement.service.ts
 │   │   ├── attendance.service.ts
-│   │   ├── auth-guard.ts         # Ma trận phân quyền RBAC
+│   │   ├── auth-guard.ts         # Role-Based Access Control (RBAC) matrix
 │   │   ├── class.service.ts
 │   │   ├── note.service.ts
 │   │   ├── seating.service.ts
@@ -70,50 +70,51 @@ frontend/
 │   │   ├── teacher.service.ts
 │   │   └── timetable.service.ts
 │   │
-│   ├── types/                    # TypeScript interfaces & domain models
+│   ├── types/                    # Canonical TypeScript interfaces & domain models
 │   └── middleware.ts             # Next.js route protection & redirect middleware
 │
-├── tests/                        # Vitest automated test suite (91 tests)
-├── next.config.ts                # Cấu hình Next.js & Proxy rewrites sang Backend (:4000)
-├── postcss.config.mjs            # Cấu hình Tailwind PostCSS
-├── tsconfig.json                 # TypeScript config với alias @/*
-├── vitest.config.mjs             # Cấu hình Vitest runner
-├── .env.example                  # Mẫu biến môi trường
-└── package.json                  # Dependencies & scripts frontend
+├── tests/                        # Vitest automated test suite (91 unit tests)
+├── next.config.ts                # Next.js configuration & API proxy rewrites to Backend (:4000)
+├── postcss.config.mjs            # Tailwind PostCSS configuration
+├── tsconfig.json                 # TypeScript compiler configuration with @/* alias
+├── vitest.config.mjs             # Test runner configuration
+├── .env.example                  # Environment variable template
+└── package.json                  # Frontend dependencies and scripts
 ```
 
 ---
 
-## 🚀 Khởi Chạy Ứng Dụng (Running Locally)
+## 🚀 Running Locally
 
-### 1. Cài đặt dependencies (từ thư mục `frontend/`):
+### 1. Install Dependencies (from within `frontend/`):
 ```bash
 npm install
 ```
 
-### 2. Cấu hình biến môi trường:
-Tạo file `.env.local` từ mẫu `.env.example`:
+### 2. Configure Environment Variables:
+Copy `.env.example` to create your local environment file:
 ```bash
 cp .env.example .env.local
 ```
-Nội dung `.env.local`:
+
+Default configuration in `.env.local`:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 
-### 3. Chạy dev server:
+### 3. Start Development Server:
 ```bash
 npm run dev
 ```
-Giao diện sẽ chạy tại: **`http://localhost:3000`**
+The application will be running at: **`http://localhost:3000`**
 
-### 4. Chạy kiểm thử tự động (Unit Tests):
+### 4. Run Automated Tests:
 ```bash
 npm test
 ```
-Chạy toàn bộ 8 file test kiểm tra RBAC, thuật toán xếp chỗ, thời khóa biểu, điểm danh và import dữ liệu.
+Executes all 8 test suites covering RBAC permissions, seating algorithms, timetable scheduling, attendance logic, and roster imports.
 
-### 5. Build cho Production:
+### 5. Production Build:
 ```bash
 npm run build
 npm run start
@@ -121,10 +122,10 @@ npm run start
 
 ---
 
-## 🔗 Cơ Chế Proxy Sang Backend
+## 🔗 Backend API Proxy Rewrites
 
-Trong file `next.config.ts`, Frontend đã thiết lập sẵn các rewrite rules:
-* Các request gọi tới `/api/:path*` sẽ tự động chuyển tiếp tới Express Backend (mặc định: `http://localhost:4000/api/:path*`).
-* Endpoint `/health` được chuyển tiếp tới `http://localhost:4000/health`.
+Configured inside `next.config.ts`, Next.js transparently forwards API traffic:
+* Incoming requests to `/api/:path*` are rewritten to the Express Backend (default: `http://localhost:4000/api/:path*`).
+* Endpoint `/health` is rewritten to `http://localhost:4000/health`.
 
-Nhờ cơ chế này, frontend không bị lỗi CORS khi giao tiếp với backend trong quá trình phát triển cục bộ.
+This eliminates CORS friction during local development and allows seamless client communication without hardcoding remote origin URLs.
