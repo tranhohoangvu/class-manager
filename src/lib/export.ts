@@ -107,3 +107,56 @@ export function exportAttendanceToExcel(
   const safeClassName = className.replace(/[^a-zA-Z0-9_-]/g, '_');
   XLSX.writeFile(workbook, `Bang_diem_danh_${safeClassName}.xlsx`);
 }
+
+/**
+ * Download sample Excel template (.xlsx) for bulk importing students.
+ */
+export function downloadStudentImportTemplate(): void {
+  const sampleData = [
+    {
+      'STT': 1,
+      'Mã học sinh (*)': 'HS41',
+      'Họ và tên (*)': 'Nguyễn Văn An',
+      'Giới tính': 'Nam',
+      'Ngày sinh': '2011-05-15',
+      'SĐT phụ huynh': '0912345678',
+      'Email': 'an.nguyen@example.com',
+    },
+    {
+      'STT': 2,
+      'Mã học sinh (*)': 'HS42',
+      'Họ và tên (*)': 'Trần Thị Bình',
+      'Giới tính': 'Nữ',
+      'Ngày sinh': '2011-08-20',
+      'SĐT phụ huynh': '0987654321',
+      'Email': 'binh.tran@example.com',
+    },
+    {
+      'STT': 3,
+      'Mã học sinh (*)': 'HS43',
+      'Họ và tên (*)': 'Lê Hoàng Cường',
+      'Giới tính': 'Nam',
+      'Ngày sinh': '2011-11-02',
+      'SĐT phụ huynh': '0901234567',
+      'Email': 'cuong.le@example.com',
+    },
+  ];
+
+  const worksheet = XLSX.utils.json_to_sheet(sampleData);
+
+  worksheet['!cols'] = [
+    { wch: 6 },  // STT
+    { wch: 18 }, // Mã HS
+    { wch: 24 }, // Họ và tên
+    { wch: 12 }, // Giới tính
+    { wch: 14 }, // Ngày sinh
+    { wch: 18 }, // SĐT phụ huynh
+    { wch: 26 }, // Email
+  ];
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Mẫu danh sách');
+
+  XLSX.writeFile(workbook, 'mau_danh_sach_hoc_sinh.xlsx');
+}
+

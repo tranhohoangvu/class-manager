@@ -14,9 +14,16 @@ import {
   GenderMale,
   GenderFemale,
   Phone,
+  PhoneCall,
   EnvelopeSimple,
   Calendar,
+  ChatCircleDots,
+  ChatText,
+  Copy,
+  Check,
+  PaperPlaneTilt,
 } from '@phosphor-icons/react';
+import { Modal } from '@/components/ui/modal';
 import {
   StudentService,
   SeatingService,
@@ -46,6 +53,8 @@ export default function StudentDetailPage() {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRow[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
 
   const loadData = () => {
     if (!studentId) return;
@@ -137,6 +146,35 @@ export default function StudentDetailPage() {
     setNotes(NoteService.getNotesForStudent(student.id));
   };
 
+  const cleanPhone = student.phone ? student.phone.replace(/[^0-9]/g, '') : '';
+
+  const templates = [
+    {
+      id: 'absent',
+      title: 'Thông báo vắng mặt',
+      description: 'Gửi khi học sinh vắng mặt đầu giờ chưa rõ lý do',
+      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN lớp ${studentClass?.name || 'lớp'} Trường THCS Nguyễn Tất Thành xin thông báo: Hôm nay em chưa có mặt tại lớp. Kính mong gia đình sớm xác nhận tình hình của em với GVCN qua số điện thoại này. Trân trọng!`,
+    },
+    {
+      id: 'late',
+      title: 'Nhắc nhở đi học muộn',
+      description: 'Nhắc nhở phụ huynh khi học sinh đến lớp muộn',
+      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN lớp ${studentClass?.name || 'lớp'} xin thông báo: Hôm nay em đến lớp muộn. Kính mong gia đình nhắc nhở em chuẩn bị và đi học đúng giờ để đảm bảo tiếp thu trọn vẹn bài học.`,
+    },
+    {
+      id: 'attendance_report',
+      title: 'Báo cáo chuyên cần định kỳ',
+      description: 'Cập nhật số liệu tham gia học tập của học sinh',
+      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN lớp ${studentClass?.name || 'lớp'} gửi cập nhật tình hình chuyên cần của em: Tỷ lệ đi học đạt ${attendanceRate}% (${presentDays} buổi có mặt, ${absentDays} buổi vắng, ${lateDays} lần đi muộn). Cảm ơn sự đồng hành của gia đình!`,
+    },
+    {
+      id: 'meeting',
+      title: 'Hẹn trao đổi phụ huynh',
+      description: 'Mời phụ huynh trao đổi riêng về tình hình học tập',
+      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN lớp ${studentClass?.name || 'lớp'} Trường THCS Nguyễn Tất Thành mong muốn được trao đổi ngắn với phụ huynh về tình hình học tập và rèn luyện của em. Kính mong gia đình thu xếp liên hệ lại với GVCN. Trân trọng cảm ơn!`,
+    },
+  ];
+
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-6xl mx-auto">
       {/* Back button */}
@@ -223,28 +261,80 @@ export default function StudentDetailPage() {
             </div>
 
             <div>
-              <span className="text-xs text-text-muted block font-medium">Số điện thoại phụ huynh</span>
-              <div className="flex items-center gap-2 text-text-primary font-medium mt-1">
-                <Phone size={16} className="text-text-muted" />
-                {student.phone ? (
-                  <a
-                    href={`tel:${student.phone}`}
-                    className="text-accent hover:underline font-semibold"
-                  >
-                    {student.phone}
-                  </a>
-                ) : (
-                  <span className="text-text-muted">Chưa có SĐT</span>
-                )}
-              </div>
-            </div>
-
-            <div>
               <span className="text-xs text-text-muted block font-medium">Email học sinh</span>
               <div className="flex items-center gap-2 text-text-primary font-medium mt-1">
                 <EnvelopeSimple size={16} className="text-text-muted" />
                 <span>{student.email || 'Chưa có email'}</span>
               </div>
+            </div>
+
+            {/* Parent Contact Card */}
+            <div className="pt-3 border-t border-border space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                  Liên hệ Phụ huynh
+                </span>
+                {student.phone && (
+                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Khả dụng
+                  </span>
+                )}
+              </div>
+
+              {student.phone ? (
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2 text-text-primary font-bold text-base bg-surface-subtle p-2.5 rounded-xl border border-border/80">
+                    <Phone size={18} className="text-accent flex-shrink-0" />
+                    <span className="font-mono">{student.phone}</span>
+                  </div>
+
+                  {/* Quick Action Buttons */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <a
+                      href={`tel:${student.phone}`}
+                      className="inline-flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors"
+                      title="Gọi điện trực tiếp cho phụ huynh"
+                    >
+                      <PhoneCall size={14} weight="bold" />
+                      <span>Gọi điện</span>
+                    </a>
+
+                    <a
+                      href={`https://zalo.me/${cleanPhone}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-colors"
+                      title="Mở ứng dụng Zalo nhắn tin cho phụ huynh"
+                    >
+                      <ChatCircleDots size={14} weight="bold" />
+                      <span>Zalo</span>
+                    </a>
+
+                    <a
+                      href={`sms:${student.phone}`}
+                      className="inline-flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-semibold bg-surface hover:bg-surface-subtle border border-border text-text-primary shadow-2xs transition-colors"
+                      title="Nhắn tin SMS cho phụ huynh"
+                    >
+                      <PaperPlaneTilt size={14} weight="bold" className="text-accent" />
+                      <span>SMS</span>
+                    </a>
+                  </div>
+
+                  {/* 1-Click Message Template Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setIsMessageModalOpen(true)}
+                    className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold bg-accent-subtle hover:bg-accent/15 text-accent border border-accent/25 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <ChatText size={16} weight="bold" />
+                    <span>Mẫu tin nhắn thông báo 1-chạm</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-surface-muted/60 border border-border text-center text-xs text-text-muted">
+                  Học sinh chưa có số điện thoại phụ huynh để liên hệ nhanh.
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -478,6 +568,95 @@ export default function StudentDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 1-Click Quick Message Modal */}
+      {student.phone && (
+        <Modal
+          isOpen={isMessageModalOpen}
+          onClose={() => setIsMessageModalOpen(false)}
+          title="Mẫu tin nhắn liên hệ phụ huynh 1-chạm"
+          description={`Gửi thông báo nhanh về học sinh ${student.full_name} (${student.student_code}) tới SĐT ${student.phone}`}
+          size="2xl"
+        >
+          <div className="space-y-4">
+            {/* Template Selector Cards */}
+            <div className="grid grid-cols-2 gap-2">
+              {templates.map((tpl, idx) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => setSelectedTemplateIndex(idx)}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    selectedTemplateIndex === idx
+                      ? 'border-accent bg-accent-subtle/50 text-text-primary shadow-xs'
+                      : 'border-border bg-surface hover:bg-surface-subtle text-text-secondary'
+                  }`}
+                >
+                  <p className={`text-xs font-bold ${selectedTemplateIndex === idx ? 'text-accent' : 'text-text-primary'}`}>
+                    {tpl.title}
+                  </p>
+                  <p className="text-[11px] text-text-muted mt-0.5 line-clamp-1">
+                    {tpl.description}
+                  </p>
+                </button>
+              ))}
+            </div>
+
+            {/* Message Preview Box */}
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-text-muted uppercase tracking-wider block">
+                Nội dung tin nhắn:
+              </span>
+              <div className="p-4 rounded-xl bg-surface-subtle border border-border text-xs leading-relaxed text-text-primary font-medium whitespace-pre-wrap select-all">
+                {templates[selectedTemplateIndex]?.body}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-3 border-t border-border">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  const text = templates[selectedTemplateIndex]?.body || '';
+                  navigator.clipboard.writeText(text);
+                  toast.success('Đã sao chép nội dung tin nhắn!');
+                }}
+                className="gap-1.5"
+              >
+                <Copy size={15} weight="bold" className="text-accent" />
+                <span>Sao chép tin nhắn</span>
+              </Button>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={`sms:${student.phone}?body=${encodeURIComponent(templates[selectedTemplateIndex]?.body || '')}`}
+                  className="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-semibold bg-surface hover:bg-surface-subtle border border-border text-text-primary shadow-2xs transition-colors"
+                >
+                  <PaperPlaneTilt size={14} weight="bold" className="text-accent" />
+                  <span>Gửi qua SMS</span>
+                </a>
+
+                <a
+                  href={`https://zalo.me/${cleanPhone}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    const text = templates[selectedTemplateIndex]?.body || '';
+                    navigator.clipboard.writeText(text);
+                    toast.info('Đã sao chép tin nhắn. Hãy dán vào ô chat Zalo với phụ huynh!');
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-colors"
+                >
+                  <ChatCircleDots size={14} weight="bold" />
+                  <span>Mở Zalo gửi tin</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

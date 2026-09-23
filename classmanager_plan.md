@@ -23,7 +23,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 ├───────────────────┬───────────────────┬──────────────────┬───────────────┬─────────────┤
 │ 1. SƠ ĐỒ LỚP HỌC  │ 2. CÀI ĐẶT & DATA │ 3. ĐIỂM DANH &   │ 4. THỜI KHÓA  │ 5. ADMIN &  │
 │    (SEATING MAP)  │    (CONSISTENCY)  │    HỌC SINH      │    BIỂU (TKB) │    HỆ THỐNG │
-│    [ĐÃ XONG ✅]   │    [ĐÃ XONG ✅]   │   [CHƯA LÀM]     │   [CHƯA LÀM]  │   [CHƯA LÀM]│
+│    [ĐÃ XONG ✅]   │    [ĐÃ XONG ✅]   │   [ĐÃ XONG ✅]   │   [CHƯA LÀM]  │   [CHƯA LÀM]│
 ├───────────────────┼───────────────────┼──────────────────┼───────────────┼─────────────┤
 │ • Lọc Chuyên cần  │ • Fix Settings    │ • Import Excel   │ • Lưới TKB    │ • Thống kê  │
 │ • Lọc Giới tính   │ • Lưu max_students│ • Lọc vắng mặt   │   Thứ 2 - 7   │   toàn trường│
@@ -104,9 +104,11 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ---
 
-## 3. CẢI TIẾN 3 — ĐIỂM DANH & QUẢN LÝ HỌC SINH `[CHƯA LÀM — CHỜ TRIỂN KHAI]`
+## 3. CẢI TIẾN 3 — ĐIỂM DANH & QUẢN LÝ HỌC SINH `[ĐÃ HOÀN THÀNH ✅]`
 
-### 3.1. Tính năng Nhập học sinh hàng loạt từ file Excel (Import Students via Excel/CSV)
+> **Trạng thái:** Đã triển khai hoàn tất 100%, vượt qua toàn bộ 27 test cases Vitest và kiểm tra kiểu TypeScript (`tsc --noEmit`).
+
+### 3.1. Tính năng Nhập học sinh hàng loạt từ file Excel (Import Students via Excel/CSV) `[ĐÃ XONG ✅]`
 * **Vấn đề:** Đầu năm học, GVCN phải nhập từng học sinh một rất mất thời gian.
 * **Giải pháp cải tiến:**
   * Thêm nút `[📥 Nhập từ Excel]` trên trang danh sách học sinh.
@@ -116,18 +118,24 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
     * Tự động kiểm tra nếu tổng số vượt quá 40 em (báo lỗi không cho nhập).
     * Xác nhận và nạp nhanh toàn bộ vào lớp.
 
-### 3.2. Cải tiến trải nghiệm Điểm danh nhanh (Attendance Quick Actions)
-* **Giải pháp:**
-  * Lọc danh sách điểm danh: Hỗ trợ tab xem nhanh danh sách những em "Chưa có mặt" (Vắng hoặc Muộn) để GVCN dễ gửi báo cáo đầu giờ cho Ban Giám hiệu.
+### 3.2. Cải tiến trải nghiệm Điểm danh nhanh (Attendance Quick Actions) `[ĐÃ XONG ✅]`
+* **Giải pháp đã thực hiện:**
+  * Lọc danh sách điểm danh: Bổ sung thanh tab lọc nhanh (`Tất cả`, `Chưa có mặt`, `Có mặt`, `Vắng`, `Muộn`, `Có phép`) kèm badge số lượng nổi bật.
+  * Hỗ trợ tìm kiếm học sinh tức thì trong giờ điểm danh theo tên và mã học sinh.
+  * Nút `[📋 Sao chép báo cáo BGH]` tự động tạo bản tin tóm tắt chuyên cần đầu giờ (Sĩ số, danh sách học sinh vắng/muộn chi tiết) để gửi nhanh qua Zalo/tin nhắn cho Ban Giám hiệu.
 
-### 3.3. Bộ lọc thời gian nâng cao trong Lịch sử chuyên cần (`/history`)
-* **Giải pháp:**
+### 3.3. Bộ lọc thời gian nâng cao trong Lịch sử chuyên cần (`/history`) `[ĐÃ XONG ✅]`
+* **Giải pháp đã thực hiện:**
   * Bổ sung bộ chọn khoảng ngày: `Tuần này` | `Tháng này` | `Tất cả` | `Tùy chọn khoảng ngày`.
-  * Tính toán tỷ lệ chuyên cần theo đúng khoảng ngày đang được lọc thay vì chỉ tính toàn bộ niên khóa.
+  * Tính toán lại ma trận điểm danh và tỷ lệ chuyên cần theo đúng khoảng ngày đang được lọc thay vì chỉ tính toàn bộ niên khóa.
+  * Bổ sung 4 thẻ KPI chuyên cần trong kỳ: Số buổi học, Tỷ lệ chuyên cần bình quân, Tổng lượt vắng, Tổng lượt đi muộn.
+  * Xuất Excel và In báo cáo theo đúng khoảng thời gian được lọc.
 
-### 3.4. Thẻ liên lạc phụ huynh trên trang Chi tiết học sinh (`/students/[id]`)
-* **Giải pháp:**
-  * Bổ sung nút gọi nhanh (`tel:`) và gửi tin nhắn Zalo/SMS mẫu thông báo tình hình học tập và chuyên cần của học sinh cho phụ huynh chỉ với 1 chạm.
+### 3.4. Thẻ liên lạc phụ huynh trên trang Chi tiết học sinh (`/students/[id]`) `[ĐÃ XONG ✅]`
+* **Giải pháp đã thực hiện:**
+  * Xây dựng Thẻ liên hệ Phụ huynh & Gia đình chuyên nghiệp.
+  * Bổ sung nút gọi nhanh (`tel:`), gửi SMS (`sms:`), và kết nối Zalo (`https://zalo.me/...`).
+  * Hộp thoại **Mẫu tin nhắn 1-chạm** hỗ trợ các mẫu thông báo chuẩn trường học: Thông báo vắng mặt, Nhắc nhở đi muộn, Báo cáo chuyên cần định kỳ, Hẹn trao đổi với GVCN. Tự động điền tên học sinh, lớp, số buổi vắng/muộn và hỗ trợ sao chép hoặc gửi ngay.
 
 ---
 
@@ -210,17 +218,17 @@ gantt
 ### 📋 GIAI ĐOẠN 2: Nâng tầm Trải nghiệm Giảng dạy & Thời khóa biểu `[ĐANG THỰC HIỆN ⏳]`
 - [x] **Task 2.1:** Thêm layer hiển thị trạng thái điểm danh hôm nay trực tiếp trên ghế ngồi của sơ đồ lớp *(Commit `64c880a`)*.
 - [x] **Task 2.2:** Thêm bộ lọc Giới tính (Nam/Nữ) highlight trên sơ đồ lớp *(Commit `64c880a`)*.
-- [ ] **Task 2.3:** Bổ sung tab lọc nhanh học sinh vắng / muộn đầu giờ trong màn hình Điểm danh.
-- [ ] **Task 2.4:** Thêm bộ lọc khoảng ngày (Tuần / Tháng) trên trang Lịch sử chuyên cần.
+- [x] **Task 2.3:** Bổ sung tab lọc nhanh học sinh vắng / muộn đầu giờ trong màn hình Điểm danh và nút sao chép báo cáo BGH.
+- [x] **Task 2.4:** Thêm bộ lọc khoảng ngày (Tuần / Tháng / Tùy chọn) trên trang Lịch sử chuyên cần kèm KPI thống kê theo kỳ.
 - [ ] **Task 2.5:** Xây dựng trang **Thời khóa biểu lớp học (`/timetable`)** dạng lưới tương tác (Thứ 2 $\rightarrow$ Thứ 7, Tiết 1 $\rightarrow$ Tiết 5), chọn môn và gán giáo viên phụ trách.
 - [ ] **Task 2.6:** Tối ưu in Thời khóa biểu A4 ngang dán bảng tin lớp học.
 
 ### 📋 GIAI ĐOẠN 3: Tự động hóa & Báo cáo Quản trị `[CHỜ TRIỂN KHAI]`
 - [ ] **Task 3.1:** Kết nối Thời khóa biểu thông minh vào trang Điểm danh (tự nhận diện môn và giáo viên theo giờ học hiện tại).
 - [ ] **Task 3.2:** Bổ sung widget "Lịch học hôm nay" trên Dashboard lớp học.
-- [ ] **Task 3.3:** Xây dựng tính năng Import danh sách học sinh từ file Excel `.xlsx` có modal xem trước và validate dữ liệu.
+- [x] **Task 3.3:** Xây dựng tính năng Import danh sách học sinh từ file Excel `.xlsx` có modal xem trước và validate dữ liệu.
 - [ ] **Task 3.4:** Bổ sung widget thống kê chuyên cần toàn trường trên Admin Dashboard.
-- [ ] **Task 3.5:** Viết thêm các test cases Vitest kiểm thử giới hạn 40 học sinh, Thời khóa biểu và luồng import.
+- [x] **Task 3.5:** Viết thêm các test cases Vitest kiểm thử giới hạn 40 học sinh và luồng import học sinh (`tests/student-import.test.ts`).
 
 ---
 

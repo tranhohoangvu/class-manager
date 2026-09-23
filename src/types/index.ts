@@ -249,9 +249,9 @@ export interface StudentFormData {
   student_code: string;
   full_name: string;
   gender: Gender | '';
-  date_of_birth: string;
-  phone: string;
-  email: string;
+  date_of_birth?: string;
+  phone?: string;
+  email?: string;
 }
 
 export interface TeacherFormData {

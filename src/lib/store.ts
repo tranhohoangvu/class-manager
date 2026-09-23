@@ -536,6 +536,35 @@ export const LocalStore = {
     return newStudent;
   },
 
+  addStudentsBatch(studentsData: StudentFormData[], classId?: string): StudentRow[] {
+    const students = getStorageItem<StudentRow[]>(STORAGE_KEYS.STUDENTS, INITIAL_STUDENTS);
+    const effectiveClassId = classId || INITIAL_CLASS.id;
+    const now = new Date().toISOString();
+    const createdList: StudentRow[] = [];
+
+    studentsData.forEach((data, index) => {
+      const newStudent: StudentRow = {
+        id: `stu-${effectiveClassId}-${Date.now().toString(36)}-${index}-${Math.random().toString(36).substring(2, 6)}`,
+        class_id: effectiveClassId,
+        student_code: data.student_code.trim().toUpperCase(),
+        full_name: data.full_name.trim(),
+        gender: (data.gender as 'male' | 'female') || null,
+        date_of_birth: data.date_of_birth || null,
+        phone: data.phone?.trim() || null,
+        email: data.email?.trim() || null,
+        avatar_url: null,
+        status: 'active',
+        created_at: now,
+        updated_at: now,
+      };
+      students.push(newStudent);
+      createdList.push(newStudent);
+    });
+
+    setStorageItem(STORAGE_KEYS.STUDENTS, students);
+    return createdList;
+  },
+
   updateStudent(id: string, data: Partial<StudentFormData>): StudentRow | null {
     const students = getStorageItem<StudentRow[]>(STORAGE_KEYS.STUDENTS, INITIAL_STUDENTS);
     const idx = students.findIndex((s) => s.id === id);

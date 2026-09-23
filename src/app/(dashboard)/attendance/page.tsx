@@ -14,6 +14,8 @@ import {
   WarningCircle,
   ChatText,
   BookOpen,
+  Copy,
+  MagnifyingGlass,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
 import { AttendanceService, StudentService } from '@/services';
@@ -43,6 +45,8 @@ export default function AttendancePage() {
   const [selectedDate, setSelectedDate] = useState<string>(getTodayISO());
   const [attendanceData, setAttendanceData] = useState<Record<string, StudentAttendanceState>>({});
   const [isLoaded, setIsLoaded] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'not_present' | 'present' | 'absent' | 'late' | 'excused'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setAllSubjects(LocalStore.getSubjects());
@@ -156,7 +160,58 @@ export default function AttendancePage() {
   const absentCount = list.filter((i) => i.status === 'absent').length;
   const lateCount = list.filter((i) => i.status === 'late').length;
   const excusedCount = list.filter((i) => i.status === 'excused').length;
+  const notPresentCount = total - presentCount;
   const presentRate = total > 0 ? Math.round((presentCount / total) * 100) : 0;
+
+  // Filtered student list for quick review
+  const filteredList = useMemo(() => {
+    return list.filter((item) => {
+      let matchStatus = true;
+      if (statusFilter === 'not_present') {
+        matchStatus = item.status !== 'present';
+      } else if (statusFilter !== 'all') {
+        matchStatus = item.status === statusFilter;
+      }
+
+      const matchSearch =
+        searchQuery.trim() === '' ||
+        item.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.student_code.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchStatus && matchSearch;
+    });
+  }, [list, statusFilter, searchQuery]);
+
+  const handleCopyReport = () => {
+    const absents = list.filter((i) => i.status === 'absent');
+    const lates = list.filter((i) => i.status === 'late');
+    const excuseds = list.filter((i) => i.status === 'excused');
+
+    const absentListStr = absents.length > 0
+      ? absents.map((i) => `${i.full_name}${i.note ? ` (${i.note})` : ''}`).join(', ')
+      : 'Không có';
+
+    const excusedListStr = excuseds.length > 0
+      ? excuseds.map((i) => `${i.full_name}${i.note ? ` (${i.note})` : ''}`).join(', ')
+      : 'Không có';
+
+    const lateListStr = lates.length > 0
+      ? lates.map((i) => `${i.full_name}${i.note ? ` (${i.note})` : ''}`).join(', ')
+      : 'Không có';
+
+    const reportText = `[BÁO CÁO CHUYÊN CẦN ${selectedSubjectId ? `MÔN ${currentSubjectObj?.name?.toUpperCase()}` : 'ĐẦU GIỜ'}]
+Trường THCS Nguyễn Tất Thành
+Lớp: ${currentClass?.name || '---'} · Ngày: ${formatDateVietnamese(selectedDate)}
+Sĩ số: ${total} học sinh
+- Có mặt: ${presentCount}/${total} (${presentRate}%)
+- Vắng không phép (${absents.length}): ${absentListStr}
+- Vắng có phép (${excuseds.length}): ${excusedListStr}
+- Đi muộn (${lates.length}): ${lateListStr}
+Người báo cáo: ${user?.name || 'GVCN'}`;
+
+    navigator.clipboard.writeText(reportText);
+    toast.success('Đã sao chép báo cáo chuyên cần gửi BGH vào clipboard!');
+  };
 
   if (!isLoaded) {
     return (
@@ -272,6 +327,126 @@ export default function AttendancePage() {
         </div>
       </div>
 
+      {/* Quick Filter Tabs & Search & Copy Report Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          <button
+            type="button"
+            onClick={() => setStatusFilter('all')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              statusFilter === 'all'
+                ? 'bg-text-primary text-surface shadow-xs font-bold'
+                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+            }`}
+          >
+            Tất cả ({total})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('not_present')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+              statusFilter === 'not_present'
+                ? 'bg-rose-600 text-white shadow-xs font-bold'
+                : notPresentCount > 0
+                ? 'bg-rose-50 hover:bg-rose-100/80 text-rose-800 border border-rose-200'
+                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+            }`}
+            title="Lọc nhanh các học sinh vắng hoặc đi muộn"
+          >
+            <span>Chưa có mặt</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${
+                statusFilter === 'not_present'
+                  ? 'bg-white/20 text-white'
+                  : notPresentCount > 0
+                  ? 'bg-rose-200 text-rose-900'
+                  : 'bg-surface-muted text-text-muted'
+              }`}
+            >
+              {notPresentCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('present')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              statusFilter === 'present'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
+                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+            }`}
+          >
+            Có mặt ({presentCount})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('absent')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              statusFilter === 'absent'
+                ? 'bg-rose-600 text-white shadow-xs font-bold'
+                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+            }`}
+          >
+            Vắng ({absentCount})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('late')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              statusFilter === 'late'
+                ? 'bg-amber-600 text-white shadow-xs font-bold'
+                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+            }`}
+          >
+            Muộn ({lateCount})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('excused')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              statusFilter === 'excused'
+                ? 'bg-slate-700 text-white shadow-xs font-bold'
+                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+            }`}
+          >
+            Có phép ({excusedCount})
+          </button>
+        </div>
+
+        {/* Right Search & Copy Report Button */}
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          <div className="relative flex-1 sm:w-64">
+            <MagnifyingGlass
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+            />
+            <input
+              type="text"
+              placeholder="Tìm học sinh, mã HS..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 h-[38px] text-xs bg-surface rounded-xl border border-border focus:outline-none focus:border-accent shadow-2xs placeholder:text-text-muted"
+            />
+          </div>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleCopyReport}
+            className="gap-1.5 text-xs whitespace-nowrap flex-shrink-0"
+            title="Sao chép báo cáo chuyên cần gửi Ban Giám hiệu"
+          >
+            <Copy size={15} weight="bold" className="text-accent" />
+            <span>Sao chép báo cáo BGH</span>
+          </Button>
+        </div>
+      </div>
+
       {/* Attendance Student List Table */}
       <div className="bg-surface rounded-3xl border border-border overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
@@ -286,7 +461,14 @@ export default function AttendancePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {list.map((item, index) => (
+              {filteredList.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-text-muted text-sm">
+                    Không tìm thấy học sinh nào phù hợp với bộ lọc hiện tại.
+                  </td>
+                </tr>
+              ) : (
+                filteredList.map((item, index) => (
                 <tr
                   key={item.student_id}
                   className={`hover:bg-surface-muted/40 transition-colors ${
@@ -388,7 +570,7 @@ export default function AttendancePage() {
                     />
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

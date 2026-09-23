@@ -27,6 +27,9 @@ export default function AttendanceHistoryPage() {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRow[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [timeRange, setTimeRange] = useState<'all' | 'this_week' | 'this_month' | 'custom'>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
 
   useEffect(() => {
     if (!currentClassId) return;
@@ -35,12 +38,48 @@ export default function AttendanceHistoryPage() {
     setIsLoaded(true);
   }, [currentClassId]);
 
-  // Distinct dates sorted descending
-  const dates = useMemo(() => {
+  // All distinct dates sorted descending
+  const allDates = useMemo(() => {
     const set = new Set<string>();
     attendanceRecords.forEach((r) => set.add(r.date));
     return Array.from(set).sort((a, b) => b.localeCompare(a));
   }, [attendanceRecords]);
+
+  // Filtered dates based on time range
+  const dates = useMemo(() => {
+    if (timeRange === 'all') return allDates;
+
+    if (timeRange === 'this_week') {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diffToMonday);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      const startStr = monday.toISOString().split('T')[0];
+      const endStr = sunday.toISOString().split('T')[0];
+      return allDates.filter((d) => d >= startStr && d <= endStr);
+    }
+
+    if (timeRange === 'this_month') {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const prefix = `${yyyy}-${mm}`;
+      return allDates.filter((d) => d.startsWith(prefix));
+    }
+
+    if (timeRange === 'custom') {
+      return allDates.filter((d) => {
+        const matchStart = !customStartDate || d >= customStartDate;
+        const matchEnd = !customEndDate || d <= customEndDate;
+        return matchStart && matchEnd;
+      });
+    }
+
+    return allDates;
+  }, [allDates, timeRange, customStartDate, customEndDate]);
 
   // Map [student_id + '_' + date] -> status
   const attendanceMap = useMemo(() => {
@@ -51,7 +90,7 @@ export default function AttendanceHistoryPage() {
     return map;
   }, [attendanceRecords]);
 
-  // Calculate statistics per student
+  // Calculate statistics per student strictly within the filtered dates
   const studentStats = useMemo(() => {
     return students.map((stu) => {
       let present = 0;
@@ -80,6 +119,29 @@ export default function AttendanceHistoryPage() {
       };
     });
   }, [students, dates, attendanceMap]);
+
+  // Summary KPI for the selected time range
+  const periodMetrics = useMemo(() => {
+    const totalSessions = dates.length;
+    let sumRate = 0;
+    let sumAbsent = 0;
+    let sumLate = 0;
+
+    studentStats.forEach((s) => {
+      sumRate += s.rate;
+      sumAbsent += s.absent;
+      sumLate += s.late;
+    });
+
+    const avgRate = studentStats.length > 0 ? Math.round(sumRate / studentStats.length) : 100;
+
+    return {
+      totalSessions,
+      avgRate,
+      sumAbsent,
+      sumLate,
+    };
+  }, [dates, studentStats]);
 
   // Students with high absence (> 1 absent)
   const studentsNeedingAttention = useMemo(() => {
@@ -183,6 +245,106 @@ export default function AttendanceHistoryPage() {
               <ArrowRight size={18} />
             </Button>
           </Link>
+        </div>
+      </div>
+
+      {/* Time Range Filter Bar */}
+      <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs no-print flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-text-muted uppercase tracking-wider mr-1">Khoảng thời gian:</span>
+          
+          <button
+            type="button"
+            onClick={() => setTimeRange('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              timeRange === 'all'
+                ? 'bg-text-primary text-surface shadow-xs font-bold'
+                : 'bg-surface-subtle hover:bg-surface-muted text-text-secondary border border-border/80'
+            }`}
+          >
+            Tất cả ({allDates.length} buổi)
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTimeRange('this_week')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              timeRange === 'this_week'
+                ? 'bg-text-primary text-surface shadow-xs font-bold'
+                : 'bg-surface-subtle hover:bg-surface-muted text-text-secondary border border-border/80'
+            }`}
+          >
+            Tuần này
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTimeRange('this_month')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              timeRange === 'this_month'
+                ? 'bg-text-primary text-surface shadow-xs font-bold'
+                : 'bg-surface-subtle hover:bg-surface-muted text-text-secondary border border-border/80'
+            }`}
+          >
+            Tháng này
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTimeRange('custom')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              timeRange === 'custom'
+                ? 'bg-text-primary text-surface shadow-xs font-bold'
+                : 'bg-surface-subtle hover:bg-surface-muted text-text-secondary border border-border/80'
+            }`}
+          >
+            Tùy chọn khoảng ngày
+          </button>
+        </div>
+
+        {timeRange === 'custom' && (
+          <div className="flex items-center gap-2 text-xs flex-wrap">
+            <span className="text-text-muted">Từ:</span>
+            <input
+              type="date"
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-accent"
+            />
+            <span className="text-text-muted">Đến:</span>
+            <input
+              type="date"
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-accent"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Period KPI Summary Metrics */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
+        <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs">
+          <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Số buổi đã học</span>
+          <div className="text-2xl font-bold text-text-primary mt-1">{periodMetrics.totalSessions} buổi</div>
+        </div>
+
+        <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Chuyên cần kỳ này</span>
+            <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Bình quân</span>
+          </div>
+          <div className="text-2xl font-bold text-emerald-600 mt-1">{periodMetrics.avgRate}%</div>
+        </div>
+
+        <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs">
+          <span className="text-xs font-bold text-rose-700 uppercase tracking-wider">Tổng lượt vắng</span>
+          <div className="text-2xl font-bold text-rose-600 mt-1">{periodMetrics.sumAbsent} lượt</div>
+        </div>
+
+        <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs">
+          <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">Tổng lượt đi muộn</span>
+          <div className="text-2xl font-bold text-amber-600 mt-1">{periodMetrics.sumLate} lượt</div>
         </div>
       </div>
 

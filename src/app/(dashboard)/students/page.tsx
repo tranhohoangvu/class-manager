@@ -13,7 +13,13 @@ import {
   GenderFemale,
   FileXls,
   Printer,
+  UploadSimple,
+  DownloadSimple,
+  CheckCircle,
+  WarningOctagon,
+  FileArrowUp,
 } from '@phosphor-icons/react';
+import * as XLSX from 'xlsx';
 import { StudentService, SeatingService } from '@/services';
 import { StudentRow, DeskWithSeats, StudentFormData } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -21,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
 import { StudentStatusBadge } from '@/components/ui/badge';
 import { EmptyStateView } from '@/components/ui/state-views';
-import { exportStudentsToExcel } from '@/lib/export';
+import { exportStudentsToExcel, downloadStudentImportTemplate } from '@/lib/export';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
@@ -39,6 +45,24 @@ export default function StudentsPage() {
   const [isAddEditOpen, setIsAddEditOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentRow | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<StudentRow | null>(null);
+
+  // Import Excel states
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importFileName, setImportFileName] = useState('');
+  const [parsedRows, setParsedRows] = useState<
+    Array<{
+      stt: number;
+      student_code: string;
+      full_name: string;
+      gender: 'male' | 'female';
+      date_of_birth: string;
+      phone: string;
+      email: string;
+      isValid: boolean;
+      errorReason?: string;
+    }>
+  >([]);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState<StudentFormData>({
@@ -156,6 +180,154 @@ export default function StudentsPage() {
     }
   };
 
+  // Handle Excel file selection & parsing
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsName = wb.SheetNames[0];
+        const ws = wb.Sheets[wsName];
+        const data = XLSX.utils.sheet_to_json<Record<string, any>>(ws, { defval: '' });
+
+        if (!data || data.length === 0) {
+          toast.error('File Excel không có dữ liệu học sinh!');
+          setParsedRows([]);
+          return;
+        }
+
+        const existingCodes = new Set(
+          students.map((s) => s.student_code.trim().toUpperCase())
+        );
+        const seenInFile = new Set<string>();
+
+        const parsed = data.map((row, idx) => {
+          const code = (
+            row['Mã học sinh (*)'] ||
+            row['Mã học sinh'] ||
+            row['Mã HS'] ||
+            row['student_code'] ||
+            row['Code'] ||
+            ''
+          )
+            .toString()
+            .trim()
+            .toUpperCase();
+
+          const name = (
+            row['Họ và tên (*)'] ||
+            row['Họ và tên'] ||
+            row['Họ tên'] ||
+            row['full_name'] ||
+            row['Name'] ||
+            ''
+          )
+            .toString()
+            .trim();
+
+          const rawGender = (row['Giới tính'] || row['gender'] || '').toString().trim().toLowerCase();
+          const gender: 'male' | 'female' = rawGender === 'nữ' || rawGender === 'female' ? 'female' : 'male';
+
+          let dob = (row['Ngày sinh'] || row['date_of_birth'] || '').toString().trim();
+          if (dob && dob.includes('/')) {
+            const parts = dob.split('/');
+            if (parts.length === 3) {
+              dob = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+          }
+
+          const phone = (row['SĐT phụ huynh'] || row['Số điện thoại'] || row['phone'] || '').toString().trim();
+          const email = (row['Email'] || row['email'] || '').toString().trim();
+
+          let isValid = true;
+          let errorReason = '';
+
+          if (!code) {
+            isValid = false;
+            errorReason = 'Thiếu mã HS';
+          } else if (!name) {
+            isValid = false;
+            errorReason = 'Thiếu họ và tên';
+          } else if (seenInFile.has(code)) {
+            isValid = false;
+            errorReason = `Trùng mã ${code} trong file`;
+          } else if (existingCodes.has(code)) {
+            isValid = false;
+            errorReason = `Mã ${code} đã có trong lớp`;
+          }
+
+          if (code) {
+            seenInFile.add(code);
+          }
+
+          return {
+            stt: idx + 1,
+            student_code: code,
+            full_name: name,
+            gender,
+            date_of_birth: dob,
+            phone,
+            email,
+            isValid,
+            errorReason,
+          };
+        });
+
+        setParsedRows(parsed);
+      } catch (err) {
+        console.error('Lỗi đọc file Excel:', err);
+        toast.error('Không thể đọc file Excel. Vui lòng kiểm tra lại định dạng file!');
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const validImportRows = parsedRows.filter((r) => r.isValid);
+  const activeStudentsCount = students.filter((s) => s.status === 'active').length;
+  const maxClassCapacity = currentClass?.max_students || 40;
+  const isOverCapacity = activeStudentsCount + validImportRows.length > maxClassCapacity;
+
+  const handleConfirmImport = () => {
+    if (!currentClassId) return;
+    if (validImportRows.length === 0) {
+      toast.error('Không có học sinh hợp lệ nào để nhập!');
+      return;
+    }
+    if (isOverCapacity) {
+      toast.error(`Tổng sĩ số (${activeStudentsCount + validImportRows.length}) vượt quá giới hạn lớp (${maxClassCapacity} học sinh)!`);
+      return;
+    }
+
+    setIsImporting(true);
+    const toImport: StudentFormData[] = validImportRows.map((r) => ({
+      student_code: r.student_code,
+      full_name: r.full_name,
+      gender: r.gender,
+      date_of_birth: r.date_of_birth,
+      phone: r.phone,
+      email: r.email,
+    }));
+
+    const res = StudentService.importStudents(currentClassId, toImport, user);
+    setIsImporting(false);
+
+    if (!res.success) {
+      toast.error(res.error || 'Nhập danh sách học sinh thất bại');
+      return;
+    }
+
+    toast.success(`Đã nạp thành công ${res.data?.count} học sinh vào lớp!`);
+    setIsImportOpen(false);
+    setParsedRows([]);
+    setImportFileName('');
+    loadData();
+  };
+
   const handleExportExcel = () => {
     if (filteredStudents.length === 0) {
       toast.error('Không có dữ liệu học sinh để xuất file!');
@@ -199,10 +371,22 @@ export default function StudentsPage() {
           </Button>
 
           {isHomeroom && (
-            <Button variant="primary" onClick={handleOpenAdd} className="gap-2">
-              <Plus size={18} weight="bold" />
-              <span>Thêm học sinh</span>
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => setIsImportOpen(true)}
+                className="gap-2"
+                title="Nhập danh sách học sinh từ file Excel"
+              >
+                <UploadSimple size={18} className="text-accent" />
+                <span>Nhập từ Excel</span>
+              </Button>
+
+              <Button variant="primary" onClick={handleOpenAdd} className="gap-2">
+                <Plus size={18} weight="bold" />
+                <span>Thêm học sinh</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -482,6 +666,177 @@ export default function StudentsPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Import Students via Excel Modal */}
+      <Modal
+        isOpen={isImportOpen}
+        onClose={() => {
+          setIsImportOpen(false);
+          setParsedRows([]);
+          setImportFileName('');
+        }}
+        title="Nhập danh sách học sinh từ file Excel"
+        description={`Tải file Excel danh sách học sinh nạp nhanh vào ${currentClass?.name || 'lớp học'}`}
+        size="3xl"
+      >
+        <div className="space-y-5">
+          {/* Top Banner / Guidelines */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-accent-subtle/40 border border-accent/20">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-text-primary">
+                Quy chuẩn nạp học sinh THCS Nguyễn Tất Thành
+              </p>
+              <p className="text-xs text-text-secondary">
+                Hỗ trợ định dạng <code className="px-1.5 py-0.5 rounded bg-surface border border-border font-mono font-bold">.xlsx</code>, <code className="px-1.5 py-0.5 rounded bg-surface border border-border font-mono font-bold">.xls</code> hoặc <code className="px-1.5 py-0.5 rounded bg-surface border border-border font-mono font-bold">.csv</code>. Tối đa 40 học sinh/lớp.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={downloadStudentImportTemplate}
+              className="gap-2 self-start sm:self-auto text-xs whitespace-nowrap flex-shrink-0"
+              title="Tải file mẫu Excel chuẩn"
+            >
+              <DownloadSimple size={15} weight="bold" className="text-accent" />
+              <span>Tải file mẫu Excel</span>
+            </Button>
+          </div>
+
+          {/* Upload Area */}
+          <div className="border-2 border-dashed border-border hover:border-accent rounded-2xl p-6 transition-colors bg-surface-subtle/50 text-center relative group">
+            <input
+              type="file"
+              accept=".xlsx, .xls, .csv"
+              onChange={handleFileSelect}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+              title="Chọn file Excel"
+            />
+            <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
+              <div className="w-12 h-12 rounded-2xl bg-surface border border-border shadow-xs flex items-center justify-center text-accent group-hover:scale-105 transition-transform">
+                <FileArrowUp size={24} weight="duotone" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-text-primary">
+                  {importFileName ? (
+                    <span className="text-accent font-bold">{importFileName}</span>
+                  ) : (
+                    'Kéo thả file Excel vào đây hoặc bấm để chọn file'
+                  )}
+                </p>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Các cột bắt buộc: Mã học sinh (*), Họ và tên (*)
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Capacity Alert */}
+          {parsedRows.length > 0 && (
+            <div
+              className={`p-3.5 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+                isOverCapacity
+                  ? 'bg-rose-50 border-rose-200 text-rose-800'
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {isOverCapacity ? (
+                  <WarningOctagon size={18} weight="bold" className="text-rose-600 flex-shrink-0" />
+                ) : (
+                  <CheckCircle size={18} weight="bold" className="text-emerald-600 flex-shrink-0" />
+                )}
+                <span>
+                  {isOverCapacity
+                    ? `Cảnh báo: Sĩ số sau khi nhập (${activeStudentsCount + validImportRows.length}) vượt quá giới hạn tối đa của lớp (${maxClassCapacity} học sinh). Không thể lưu!`
+                    : `Sĩ số dự kiến: ${activeStudentsCount} + ${validImportRows.length} = ${activeStudentsCount + validImportRows.length}/${maxClassCapacity} học sinh (Hợp lệ).`}
+                </span>
+              </div>
+              <span className="font-mono font-bold whitespace-nowrap">
+                {validImportRows.length} hợp lệ / {parsedRows.length - validImportRows.length} lỗi
+              </span>
+            </div>
+          )}
+
+          {/* Data Preview Table */}
+          {parsedRows.length > 0 && (
+            <div className="border border-border rounded-xl overflow-hidden max-h-60 overflow-y-auto shadow-2xs">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-surface-subtle sticky top-0 border-b border-border font-semibold text-text-muted">
+                  <tr>
+                    <th className="px-3 py-2 w-12 text-center">STT</th>
+                    <th className="px-3 py-2 w-20">Mã HS</th>
+                    <th className="px-3 py-2">Họ và tên</th>
+                    <th className="px-3 py-2 w-20">Giới tính</th>
+                    <th className="px-3 py-2 w-24">Ngày sinh</th>
+                    <th className="px-3 py-2 w-28">SĐT PH</th>
+                    <th className="px-3 py-2 w-32 text-right">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {parsedRows.map((row) => (
+                    <tr
+                      key={row.stt}
+                      className={row.isValid ? 'hover:bg-surface-subtle/50' : 'bg-rose-50/50 hover:bg-rose-50'}
+                    >
+                      <td className="px-3 py-2 text-center font-mono text-text-muted">{row.stt}</td>
+                      <td className="px-3 py-2 font-mono font-semibold">{row.student_code || '—'}</td>
+                      <td className="px-3 py-2 font-medium">{row.full_name || '—'}</td>
+                      <td className="px-3 py-2">{row.gender === 'male' ? 'Nam' : 'Nữ'}</td>
+                      <td className="px-3 py-2 font-mono text-text-secondary">{row.date_of_birth || '—'}</td>
+                      <td className="px-3 py-2 font-mono text-text-secondary">{row.phone || '—'}</td>
+                      <td className="px-3 py-2 text-right">
+                        {row.isValid ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded">
+                            <CheckCircle size={12} weight="bold" />
+                            Hợp lệ
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 bg-rose-100 px-2 py-0.5 rounded"
+                            title={row.errorReason}
+                          >
+                            <WarningOctagon size={12} weight="bold" />
+                            {row.errorReason}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Modal Actions */}
+          <div className="flex justify-between items-center gap-2 pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setIsImportOpen(false);
+                setParsedRows([]);
+                setImportFileName('');
+              }}
+            >
+              Huỷ
+            </Button>
+
+            <Button
+              type="button"
+              variant="primary"
+              disabled={validImportRows.length === 0 || isOverCapacity || isImporting}
+              onClick={handleConfirmImport}
+              className="gap-2"
+            >
+              {isImporting ? (
+                <span>Đang nạp...</span>
+              ) : (
+                <span>Xác nhận nạp {validImportRows.length} học sinh</span>
+              )}
+            </Button>
+          </div>
+        </div>
       </Modal>
 
       {/* Delete Confirmation Dialog */}
