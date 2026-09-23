@@ -6,6 +6,7 @@ import {
   SquaresFour,
   Student,
   Armchair,
+  CalendarDots,
   ClipboardText,
   ClockCounterClockwise,
   Megaphone,
@@ -43,6 +44,12 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       href: '/seating',
       label: 'Chỗ ngồi',
       icon: Armchair,
+      badge: isSubjectTeacher ? 'Xem' : undefined,
+    },
+    {
+      href: '/timetable',
+      label: 'Thời khóa biểu',
+      icon: CalendarDots,
       badge: isSubjectTeacher ? 'Xem' : undefined,
     },
     {

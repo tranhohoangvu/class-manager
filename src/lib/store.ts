@@ -16,6 +16,7 @@ import {
   ClassMembershipRow,
   SubjectAssignmentRow,
   ClassMembershipRole,
+  TimetableEntryRow,
 } from '@/types';
 import {
   INITIAL_USERS,
@@ -29,10 +30,12 @@ import {
   INITIAL_SUBJECTS,
   INITIAL_CLASS_MEMBERSHIPS,
   INITIAL_SUBJECT_ASSIGNMENTS,
+  INITIAL_TIMETABLE,
   generateDesksForClass,
+  generateTimetableForClass,
 } from './mock-data';
 
-const CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v6';
+const CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v7';
 
 const STORAGE_KEYS = {
   DATA_VERSION: 'cm_data_version',
@@ -46,9 +49,13 @@ const STORAGE_KEYS = {
   SUBJECTS: 'cm_thcs_subjects',
   MEMBERSHIPS: 'cm_thcs_memberships',
   SUBJECT_ASSIGNMENTS: 'cm_thcs_subject_assignments',
+  TIMETABLE: 'cm_thcs_timetable',
 };
 
+const memoryCache: Record<string, unknown> = {};
+
 function setStorageItem<T>(key: string, value: T): void {
+  memoryCache[key] = value;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -89,6 +96,7 @@ function ensureInitialized(): void {
         'cm_thcs_subjects',
         'cm_thcs_memberships',
         'cm_thcs_subject_assignments',
+        'cm_thcs_timetable',
       ];
       legacyKeys.forEach((k) => localStorage.removeItem(k));
 
@@ -103,6 +111,7 @@ function ensureInitialized(): void {
       setStorageItem(STORAGE_KEYS.SUBJECTS, INITIAL_SUBJECTS);
       setStorageItem(STORAGE_KEYS.MEMBERSHIPS, INITIAL_CLASS_MEMBERSHIPS);
       setStorageItem(STORAGE_KEYS.SUBJECT_ASSIGNMENTS, INITIAL_SUBJECT_ASSIGNMENTS);
+      setStorageItem(STORAGE_KEYS.TIMETABLE, INITIAL_TIMETABLE);
 
       localStorage.setItem(STORAGE_KEYS.DATA_VERSION, CURRENT_DATA_VERSION);
     }
@@ -112,7 +121,9 @@ function ensureInitialized(): void {
 }
 
 function getStorageItem<T>(key: string, defaultValue: T): T {
-  if (typeof window === 'undefined') return defaultValue;
+  if (typeof window === 'undefined') {
+    return (memoryCache[key] !== undefined ? memoryCache[key] : defaultValue) as T;
+  }
   ensureInitialized();
   try {
     const item = localStorage.getItem(key);
@@ -904,6 +915,127 @@ export const LocalStore = {
 
     allRecords.push(...newRecords);
     setStorageItem(STORAGE_KEYS.ATTENDANCE, allRecords);
+  },
+
+  // =============================================
+  // Timetable (6 days x 5 periods)
+  // =============================================
+
+  getAllTimetables(): TimetableEntryRow[] {
+    return getStorageItem<TimetableEntryRow[]>(STORAGE_KEYS.TIMETABLE, INITIAL_TIMETABLE);
+  },
+
+  getTimetable(classId: string): TimetableEntryRow[] {
+    const all = this.getAllTimetables();
+    return all.filter((t) => t.class_id === classId);
+  },
+
+  getTimetableEntry(
+    classId: string,
+    dayOfWeek: number,
+    period: number
+  ): TimetableEntryRow | null {
+    const list = this.getTimetable(classId);
+    return list.find((t) => t.day_of_week === dayOfWeek && t.period === period) || null;
+  },
+
+  saveTimetableEntry(entry: {
+    class_id: string;
+    day_of_week: number;
+    period: number;
+    subject_id: string;
+    teacher_id: string | null;
+  }): TimetableEntryRow {
+    const all = this.getAllTimetables();
+    const existingIndex = all.findIndex(
+      (t) =>
+        t.class_id === entry.class_id &&
+        t.day_of_week === entry.day_of_week &&
+        t.period === entry.period
+    );
+
+    const now = new Date().toISOString();
+    let updatedEntry: TimetableEntryRow;
+
+    if (existingIndex >= 0) {
+      updatedEntry = {
+        ...all[existingIndex],
+        subject_id: entry.subject_id,
+        teacher_id: entry.teacher_id,
+        updated_at: now,
+      };
+      all[existingIndex] = updatedEntry;
+    } else {
+      updatedEntry = {
+        id: `tt-${entry.class_id}-d${entry.day_of_week}-p${entry.period}`,
+        class_id: entry.class_id,
+        day_of_week: entry.day_of_week,
+        period: entry.period,
+        subject_id: entry.subject_id,
+        teacher_id: entry.teacher_id,
+        created_at: now,
+        updated_at: now,
+      };
+      all.push(updatedEntry);
+    }
+
+    setStorageItem(STORAGE_KEYS.TIMETABLE, all);
+    return updatedEntry;
+  },
+
+  deleteTimetableEntry(classId: string, dayOfWeek: number, period: number): boolean {
+    const all = this.getAllTimetables();
+    const filtered = all.filter(
+      (t) =>
+        !(t.class_id === classId && t.day_of_week === dayOfWeek && t.period === period)
+    );
+    if (filtered.length !== all.length) {
+      setStorageItem(STORAGE_KEYS.TIMETABLE, filtered);
+      return true;
+    }
+    return false;
+  },
+
+  setTimetableForClass(
+    classId: string,
+    entries: TimetableEntryRow[]
+  ): TimetableEntryRow[] {
+    const all = this.getAllTimetables().filter((t) => t.class_id !== classId);
+    all.push(...entries);
+    setStorageItem(STORAGE_KEYS.TIMETABLE, all);
+    return entries;
+  },
+
+  resetTimetableToDefault(classId: string): TimetableEntryRow[] {
+    const defaultEntries = generateTimetableForClass(classId);
+    return this.setTimetableForClass(classId, defaultEntries);
+  },
+
+  copyTimetable(sourceClassId: string, targetClassId: string): TimetableEntryRow[] {
+    const sourceEntries = this.getTimetable(sourceClassId);
+    const targetAssignments = this.getSubjectAssignmentsForClass(targetClassId);
+    const teacherMap = new Map<string, string>();
+    targetAssignments.forEach((a) => teacherMap.set(a.subject_id, a.teacher_id));
+
+    const now = new Date().toISOString();
+    const newEntries: TimetableEntryRow[] = sourceEntries.map((item) => ({
+      id: `tt-${targetClassId}-d${item.day_of_week}-p${item.period}`,
+      class_id: targetClassId,
+      day_of_week: item.day_of_week,
+      period: item.period,
+      subject_id: item.subject_id,
+      teacher_id: teacherMap.get(item.subject_id) || item.teacher_id,
+      created_at: now,
+      updated_at: now,
+    }));
+
+    return this.setTimetableForClass(targetClassId, newEntries);
+  },
+
+  clearTimetable(classId: string): boolean {
+    const all = this.getAllTimetables().filter((t) => t.class_id !== classId);
+    setStorageItem(STORAGE_KEYS.TIMETABLE, all);
+    return true;
   },
 
   // =============================================

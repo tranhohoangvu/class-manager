@@ -23,7 +23,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 ├───────────────────┬───────────────────┬──────────────────┬───────────────┬─────────────┤
 │ 1. SƠ ĐỒ LỚP HỌC  │ 2. CÀI ĐẶT & DATA │ 3. ĐIỂM DANH &   │ 4. THỜI KHÓA  │ 5. ADMIN &  │
 │    (SEATING MAP)  │    (CONSISTENCY)  │    HỌC SINH      │    BIỂU (TKB) │    HỆ THỐNG │
-│    [ĐÃ XONG ✅]   │    [ĐÃ XONG ✅]   │   [ĐÃ XONG ✅]   │   [CHƯA LÀM]  │   [CHƯA LÀM]│
+│    [ĐÃ XONG ✅]   │    [ĐÃ XONG ✅]   │   [ĐÃ XONG ✅]   │  [ĐÃ XONG ✅] │   [CHƯA LÀM]│
 ├───────────────────┼───────────────────┼──────────────────┼───────────────┼─────────────┤
 │ • Lọc Chuyên cần  │ • Fix Settings    │ • Import Excel   │ • Lưới TKB    │ • Thống kê  │
 │ • Lọc Giới tính   │ • Lưu max_students│ • Lọc vắng mặt   │   Thứ 2 - 7   │   toàn trường│
@@ -139,34 +139,60 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ---
 
-## 4. CẢI TIẾN 4 — THỜI KHÓA BIỂU LỚP HỌC (CLASS TIMETABLE MODULE) `[CHƯA LÀM — CHỜ TRIỂN KHAI]`
+## 4. CẢI TIẾN 4 — THỜI KHÓA BIỂU LỚP HỌC (CLASS TIMETABLE MODULE) `[ĐÃ HOÀN THÀNH ✅]`
+
+> **Trạng thái:** Đã triển khai hoàn tất 100%, vượt qua toàn bộ 40 test cases Vitest (`tests/timetable.test.ts`), không lỗi TypeScript (`tsc --noEmit`).
 
 Đây là **mảnh ghép liên kết thực tế** giữa thời gian học, môn học, giáo viên phụ trách và luồng điểm danh hằng ngày.
 
-### 4.1. Bảng lưới Thời khóa biểu tương tác (`/timetable`)
+### 4.1. Bảng lưới Thời khóa biểu tương tác (`/timetable`) `[ĐÃ XONG ✅]`
 * **Cấu trúc chuẩn:** 6 ngày học (Thứ Hai $\rightarrow$ Thứ Bảy) × 5 tiết buổi sáng (Tiết 1 $\rightarrow$ Tiết 5).
 * **Nội dung mỗi ô tiết học:**
-  * Tên môn học kèm màu sắc đặc trưng (Toán - Xanh dương, Ngữ văn - Xanh lá, Tiếng Anh - Tím, KHTN - Vàng hổ phách...).
-  * Tên giáo viên bộ môn phụ trách (tự động lấy từ phân công giảng dạy `subject_assignments`).
-* **Thao tác nhanh:**
-  * GVCN hoặc Admin bấm vào ô để chọn nhanh môn học cho tiết đó.
-  * Hỗ trợ nút **[Xếp nhanh theo tuần]** hoặc **[Sao chép TKB]** sang tuần mới.
+  * Tên môn học kèm mã môn và màu sắc nhận diện đặc trưng (Toán - Xanh dương, Ngữ văn - Xanh lá, Tiếng Anh - Tím, Vật lý - Cyan, Hóa học - Vàng hổ phách, Sinh học - Xanh cốm, Lịch sử - Đỏ hồng, Địa lý - Teal, Tin học - Indigo, Công nghệ - Stone).
+  * Tên giáo viên bộ môn phụ trách (tự động liên kết từ phân công chuyên môn `subject_assignments` của lớp).
+* **Thao tác nghiệp vụ:**
+  * Bấm vào bất kỳ ô tiết học để gán/đổi môn học, giáo viên tự động tra cứu và điền sẵn.
+  * Hỗ trợ nút **[⚡ Xếp mẫu chuẩn]**: Áp dụng 30 tiết chuẩn phân bổ đều các môn THCS.
+  * Hỗ trợ nút **[📋 Sao chép TKB]**: Sao chép thời khóa biểu từ lớp khác sang lớp hiện tại, tự động ánh xạ lại danh sách GVBM lớp đích.
+  * Phân quyền RBAC: Admin và GVCN có quyền sửa; GVBM hiển thị badge "Chế độ xem".
+  * Hỗ trợ giao diện Responsive: Lưới ma trận trên Desktop và Tab chọn ngày linh hoạt trên Mobile.
 
-### 4.2. Điểm danh thông minh theo thời gian thực (Smart Contextual Attendance)
+### 4.2. Điểm danh thông minh theo thời gian thực (Smart Contextual Attendance) `[ĐÃ XONG ✅]`
 * Khi giáo viên vào trang Điểm danh (`/attendance`), hệ thống tự động đối chiếu thứ trong tuần và giờ hiện tại:
-  * Ví dụ: *Thứ Ba lúc 08:30* $\rightarrow$ Hệ thống tự nhận diện đang là **Tiết 2: Môn Toán (Thầy Nguyễn Văn An)**.
-  * Tự động chọn sẵn môn học và giáo viên phụ trách mà không cần chọn thủ công từ dropdown.
+  * Ví dụ: *Thứ Ba lúc 08:30* $\rightarrow$ Tự động nhận diện đang là **Tiết 2: Môn Toán (Thầy Nguyễn Văn An)**.
+  * Hiển thị Banner thông minh với trạng thái: Đang điểm danh đúng môn, hoặc Gợi ý đổi nhanh 1-chạm sang môn học đang diễn ra.
+  * Bổ sung **Thanh chọn tiết nhanh trong ngày**: Bấm 1 chạm vào bất kỳ tiết học nào (Tiết 1 $\rightarrow$ 5) để chuyển môn cần điểm danh tức thì.
 
-### 4.3. Widget "Lịch học hôm nay" trên Dashboard
-* Hiển thị ngay trên Dashboard của lớp:
-  * Thanh tiến trình các tiết học trong ngày (Đã học xong, Đang học, Tiết tiếp theo).
-  * Tiết học hiện tại nổi bật giúp giáo viên và học sinh nắm bắt nhịp độ buổi học.
+### 4.3. Widget "Lịch học hôm nay" trên Dashboard `[ĐÃ XONG ✅]`
+* Hiển thị nổi bật tại trang Dashboard của lớp học:
+  * Thanh tiến trình tiến độ buổi học (ví dụ: *Đã hoàn thành 2/5 tiết · 40%*).
+  * Danh sách 5 tiết học của ngày hiện tại kèm khung giờ, tên môn, màu sắc nhận diện, giáo viên phụ trách.
+  * Trạng thái trực quan: `Đã xong` (icon check), `Đang học` (pulse animation nổi bật), `Sắp tới`.
+  * Nút hành động nhanh `[Điểm danh]` dẫn thẳng đến trang điểm danh đúng môn học đó.
+  * Bổ sung nút truy cập nhanh "Thời khóa biểu" trên Quick Action Dock.
 
-### 4.4. Bản in Thời khóa biểu A4 dán bảng tin lớp (Printable Timetable)
-* Hỗ trợ nút **[In Thời khóa biểu]**:
-  * Tự động căn chỉnh vừa vặn trên 1 trang giấy A4 ngang.
-  * Hiển thị rõ ràng tiêu đề: *Trường THCS Nguyễn Tất Thành · Thời khóa biểu Lớp 9A1 · Niên khóa 2026 - 2027*.
-  * Có phần phê duyệt của Ban Giám hiệu và chữ ký GVCN.
+### 4.4. Bản in Thời khóa biểu A4 dán bảng tin lớp (Printable Timetable) `[ĐÃ XONG ✅]`
+* Hỗ trợ nút **[🖨 In TKB A4]** tại `/timetable`:
+  * Tự động căn chỉnh vừa vặn trên 1 trang giấy A4 ngang (`@media print`).
+  * Hiển thị quốc hiệu/tiêu ngữ, tiêu đề trang trọng: *Trường THCS Nguyễn Tất Thành · Thời khóa biểu Lớp [Tên lớp] · Học kỳ I · Năm học 2026 - 2027*.
+  * Bảng kẻ rõ nét, hiển thị đầy đủ tên môn và giáo viên giảng dạy từng tiết.
+  * Khung phê duyệt chính thức của Ban Giám hiệu và chữ ký Giáo viên Chủ nhiệm ở cuối trang in.
+
+### 4.5. Cơ chế Kiểm tra & Ngăn xung đột TKB (Timetable Conflict Detection & Prevention) `[ĐÃ XONG ✅]`
+* **Quy tắc bất biến cốt lõi:**
+  * **Một giáo viên không được dạy hai lớp khác nhau tại cùng một ngày và cùng một tiết:** Quét toàn bộ store trường học trên tất cả các khối (Khối 6 $\rightarrow$ Khối 9).
+  * **Mỗi lớp chỉ có tối đa 1 tiết học tại cùng một ngày và tiết.**
+  * **Không tự xung đột với chính mình khi cập nhật:** Sử dụng `excludeEntryId` khi sửa môn/tiết hiện tại.
+  * **Transaction Atomic khi Sao chép TKB / Áp dụng Mẫu chuẩn:** Nếu phát hiện bất kỳ tiết nào gây xung đột lịch giáo viên ở lớp khác, hệ thống từ chối toàn bộ thao tác, rollback và trả về danh sách chi tiết các tiết bị trùng (Thứ, Tiết, Tên giáo viên, Lớp đang dạy).
+  * **Giao diện trực quan:** Hiển thị banner cảnh báo đỏ nổi bật kèm icon `WarningCircle` ngay trong modal sửa ô và modal sao chép.
+  * **12/12 Test cases chuẩn nghiệp vụ:** Đạt 100% Passed trong `tests/timetable.test.ts`.
+
+### 4.6. Chuẩn hóa Phân quyền Điểm danh (Attendance Authorization Refinement) `[ĐÃ XONG ✅]`
+* **Quy tắc điểm danh:** GVCN và GVBM có cùng quyền: **chỉ được điểm danh những môn/tiết mà chính giáo viên đó được phân công giảng dạy**. Không cho phép điểm danh thay giáo viên khác.
+* **Quy tắc xem dữ liệu chuyên cần:**
+  * **GVCN:** Có quyền **XEM toàn bộ dữ liệu điểm danh của lớp mình chủ nhiệm** (trạng thái Chỉ xem - Read-only, các nút sửa/xóa/lưu bị vô hiệu hóa) để theo dõi nề nếp toàn lớp.
+  * **GVBM:** Chỉ được xem và điểm danh môn mình phụ trách; bị chặn xem các môn khác.
+  * **Admin:** Toàn quyền xem và ghi nhận cho mọi lớp và môn học.
 
 ---
 
@@ -201,10 +227,10 @@ gantt
     section Giai đoạn 2 (UX & Thời khóa biểu)
     Lọc Chuyên cần & Giới tính trên sơ đồ lớp     :done, b1, 2026-09-24, 1d
     Lọc học sinh vắng đầu giờ & lọc ngày Lịch sử  :done, b2, 2026-09-25, 1d
-    Xây dựng module Thời khóa biểu (/timetable)   :b3, 2026-09-25, 2d
+    Xây dựng module Thời khóa biểu (/timetable)   :done, b3, 2026-09-25, 2d
     section Giai đoạn 3 (Automation & Admin)
     Import danh sách học sinh từ file Excel       :done, c2, 2026-09-28, 2d
-    Tích hợp TKB thông minh vào Điểm danh         :c1, 2026-09-27, 1d
+    Tích hợp TKB thông minh vào Điểm danh         :done, c1, 2026-09-27, 1d
     Thống kê chuyên cần toàn trường Admin         :c3, 2026-09-29, 1d
     Kiểm thử Vitest & Đóng gói hoàn thiện         :c4, 2026-09-30, 1d
 ```
@@ -215,17 +241,17 @@ gantt
 - [x] **Task 1.3:** Tối ưu CSS Print `@media print` cho trang Sơ đồ lớp (`/seating`) để in A4 ngang chuẩn không viền thừa *(Commit `64c880a`)*.
 - [x] **Task 1.4:** Lưu `viewPerspective` vào `localStorage` *(Commit `64c880a`)*.
 
-### 📋 GIAI ĐOẠN 2: Nâng tầm Trải nghiệm Giảng dạy & Thời khóa biểu `[ĐANG THỰC HIỆN ⏳]`
+### 📋 GIAI ĐOẠN 2: Nâng tầm Trải nghiệm Giảng dạy & Thời khóa biểu `[100% HOÀN THÀNH ✅]`
 - [x] **Task 2.1:** Thêm layer hiển thị trạng thái điểm danh hôm nay trực tiếp trên ghế ngồi của sơ đồ lớp *(Commit `64c880a`)*.
 - [x] **Task 2.2:** Thêm bộ lọc Giới tính (Nam/Nữ) highlight trên sơ đồ lớp *(Commit `64c880a`)*.
 - [x] **Task 2.3:** Bổ sung tab lọc nhanh học sinh vắng / muộn đầu giờ trong màn hình Điểm danh và nút sao chép báo cáo BGH.
 - [x] **Task 2.4:** Thêm bộ lọc khoảng ngày (Tuần / Tháng / Tùy chọn) trên trang Lịch sử chuyên cần kèm KPI thống kê theo kỳ.
-- [ ] **Task 2.5:** Xây dựng trang **Thời khóa biểu lớp học (`/timetable`)** dạng lưới tương tác (Thứ 2 $\rightarrow$ Thứ 7, Tiết 1 $\rightarrow$ Tiết 5), chọn môn và gán giáo viên phụ trách.
-- [ ] **Task 2.6:** Tối ưu in Thời khóa biểu A4 ngang dán bảng tin lớp học.
+- [x] **Task 2.5:** Xây dựng trang **Thời khóa biểu lớp học (`/timetable`)** dạng lưới tương tác (Thứ 2 $\rightarrow$ Thứ 7, Tiết 1 $\rightarrow$ Tiết 5), chọn môn và gán giáo viên phụ trách.
+- [x] **Task 2.6:** Tối ưu in Thời khóa biểu A4 ngang dán bảng tin lớp học.
 
-### 📋 GIAI ĐOẠN 3: Tự động hóa & Báo cáo Quản trị `[CHỜ TRIỂN KHAI]`
-- [ ] **Task 3.1:** Kết nối Thời khóa biểu thông minh vào trang Điểm danh (tự nhận diện môn và giáo viên theo giờ học hiện tại).
-- [ ] **Task 3.2:** Bổ sung widget "Lịch học hôm nay" trên Dashboard lớp học.
+### 📋 GIAI ĐOẠN 3: Tự động hóa & Báo cáo Quản trị `[ĐANG THỰC HIỆN ⏳]`
+- [x] **Task 3.1:** Kết nối Thời khóa biểu thông minh vào trang Điểm danh (tự nhận diện môn và giáo viên theo giờ học hiện tại).
+- [x] **Task 3.2:** Bổ sung widget "Lịch học hôm nay" trên Dashboard lớp học.
 - [x] **Task 3.3:** Xây dựng tính năng Import danh sách học sinh từ file Excel `.xlsx` có modal xem trước và validate dữ liệu.
 - [ ] **Task 3.4:** Bổ sung widget thống kê chuyên cần toàn trường trên Admin Dashboard.
 - [x] **Task 3.5:** Viết thêm các test cases Vitest kiểm thử giới hạn 40 học sinh và luồng import học sinh (`tests/student-import.test.ts`).

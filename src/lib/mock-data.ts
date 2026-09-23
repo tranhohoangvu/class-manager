@@ -14,6 +14,7 @@ import {
   SubjectRow,
   ClassMembershipRow,
   SubjectAssignmentRow,
+  TimetableEntryRow,
 } from '@/types';
 
 // 1. 10 SUBJECTS
@@ -44502,3 +44503,168 @@ export const INITIAL_ATTENDANCE_RECORDS: AttendanceRow[] = [
     "updated_at": "2026-09-16T08:38:28.532Z"
   }
 ];
+
+// =============================================
+// 6. TIMETABLE ENTRIES (6 days x 5 periods = 30 periods per class)
+// =============================================
+export const STANDARD_SCHEDULE_TEMPLATE: Array<{ day: number; period: number; subject_id: string }> = [
+  // Thứ Hai (day 2)
+  { day: 2, period: 1, subject_id: 'sub-mat' },
+  { day: 2, period: 2, subject_id: 'sub-mat' },
+  { day: 2, period: 3, subject_id: 'sub-lit' },
+  { day: 2, period: 4, subject_id: 'sub-lit' },
+  { day: 2, period: 5, subject_id: 'sub-eng' },
+  // Thứ Ba (day 3)
+  { day: 3, period: 1, subject_id: 'sub-lit' },
+  { day: 3, period: 2, subject_id: 'sub-mat' },
+  { day: 3, period: 3, subject_id: 'sub-phy' },
+  { day: 3, period: 4, subject_id: 'sub-che' },
+  { day: 3, period: 5, subject_id: 'sub-his' },
+  // Thứ Tư (day 4)
+  { day: 4, period: 1, subject_id: 'sub-mat' },
+  { day: 4, period: 2, subject_id: 'sub-eng' },
+  { day: 4, period: 3, subject_id: 'sub-eng' },
+  { day: 4, period: 4, subject_id: 'sub-bio' },
+  { day: 4, period: 5, subject_id: 'sub-geo' },
+  // Thứ Năm (day 5)
+  { day: 5, period: 1, subject_id: 'sub-lit' },
+  { day: 5, period: 2, subject_id: 'sub-lit' },
+  { day: 5, period: 3, subject_id: 'sub-inf' },
+  { day: 5, period: 4, subject_id: 'sub-inf' },
+  { day: 5, period: 5, subject_id: 'sub-tec' },
+  // Thứ Sáu (day 6)
+  { day: 6, period: 1, subject_id: 'sub-mat' },
+  { day: 6, period: 2, subject_id: 'sub-mat' },
+  { day: 6, period: 3, subject_id: 'sub-eng' },
+  { day: 6, period: 4, subject_id: 'sub-phy' },
+  { day: 6, period: 5, subject_id: 'sub-his' },
+  // Thứ Bảy (day 7)
+  { day: 7, period: 1, subject_id: 'sub-che' },
+  { day: 7, period: 2, subject_id: 'sub-bio' },
+  { day: 7, period: 3, subject_id: 'sub-geo' },
+  { day: 7, period: 4, subject_id: 'sub-tec' },
+  { day: 7, period: 5, subject_id: 'sub-lit' },
+];
+
+const ALL_SLOTS: { day: number; period: number }[] = [];
+for (let d = 2; d <= 7; d++) {
+  for (let p = 1; p <= 5; p++) {
+    ALL_SLOTS.push({ day: d, period: p });
+  }
+}
+
+function buildInitialTimetableMap(): Map<string, TimetableEntryRow[]> {
+  const classTeacherMap = new Map<string, Map<string, string>>();
+  for (const sa of INITIAL_SUBJECT_ASSIGNMENTS) {
+    if (!classTeacherMap.has(sa.class_id)) {
+      classTeacherMap.set(sa.class_id, new Map());
+    }
+    classTeacherMap.get(sa.class_id)!.set(sa.subject_id, sa.teacher_id);
+  }
+
+  const teacherBusy = new Map<string, Set<string>>();
+  const classSchedules = new Map<string, TimetableEntryRow[]>();
+
+  for (const c of INITIAL_CLASSES) {
+    const teacherMap = classTeacherMap.get(c.id) || new Map();
+
+    if (c.id === 'c-6a1') {
+      const schedule: TimetableEntryRow[] = STANDARD_SCHEDULE_TEMPLATE.map((slot) => {
+        const teacherId = teacherMap.get(slot.subject_id) || null;
+        if (teacherId) {
+          const key = `${slot.day}_${slot.period}`;
+          if (!teacherBusy.has(teacherId)) teacherBusy.set(teacherId, new Set());
+          teacherBusy.get(teacherId)!.add(key);
+        }
+        return {
+          id: `tt-${c.id}-d${slot.day}-p${slot.period}`,
+          class_id: c.id,
+          day_of_week: slot.day,
+          period: slot.period,
+          subject_id: slot.subject_id,
+          teacher_id: teacherId,
+          created_at: '2026-09-01T00:00:00.000Z',
+          updated_at: '2026-09-01T00:00:00.000Z',
+        };
+      });
+      classSchedules.set(c.id, schedule);
+      continue;
+    }
+
+    const subjects = STANDARD_SCHEDULE_TEMPLATE.map((s) => s.subject_id);
+    const assignedSlots: TimetableEntryRow[] = [];
+
+    function backtrack(idx: number): boolean {
+      if (idx === subjects.length) return true;
+      const subj = subjects[idx];
+      const teacherId = teacherMap.get(subj) || null;
+
+      for (let sIdx = 0; sIdx < ALL_SLOTS.length; sIdx++) {
+        const slot = ALL_SLOTS[sIdx];
+        const slotKey = `${slot.day}_${slot.period}`;
+        if (assignedSlots.some((a) => a.day_of_week === slot.day && a.period === slot.period)) {
+          continue;
+        }
+        if (teacherId && teacherBusy.get(teacherId)?.has(slotKey)) {
+          continue;
+        }
+
+        if (teacherId) {
+          if (!teacherBusy.has(teacherId)) teacherBusy.set(teacherId, new Set());
+          teacherBusy.get(teacherId)!.add(slotKey);
+        }
+        assignedSlots.push({
+          id: `tt-${c.id}-d${slot.day}-p${slot.period}`,
+          class_id: c.id,
+          day_of_week: slot.day,
+          period: slot.period,
+          subject_id: subj,
+          teacher_id: teacherId,
+          created_at: '2026-09-01T00:00:00.000Z',
+          updated_at: '2026-09-01T00:00:00.000Z',
+        });
+
+        if (backtrack(idx + 1)) return true;
+
+        assignedSlots.pop();
+        if (teacherId) {
+          teacherBusy.get(teacherId)!.delete(slotKey);
+        }
+      }
+      return false;
+    }
+
+    backtrack(0);
+    classSchedules.set(c.id, assignedSlots);
+  }
+
+  return classSchedules;
+}
+
+const GLOBAL_TIMETABLE_CACHE = buildInitialTimetableMap();
+
+export function generateTimetableForClass(classId: string): TimetableEntryRow[] {
+  const cached = GLOBAL_TIMETABLE_CACHE.get(classId);
+  if (cached && cached.length > 0) {
+    return cached.map((e) => ({ ...e }));
+  }
+  const classAssignments = INITIAL_SUBJECT_ASSIGNMENTS.filter((a) => a.class_id === classId);
+  const teacherMap = new Map<string, string>();
+  classAssignments.forEach((a) => teacherMap.set(a.subject_id, a.teacher_id));
+
+  return STANDARD_SCHEDULE_TEMPLATE.map((slot) => ({
+    id: `tt-${classId}-d${slot.day}-p${slot.period}`,
+    class_id: classId,
+    day_of_week: slot.day,
+    period: slot.period,
+    subject_id: slot.subject_id,
+    teacher_id: teacherMap.get(slot.subject_id) || null,
+    created_at: '2026-09-01T00:00:00.000Z',
+    updated_at: '2026-09-01T00:00:00.000Z',
+  }));
+}
+
+export const INITIAL_TIMETABLE: TimetableEntryRow[] = INITIAL_CLASSES.flatMap((c) =>
+  generateTimetableForClass(c.id)
+);
+

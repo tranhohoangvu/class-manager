@@ -14,14 +14,32 @@ import {
   ClipboardText,
   ArrowRight,
   PushPin,
+  CalendarDots,
+  ChalkboardTeacher,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
-import { ClassRow, StudentRow, DeskWithSeats, AnnouncementRow, AttendanceRow } from '@/types';
+import {
+  ClassRow,
+  StudentRow,
+  DeskWithSeats,
+  AnnouncementRow,
+  AttendanceRow,
+  TimetableEntryRow,
+  SubjectRow,
+  UserRow,
+} from '@/types';
 import { formatDateVietnamese, cn } from '@/lib/utils';
 import { AttendanceBadge, RoleBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
+import { TimetableService, CurrentPeriodInfo, AuthGuard } from '@/services';
+import {
+  TIMETABLE_PERIODS,
+  TIMETABLE_DAYS,
+  SUBJECT_COLOR_MAP,
+  DEFAULT_SUBJECT_COLOR,
+} from '@/lib/constants';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -31,6 +49,10 @@ export default function DashboardPage() {
   const [desks, setDesks] = useState<DeskWithSeats[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
   const [todayAttendance, setTodayAttendance] = useState<AttendanceRow[]>([]);
+  const [timetable, setTimetable] = useState<TimetableEntryRow[]>([]);
+  const [subjectsMap, setSubjectsMap] = useState<Map<string, SubjectRow>>(new Map());
+  const [teachersMap, setTeachersMap] = useState<Map<string, UserRow>>(new Map());
+  const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -42,12 +64,25 @@ export default function DashboardPage() {
     const dsks = LocalStore.getDesks(currentClassId);
     const anns = LocalStore.getAnnouncements(currentClassId);
     const atts = LocalStore.getAttendanceForDate(todayStr, currentClassId);
+    const tts = TimetableService.getTimetableForClass(currentClassId);
+
+    const subjs = LocalStore.getSubjects();
+    const sm = new Map<string, SubjectRow>();
+    subjs.forEach((s) => sm.set(s.id, s));
+
+    const usrs = LocalStore.getUsers();
+    const tm = new Map<string, UserRow>();
+    usrs.forEach((u) => tm.set(u.id, u));
 
     setClassInfo(cls);
     setStudents(stus);
     setDesks(dsks);
     setAnnouncements(anns);
     setTodayAttendance(atts);
+    setTimetable(tts);
+    setSubjectsMap(sm);
+    setTeachersMap(tm);
+    setPeriodInfo(TimetableService.getCurrentPeriodInfo());
     setIsLoaded(true);
   }, [currentClassId, currentClass, todayStr]);
 
@@ -96,6 +131,45 @@ export default function DashboardPage() {
 
   const pinnedAnnouncement = announcements.find((a) => a.is_pinned) || announcements[0];
   const presentRate = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
+
+  // Today's Timetable Schedule Calculation
+  const currentDayOfWeek = periodInfo?.dayOfWeek ?? (new Date().getDay() === 0 ? 8 : new Date().getDay() + 1);
+  const isWeekend = currentDayOfWeek === 8;
+  const todayDayConfig = TIMETABLE_DAYS.find((d) => d.day === (isWeekend ? 2 : currentDayOfWeek));
+
+  const todaySchedule = TIMETABLE_PERIODS.map((period) => {
+    const targetDay = isWeekend ? 2 : currentDayOfWeek;
+    const entry = timetable.find(
+      (t) => t.day_of_week === targetDay && t.period === period.period
+    );
+    const subj = entry ? subjectsMap.get(entry.subject_id) : null;
+    const teacher = entry && entry.teacher_id ? teachersMap.get(entry.teacher_id) : null;
+
+    let status: 'completed' | 'ongoing' | 'upcoming' = 'upcoming';
+    if (!isWeekend && periodInfo) {
+      if (periodInfo.status === 'after_school') {
+        status = 'completed';
+      } else if (periodInfo.status === 'in_period' && periodInfo.period !== null) {
+        if (period.period < periodInfo.period) status = 'completed';
+        else if (period.period === periodInfo.period) status = 'ongoing';
+        else status = 'upcoming';
+      } else if (periodInfo.status === 'break' && periodInfo.nextPeriod) {
+        if (period.period < periodInfo.nextPeriod.period) status = 'completed';
+        else status = 'upcoming';
+      }
+    }
+
+    return {
+      period,
+      entry,
+      subject: subj,
+      teacher,
+      status,
+    };
+  });
+
+  const completedPeriodCount = todaySchedule.filter((s) => s.status === 'completed').length;
+  const periodProgressPercent = Math.round((completedPeriodCount / 5) * 100);
 
   return (
     <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
@@ -292,59 +366,73 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Action Dock */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
         <Link href="/attendance">
-          <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-3.5 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-              <ClipboardText size={22} weight="duotone" />
+          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <ClipboardText size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[14px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
                 Điểm danh lớp
               </div>
-              <div className="text-[12px] text-text-muted">Ghi nhận chuyên cần</div>
+              <div className="text-[11px] text-text-muted">Chuyên cần hôm nay</div>
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/timetable">
+          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <CalendarDots size={20} weight="duotone" />
+            </div>
+            <div>
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
+                Thời khóa biểu
+              </div>
+              <div className="text-[11px] text-text-muted">Lịch học 6 ngày</div>
             </div>
           </div>
         </Link>
 
         <Link href="/seating">
-          <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-3.5 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-11 h-11 rounded-xl bg-accent/10 text-accent flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-              <Armchair size={22} weight="duotone" />
+          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
+            <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Armchair size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[14px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
                 Sắp xếp chỗ ngồi
               </div>
-              <div className="text-[12px] text-text-muted">Sơ đồ vị trí học sinh</div>
+              <div className="text-[11px] text-text-muted">Sơ đồ 20 bàn</div>
             </div>
           </div>
         </Link>
 
         <Link href="/students">
-          <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-3.5 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-              <Users size={22} weight="duotone" />
+          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Users size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[14px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
                 Danh sách học sinh
               </div>
-              <div className="text-[12px] text-text-muted">Hồ sơ 30 học sinh</div>
+              <div className="text-[11px] text-text-muted">Hồ sơ 40 học sinh</div>
             </div>
           </div>
         </Link>
 
         <Link href="/announcements">
-          <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-3.5 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-11 h-11 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-              <Megaphone size={22} weight="duotone" />
+          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group col-span-2 sm:col-span-1">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Megaphone size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[14px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
                 Bảng thông báo
               </div>
-              <div className="text-[12px] text-text-muted">Thông tin lớp học</div>
+              <div className="text-[11px] text-text-muted">Tin tức lớp học</div>
             </div>
           </div>
         </Link>
@@ -352,8 +440,168 @@ export default function DashboardPage() {
 
       {/* Main Operational Two-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Notable Attendance & Classroom Seating Preview */}
+        {/* Left Column: Today's Timetable, Notable Attendance & Classroom Seating Preview */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Widget 1: Lịch học hôm nay (Today's Timetable Widget) */}
+          <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
+            <div className="px-6 py-4.5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-muted/30">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center flex-shrink-0">
+                  <CalendarDots size={20} weight="duotone" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-bold text-text-primary">
+                      Lịch học hôm nay — {isWeekend ? 'Xem trước Thứ Hai' : todayDayConfig?.name}
+                    </h2>
+                    {isWeekend ? (
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        Chủ Nhật (Nghỉ)
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Buổi sáng (5 tiết)
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[12px] text-text-muted mt-0.5">
+                    {isWeekend
+                      ? 'Học sinh nghỉ cuối tuần · Hiển thị lịch ngày học kế tiếp'
+                      : `Tiến độ: ${completedPeriodCount}/5 tiết hoàn thành (${periodProgressPercent}%)`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <Link href="/timetable">
+                  <Button variant="ghost" size="sm" className="text-accent cursor-pointer">
+                    <span>Xem TKB tuần</span>
+                    <ArrowRight size={14} />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Progress bar on active school days */}
+            {!isWeekend && (
+              <div className="w-full bg-surface-muted h-1 overflow-hidden">
+                <div
+                  className="bg-accent h-full transition-all duration-500"
+                  style={{ width: `${periodProgressPercent}%` }}
+                />
+              </div>
+            )}
+
+            <div className="p-5 space-y-2.5">
+              {todaySchedule.map(({ period, entry, subject, teacher, status }) => {
+                const colorStyle = (subject && SUBJECT_COLOR_MAP[subject.code]) || DEFAULT_SUBJECT_COLOR;
+                const isOngoing = status === 'ongoing';
+                const isCompleted = status === 'completed';
+                const targetDay = isWeekend ? 2 : currentDayOfWeek;
+                const canAttend = AuthGuard.canAttendPeriod(user, currentClassId, targetDay, period.period);
+
+                return (
+                  <div
+                    key={period.period}
+                    className={cn(
+                      'p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all',
+                      isOngoing
+                        ? 'bg-blue-50/70 border-blue-300 ring-1 ring-blue-400 shadow-2xs'
+                        : isCompleted
+                        ? 'bg-surface-muted/40 border-border/70 opacity-80'
+                        : 'bg-surface border-border hover:border-accent/40'
+                    )}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Period Time Badge */}
+                      <div className="text-center w-20 flex-shrink-0">
+                        <span className={cn(
+                          'text-xs font-bold block',
+                          isOngoing ? 'text-blue-700' : 'text-text-primary'
+                        )}>
+                          {period.label}
+                        </span>
+                        <span className="text-[11px] text-text-muted block mt-0.5 font-medium">
+                          {period.startTime}
+                        </span>
+                      </div>
+
+                      <div className="h-7 w-[1px] bg-border flex-shrink-0" />
+
+                      {/* Subject & Teacher Info */}
+                      {subject ? (
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={cn('text-xs font-extrabold px-1.5 py-0.2 rounded border', colorStyle.badgeBg, colorStyle.border)}>
+                              {subject.code}
+                            </span>
+                            <span className="text-sm font-bold text-text-primary">
+                              {subject.name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs text-text-muted mt-0.5 truncate">
+                            <ChalkboardTeacher size={14} className="flex-shrink-0" />
+                            <span className="truncate">{teacher?.name || 'Chưa gán GV'}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-text-muted italic">
+                          Tiết tự học / Chưa phân công môn
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Status Badge & Action */}
+                    <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+                      {isOngoing && (
+                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white flex items-center gap-1.5 shadow-2xs animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          <span>Đang học</span>
+                        </span>
+                      )}
+
+                      {isCompleted && (
+                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 flex items-center gap-1">
+                          <CheckCircle size={13} weight="fill" className="text-slate-500" />
+                          <span>Đã xong</span>
+                        </span>
+                      )}
+
+                      {status === 'upcoming' && (
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-surface-muted text-text-muted border border-border">
+                          {period.startTime}
+                        </span>
+                      )}
+
+                      {subject && (isOngoing || status === 'upcoming') && (
+                        canAttend ? (
+                          <Link href={`/attendance?subjectId=${subject.id}`}>
+                            <Button variant="secondary" size="sm" className="cursor-pointer text-[12px] h-8 px-2.5">
+                              <ClipboardText size={14} />
+                              <span>Điểm danh</span>
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/attendance?subjectId=${subject.id}`}
+                            title={`Bạn không được phân công dạy môn ${subject.name} (tiết ${period.period}). Bấm để xem chuyên cần ở chế độ chỉ đọc.`}
+                          >
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1.5 text-[12px] h-8 px-2.5 rounded-lg bg-surface-muted/80 text-text-muted hover:bg-surface-muted border border-border/80 transition-colors cursor-pointer"
+                            >
+                              <ClipboardText size={14} className="opacity-50" />
+                              <span>Không khả dụng</span>
+                            </button>
+                          </Link>
+                        )
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           {/* Notable Attendance List */}
           <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
             <div className="px-6 py-4.5 border-b border-border flex items-center justify-between">

@@ -69,7 +69,8 @@ Permissions adapt dynamically based on the teacher's active class role:
 | :--- | :---: | :---: | :---: |
 | **Student Management** | Full CRUD | Read-Only Profile View | Full System Access |
 | **Seating Arrangement** | Swap, Randomize, Assign, Clear | View-Only Layout | View-Only |
-| **Attendance** | Mark Homeroom & All Subjects | Mark Assigned Subject Only | View All Records |
+| **Attendance (Điểm danh)** | Mark Assigned Subject; View All Class Records (Read-Only) | Mark & View Assigned Subject Only | Full System Access (Mark & View All) |
+| **Timetable (Thời khóa biểu)** | Full CRUD & Fast Templates (Conflict Check) | Read-Only View | Full Configuration |
 | **Student Notes** | Create & Delete Notes | Denied | View Only |
 | **Announcements** | Create, Pin, Delete | Read-Only | Manage All |
 | **Class Settings** | Full Configuration | Denied | Full Configuration |
@@ -84,19 +85,29 @@ Permissions adapt dynamically based on the teacher's active class role:
 - **Official A4 Print Layout**: Dedicated landscape print stylesheet (`@media print`) rendering the seating chart with school title header and official BGH / GVCN signature blocks.
 
 ### 3. Subject-Aware Attendance Engine & Quick Actions
-- **Session & Homeroom Attendance**: GVBM marks attendance for their assigned subject period; GVCN takes daily morning attendance.
+- **Strict Pedagogical RBAC**: Both GVCN and GVBM only take attendance for periods/subjects they are actively assigned to teach. GVCN has read-only access to view all subject records for comprehensive student monitoring.
+- **Real-Time Context Detection**: Automatically synchronizes with current clock time and period schedule to pre-select ongoing subject and teacher.
 - **Quick Status Tabs**: Filter students instantly by `Tất cả`, `Chưa có mặt` (Unaccounted / Absent or Late), `Có mặt`, `Vắng`, `Muộn`, and `Có phép`.
 - **1-Click School Admin Report**: Copy formatted morning absence summary to clipboard for immediate reporting to School Leadership via Zalo or SMS.
 - **Advanced Time Range Filtering (`/history`)**: Filter attendance history by `Tuần này`, `Tháng này`, `Tất cả`, or `Tùy chọn khoảng ngày`. Real-time recalculation of student attendance rates and period KPIs.
 
-### 4. Student Operations & Bulk Excel Import
+### 4. Interactive Timetable & Conflict Prevention Engine (`/timetable`)
+- **6 Days × 5 Periods Matrix**: Standardized 30-period secondary school schedule (Monday to Saturday, Morning sessions).
+- **Strict School-Wide Conflict Prevention**:
+  - **Teacher Conflict Check**: Enforces invariant that a teacher cannot teach two different classes at the same day and period. Scans the entire school timetable across all grades (6–9).
+  - **Class Conflict Check**: Each slot in a class contains at most one entry.
+  - **Atomic Transaction & Rollback**: Batch operations (`copyFromClass`, `applyStandardTemplate`) validate all target entries and roll back with detailed conflict breakdowns if collisions occur.
+- **Smart Real-Time Period Calculator**: Evaluates current time against THCS bell schedule (`getCurrentPeriodInfo`) to flag active, break, and upcoming sessions.
+- **Official A4 Landscape Print View**: Formal bulletin-board timetable layout with school header, subject palette, and signature blocks.
+
+### 5. Student Operations & Bulk Excel Import
 - **Bulk Excel Import (`/students`)**: Upload student rosters via `.xlsx`, `.xls`, or `.csv` with auto-column mapping.
 - **Pre-Import Data Validation**: Automatic duplicate check (within file and against existing students) and strict class capacity enforcement (max 40 students).
 - **Official Template Generator**: 1-click download of standardized sample template (`mau_danh_sach_hoc_sinh.xlsx`).
 - **Parent Contact Center (`/students/[id]`)**: Instant 1-touch actions for direct phone calling (`tel:`), SMS messaging (`sms:`), and Zalo chat (`https://zalo.me/`).
 - **1-Click Pre-formatted Notification Templates**: Ready-to-send school templates for Unexcused Absences, Tardiness Alerts, Periodic Attendance Reports, and Parent Conference Requests.
 
-### 5. Premium Visual Design System
+### 6. Premium Visual Design System
 The visual language is engineered specifically for modern Vietnamese educational institutions:
 - **True 16px Standard Typography & Hierarchy**: Confident editorial typography with Vietnamese diacritics support.
 - **Warm Paper Multi-Surface Architecture**: OKLCH semantic palette (`--bg`, `--surface`, `--surface-muted`, and scholastic indigo `--accent`).

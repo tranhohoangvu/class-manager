@@ -11,15 +11,30 @@ import { OperationResult, success, failure } from './types';
 const VALID_STATUSES: AttendanceStatus[] = ['present', 'absent', 'late', 'excused'];
 
 export const AttendanceService = {
-  getAttendanceRecords(classId?: string, subjectId?: string): AttendanceRow[] {
+  getAttendanceRecords(
+    classId?: string,
+    subjectId?: string,
+    currentUser?: UserRow | null
+  ): AttendanceRow[] {
+    if (currentUser !== undefined && currentUser !== null && classId) {
+      if (!AuthGuard.canViewAttendance(currentUser, classId, subjectId)) {
+        return [];
+      }
+    }
     return LocalStore.getAttendanceRecords(classId, subjectId);
   },
 
   getAttendanceForDate(
     dateStr: string,
     classId?: string,
-    subjectId?: string
+    subjectId?: string,
+    currentUser?: UserRow | null
   ): AttendanceRow[] {
+    if (currentUser !== undefined && currentUser !== null && classId) {
+      if (!AuthGuard.canViewAttendance(currentUser, classId, subjectId)) {
+        return [];
+      }
+    }
     return LocalStore.getAttendanceForDate(dateStr, classId, subjectId);
   },
 
@@ -31,12 +46,19 @@ export const AttendanceService = {
     currentUser: UserRow | null
   ): OperationResult<void> {
     // 1. Authorization check
+    if (!currentUser) {
+      return failure('Thao tác yêu cầu đăng nhập tài khoản.');
+    }
+    if (currentUser.status === 'disabled') {
+      return failure('Tài khoản của bạn đã bị khóa hoặc vô hiệu hóa.');
+    }
+
     const effectiveSubjectId = subjectId && subjectId.trim() !== '' ? subjectId : undefined;
     if (!AuthGuard.canManageAttendance(currentUser, classId, effectiveSubjectId)) {
       if (effectiveSubjectId) {
-        return failure('Bạn không được phân công giảng dạy môn học này tại lớp đã chọn.');
+        return failure('Bạn không được phân công giảng dạy môn học này tại lớp đã chọn. Giáo viên chỉ được điểm danh các tiết/môn mà mình được phân công giảng dạy.');
       }
-      return failure('Chỉ Giáo viên Chủ nhiệm hoặc Quản trị viên mới có quyền điểm danh chung cả buổi.');
+      return failure('Giáo viên chỉ được điểm danh các tiết/môn mà mình được phân công giảng dạy tại lớp này.');
     }
 
     // 2. Validate date format YYYY-MM-DD

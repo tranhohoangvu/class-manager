@@ -185,6 +185,11 @@ Hai thực thể cốt lõi xác lập quyền hạn của giáo viên theo ng�
   - `late`: Đi muộn.
   - `excused`: Vắng có phép.
 
+- **Role Access:**
+  - `ADMIN`: Toàn quyền xem và ghi nhận điểm danh cho tất cả các lớp và môn học.
+  - `GVCN`: Chỉ được điểm danh những môn/tiết mà chính mình trực tiếp phụ trách giảng dạy. Được quyền XEM toàn bộ dữ liệu điểm danh của lớp mình chủ nhiệm (chế độ Chỉ xem - Read-only). Không được sửa/xóa/điểm danh thay giáo viên khác.
+  - `GVBM`: Chỉ được điểm danh và xem dữ liệu điểm danh của môn/tiết mà chính mình được phân công phụ trách. Bị chặn xem và sửa các môn khác.
+
 ---
 
 ### 2.8. Announcement (Thông báo lớp học)
@@ -218,15 +223,38 @@ Hai thực thể cốt lõi xác lập quyền hạn của giáo viên theo ng�
 
 ---
 
+### 2.10. TimetableEntry (Thời khóa biểu lớp học)
+Mô tả một tiết học cụ thể trong tuần của lớp học (Khung chuẩn 6 ngày x 5 tiết = 30 tiết/tuần).
+- **ID:** `string` (e.g. `tt-c-6a1-d2-p1`)
+- **Required fields:**
+  - `class_id`: `string` (FK `classes.id`)
+  - `day_of_week`: `number` (2..7: Thứ Hai đến Thứ Bảy)
+  - `period`: `number` (1..5: Tiết 1 đến Tiết 5 buổi sáng)
+  - `subject_id`: `string` (FK `subjects.id`)
+  - `created_at`, `updated_at`: ISO 8601 string
+- **Optional fields:**
+  - `teacher_id`: `string | null` (FK `users.id`, giáo viên trực tiếp giảng dạy)
+- **Ràng buộc toàn vẹn & Ngăn xung đột (Conflict Invariants):**
+  - `UNIQUE(class_id, day_of_week, period)`: Mỗi lớp học tại cùng một ngày và cùng một tiết chỉ có tối đa 1 entry.
+  - `UNIQUE(teacher_id, day_of_week, period)` WHERE `teacher_id IS NOT NULL`: Một giáo viên không được phép dạy 2 lớp khác nhau tại cùng một ngày và cùng một tiết trên toàn trường.
+- **Role Access:**
+  - `ADMIN` & `GVCN`: Xem, thêm, sửa, xóa, áp dụng mẫu chuẩn 30 tiết, sao chép TKB giữa các lớp (có kiểm tra xung đột tự động).
+  - `GVBM`: Chỉ xem (Read-only view).
+
+---
+
 ## 3. MIGRATION ROADMAP TỚI SUPABASE / POSTGRESQL
 
 Khi chuyển đổi từ `LocalStore` sang Supabase thật trong tương lai, schema sẽ được thực thi theo các bước:
 
 1. Tạo extension UUID: `CREATE EXTENSION IF NOT EXISTS "pgcrypto";`
 2. Tạo các bảng cơ sở: `subjects`, `classes`, `class_memberships`, `subject_assignments`.
-3. Cập nhật bảng `students` với unique constraint `UNIQUE(class_id, student_code)`.
-4. Cập nhật bảng `attendance` với composite unique key: `(student_id, date, subject_id)`.
-5. Tạo Trigger kiểm tra:
+3. Tạo bảng thời khóa biểu: `timetable_entries` với 2 constraint ràng buộc ngăn xung đột:
+   - `CONSTRAINT uq_class_slot UNIQUE (class_id, day_of_week, period)`
+   - `CONSTRAINT uq_teacher_slot UNIQUE (teacher_id, day_of_week, period)`
+4. Cập nhật bảng `students` với unique constraint `UNIQUE(class_id, student_code)`.
+5. Cập nhật bảng `attendance` với composite unique key: `(student_id, date, subject_id)`.
+6. Tạo Trigger kiểm tra:
    - `trg_check_max_students`: Chặn thêm học sinh khi lớp đã đủ sĩ số.
    - `trg_check_teacher_grades_limit`: Chặn phân công giáo viên dạy quá 2 khối.
-6. Thiết lập RLS Policies tương ứng với các checks trong `src/services/auth-guard.ts`.
+7. Thiết lập RLS Policies tương ứng với các checks trong `src/services/auth-guard.ts`.

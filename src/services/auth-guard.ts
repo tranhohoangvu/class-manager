@@ -20,8 +20,8 @@ export const AuthGuard = {
   /**
    * Check if user is the homeroom teacher of the specified class (or Admin).
    */
-  isHomeroomTeacher(user: UserRow | null, classId: string): boolean {
-    if (!user || user.status === 'disabled') return false;
+  isHomeroomTeacher(user: UserRow | null, classId: string | null | undefined): boolean {
+    if (!user || user.status === 'disabled' || !classId) return false;
     if (user.role === 'ADMIN') return true;
     const role = LocalStore.getClassRole(user.id, classId);
     return role === 'HOMEROOM_TEACHER';
@@ -30,8 +30,8 @@ export const AuthGuard = {
   /**
    * Check if user teaches in the class (either homeroom or subject teacher).
    */
-  hasAccessToClass(user: UserRow | null, classId: string): boolean {
-    if (!user || user.status === 'disabled') return false;
+  hasAccessToClass(user: UserRow | null, classId: string | null | undefined): boolean {
+    if (!user || user.status === 'disabled' || !classId) return false;
     if (user.role === 'ADMIN') return true;
     const role = LocalStore.getClassRole(user.id, classId);
     return role !== null;
@@ -54,35 +54,97 @@ export const AuthGuard = {
   },
 
   /**
-   * Check if user can take attendance.
+   * Check if user can take attendance for a specific subject in a class.
    * Business Rule:
-   * - Homeroom teacher can take general attendance or any subject in their class.
-   * - Subject teacher can ONLY take attendance for the subject they are assigned to teach in that class.
+   * - ADMIN: Full attendance rights.
+   * - TEACHERS (both Homeroom and Subject Teachers): Can ONLY take attendance
+   *   for the specific subject they are assigned to teach in that class.
+   * - Homeroom teacher does NOT get blanket attendance rights for other teachers' subjects.
+   * - Attendance without a subjectId is not allowed for teachers.
    */
   canManageAttendance(
     user: UserRow | null,
-    classId: string,
+    classId: string | null | undefined,
     subjectId?: string | null
   ): boolean {
-    if (!user || user.status === 'disabled') return false;
+    if (!user || user.status === 'disabled' || !classId) return false;
     if (user.role === 'ADMIN') return true;
 
-    const role = LocalStore.getClassRole(user.id, classId);
-    if (!role) return false;
+    // Both GVCN and GVBM MUST have a specific subject assigned to them in this class
+    if (!subjectId) return false;
 
-    // Homeroom teacher can manage attendance for their class
-    if (role === 'HOMEROOM_TEACHER') return true;
+    const assignments = LocalStore.getSubjectAssignmentsForClass(classId);
+    return assignments.some(
+      (a) => a.teacher_id === user.id && a.subject_id === subjectId
+    );
+  },
 
-    // If subject teacher, they MUST be assigned to this specific subject in this class
-    if (role === 'SUBJECT_TEACHER') {
-      if (!subjectId) return false; // GVBM cannot mark general class attendance
-      const assignments = LocalStore.getSubjectAssignmentsForClass(classId);
-      return assignments.some(
-        (a) => a.teacher_id === user.id && a.subject_id === subjectId
-      );
-    }
+  /**
+   * Check if user can VIEW attendance data for a specific class and subject.
+   * Business Rules:
+   * - ADMIN: Full access to view attendance for all classes and subjects.
+   * - HOMEROOM TEACHER (GVCN): Full VIEW scope for all subjects in their homeroom class
+   *   (including subjects taught by other teachers, read-only).
+   * - SUBJECT TEACHER (GVBM): Can ONLY view attendance of their own assigned subjects.
+   *   (Denied view access to other teachers' subjects).
+   */
+  canViewAttendance(
+    user: UserRow | null,
+    classId: string | null | undefined,
+    subjectId?: string | null
+  ): boolean {
+    if (!user || user.status === 'disabled' || !classId) return false;
+    if (user.role === 'ADMIN') return true;
 
-    return false;
+    // GVCN has full VIEW scope for all subjects in their homeroom class
+    if (this.isHomeroomTeacher(user, classId)) return true;
+
+    // Pure GVBM can ONLY view their own assigned subjects
+    if (!subjectId) return false;
+
+    const assignments = LocalStore.getSubjectAssignmentsForClass(classId);
+    return assignments.some(
+      (a) => a.teacher_id === user.id && a.subject_id === subjectId
+    );
+  },
+
+  /**
+   * Check if a teacher can take attendance for a specific timetable period.
+   * CanAttend(classId, periodId, teacherId)
+   */
+  canAttendPeriod(
+    user: UserRow | null,
+    classId: string | null | undefined,
+    dayOfWeek: number,
+    period: number
+  ): boolean {
+    if (!user || user.status === 'disabled' || !classId) return false;
+    if (user.role === 'ADMIN') return true;
+
+    const entry = LocalStore.getTimetableEntry(classId, dayOfWeek, period);
+    if (!entry || !entry.subject_id) return false;
+
+    // Direct match on entry teacher_id
+    if (entry.teacher_id === user.id) return true;
+
+    // Match on assigned subject in this class
+    const assignments = LocalStore.getSubjectAssignmentsForClass(classId);
+    return assignments.some(
+      (a) => a.teacher_id === user.id && a.subject_id === entry.subject_id
+    );
+  },
+
+  /**
+   * Get list of subjects assigned to this teacher in the given class.
+   */
+  getTeacherAssignedSubjectsInClass(user: UserRow | null, classId: string | null | undefined) {
+    if (!user || user.status === 'disabled' || !classId) return [];
+    if (user.role === 'ADMIN') return LocalStore.getSubjects();
+
+    const assignments = LocalStore.getSubjectAssignmentsForClass(classId);
+    const userAssignments = assignments.filter((a) => a.teacher_id === user.id);
+    const assignedSubjectIds = new Set(userAssignments.map((a) => a.subject_id));
+    return LocalStore.getSubjects().filter((s) => assignedSubjectIds.has(s.id));
   },
 
   /**
