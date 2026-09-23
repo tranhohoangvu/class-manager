@@ -160,3 +160,73 @@ export function downloadStudentImportTemplate(): void {
   XLSX.writeFile(workbook, 'mau_danh_sach_hoc_sinh.xlsx');
 }
 
+/**
+ * Xuất file Excel Báo cáo tổng hợp trường học THCS đa trang (4 sheets).
+ */
+export function exportSchoolComprehensiveReport(data: import('@/services/admin-report.service').SchoolReportWorkbookData): void {
+  const workbook = XLSX.utils.book_new();
+
+  // Sheet 1: Danh sách 16 Lớp học
+  const wsClasses = XLSX.utils.json_to_sheet(data.classesSheet);
+  wsClasses['!cols'] = [
+    { wch: 6 },  // STT
+    { wch: 10 }, // Mã lớp
+    { wch: 14 }, // Tên lớp
+    { wch: 8 },  // Khối
+    { wch: 22 }, // Phòng học
+    { wch: 24 }, // GVCN
+    { wch: 14 }, // Sĩ số hiện tại
+    { wch: 14 }, // Sĩ số tối đa
+    { wch: 12 }, // Số bàn học
+    { wch: 16 }, // Trạng thái
+  ];
+  XLSX.utils.book_append_sheet(workbook, wsClasses, '16 Lớp học');
+
+  // Sheet 2: Đội ngũ Giáo viên & Phân công
+  const wsTeachers = XLSX.utils.json_to_sheet(data.teachersSheet);
+  wsTeachers['!cols'] = [
+    { wch: 6 },  // STT
+    { wch: 24 }, // Họ và tên
+    { wch: 28 }, // Email
+    { wch: 14 }, // Số điện thoại
+    { wch: 16 }, // Vai trò
+    { wch: 16 }, // Trạng thái
+    { wch: 14 }, // Lớp chủ nhiệm
+    { wch: 45 }, // Phân công giảng dạy
+  ];
+  XLSX.utils.book_append_sheet(workbook, wsTeachers, 'Đội ngũ Giáo viên');
+
+  // Sheet 3: Chuyên cần toàn trường
+  const wsAttendance = XLSX.utils.json_to_sheet(data.monthlyAttendanceSheet);
+  wsAttendance['!cols'] = [
+    { wch: 6 },  // STT
+    { wch: 12 }, // Tên lớp
+    { wch: 8 },  // Khối
+    { wch: 10 }, // Sĩ số
+    { wch: 14 }, // Lượt có mặt
+    { wch: 16 }, // Vắng không phép
+    { wch: 16 }, // Vắng có phép
+    { wch: 12 }, // Đi muộn
+    { wch: 18 }, // Tổng lượt ghi nhận
+    { wch: 18 }, // Tỷ lệ chuyên cần
+  ];
+  XLSX.utils.book_append_sheet(workbook, wsAttendance, 'Chuyên cần toàn trường');
+
+  // Sheet 4: Thời khóa biểu toàn trường
+  const wsTimetable = XLSX.utils.json_to_sheet(data.timetableSheet);
+  wsTimetable['!cols'] = [
+    { wch: 6 },  // STT
+    { wch: 12 }, // Lớp học
+    { wch: 8 },  // Khối
+    { wch: 12 }, // Thứ
+    { wch: 10 }, // Tiết học
+    { wch: 16 }, // Khung giờ
+    { wch: 16 }, // Môn học
+    { wch: 24 }, // Giáo viên giảng dạy
+  ];
+  XLSX.utils.book_append_sheet(workbook, wsTimetable, 'Thời khóa biểu');
+
+  const filename = `Bao_cao_tong_hop_THCS_Nguyen_Tat_Thanh_2026_2027.xlsx`;
+  XLSX.writeFile(workbook, filename);
+}
+

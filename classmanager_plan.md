@@ -196,21 +196,25 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ---
 
-## 5. CẢI TIẾN 5 — ADMIN PORTAL & BÁO CÁO TOÀN TRƯỜNG `[CHƯA LÀM — CHỜ TRIỂN KHAI]`
+## 5. CẢI TIẾN 5 — ADMIN PORTAL & BÁO CÁO TOÀN TRƯỜNG `[100% HOÀN THÀNH ✅]`
 
-### 5.1. Bảng điều khiển Quản trị viên (Admin Executive Dashboard)
+> **Trạng thái:** Đã hoàn thành 100%, vượt qua toàn bộ 6 test cases Vitest (`tests/admin-report.test.ts`), Next.js production build thành công 18/18 routes.
+
+### 5.1. Bảng điều khiển Quản trị viên (Admin Executive Dashboard) `[ĐÃ XONG ✅]`
 * **Bổ sung chỉ số toàn trường:**
-  * Tỷ lệ học sinh đi học toàn trường hôm nay (ví dụ: `468/480 học sinh · 97.5%`).
-  * Danh sách các lớp có tỷ lệ vắng cao trong ngày để Ban Giám hiệu nắm tình hình.
-  * Biểu đồ phân bổ học sinh theo từng khối lớp (Khối 6, 7, 8, 9).
+  * Tỷ lệ học sinh đi học toàn trường hôm nay (ví dụ: `468/480 học sinh · 97.5%`) kèm thanh tiến độ trực quan.
+  * Thẻ học sinh có mặt, vắng mặt (không phép / có phép), đi muộn hôm nay.
+  * Danh sách cảnh báo các lớp có tỷ lệ vắng cao trong ngày để Ban Giám hiệu nắm tình hình tức thì, có link chuyển đến sổ điểm danh lớp.
+  * Biểu đồ phân rã học sinh & chuyên cần theo từng khối lớp (Khối 6, 7, 8, 9).
+  * Bảng giám sát chuyên cần chi tiết toàn bộ 16 lớp học với bộ lọc theo khối và tìm kiếm tức thì.
 
-### 5.2. Báo cáo tổng hợp xuất file Excel cho Nhà trường
+### 5.2. Báo cáo tổng hợp xuất file Excel cho Nhà trường `[ĐÃ XONG ✅]`
 * **Giải pháp:**
-  * Nút `[Xuất báo cáo trường]` tại Admin Portal: Tạo file Excel đa trang gồm:
-    * Sheet 1: Danh sách tổng hợp 16 lớp (GVCN, Sĩ số, Phòng học, Số bàn).
-    * Sheet 2: Danh sách 24 giáo viên và bảng phân công chuyên môn.
-    * Sheet 3: Bảng theo dõi chuyên cần toàn trường theo tháng.
-    * Sheet 4: Tổng hợp Thời khóa biểu toàn trường.
+  * Nút `[Xuất báo cáo trường (.xlsx)]` tại Header Admin Portal: Tạo file Excel đa trang chuẩn hóa gồm:
+    * Sheet 1: Danh sách tổng hợp 16 lớp (GVCN, Sĩ số hiện tại / tối đa, Phòng học, Số bàn, Trạng thái).
+    * Sheet 2: Danh sách 24+ giáo viên và bảng phân công chuyên môn giảng dạy các lớp.
+    * Sheet 3: Bảng theo dõi chuyên cần toàn trường theo tháng của 16 lớp học.
+    * Sheet 4: Tổng hợp Thời khóa biểu toàn trường (480 tiết học của 16 lớp).
 
 ---
 
@@ -231,8 +235,8 @@ gantt
     section Giai đoạn 3 (Automation & Admin)
     Import danh sách học sinh từ file Excel       :done, c2, 2026-09-28, 2d
     Tích hợp TKB thông minh vào Điểm danh         :done, c1, 2026-09-27, 1d
-    Thống kê chuyên cần toàn trường Admin         :c3, 2026-09-29, 1d
-    Kiểm thử Vitest & Đóng gói hoàn thiện         :c4, 2026-09-30, 1d
+    Thống kê chuyên cần toàn trường Admin         :done, c3, 2026-09-29, 1d
+    Kiểm thử Vitest & Đóng gói hoàn thiện         :done, c4, 2026-09-30, 1d
 ```
 
 ### 📋 GIAI ĐOẠN 1: Chuẩn hóa Dữ liệu & Tính năng Thiết yếu `[100% HOÀN THÀNH ✅]`
@@ -249,12 +253,12 @@ gantt
 - [x] **Task 2.5:** Xây dựng trang **Thời khóa biểu lớp học (`/timetable`)** dạng lưới tương tác (Thứ 2 $\rightarrow$ Thứ 7, Tiết 1 $\rightarrow$ Tiết 5), chọn môn và gán giáo viên phụ trách.
 - [x] **Task 2.6:** Tối ưu in Thời khóa biểu A4 ngang dán bảng tin lớp học.
 
-### 📋 GIAI ĐOẠN 3: Tự động hóa & Báo cáo Quản trị `[ĐANG THỰC HIỆN ⏳]`
+### 📋 GIAI ĐOẠN 3: Tự động hóa & Báo cáo Quản trị `[100% HOÀN THÀNH ✅]`
 - [x] **Task 3.1:** Kết nối Thời khóa biểu thông minh vào trang Điểm danh (tự nhận diện môn và giáo viên theo giờ học hiện tại).
 - [x] **Task 3.2:** Bổ sung widget "Lịch học hôm nay" trên Dashboard lớp học.
 - [x] **Task 3.3:** Xây dựng tính năng Import danh sách học sinh từ file Excel `.xlsx` có modal xem trước và validate dữ liệu.
-- [ ] **Task 3.4:** Bổ sung widget thống kê chuyên cần toàn trường trên Admin Dashboard.
-- [x] **Task 3.5:** Viết thêm các test cases Vitest kiểm thử giới hạn 40 học sinh và luồng import học sinh (`tests/student-import.test.ts`).
+- [x] **Task 3.4:** Bổ sung widget thống kê chuyên cần toàn trường trên Admin Dashboard & nút xuất báo cáo Excel 4 sheets.
+- [x] **Task 3.5:** Viết thêm các test cases Vitest kiểm thử giới hạn 40 học sinh, import học sinh, thời khóa biểu và báo cáo trường (`tests/admin-report.test.ts`).
 
 ---
 

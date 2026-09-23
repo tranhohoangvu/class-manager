@@ -8,3 +8,4 @@ export * from './announcement.service';
 export * from './note.service';
 export * from './teacher.service';
 export * from './timetable.service';
+export * from './admin-report.service';
