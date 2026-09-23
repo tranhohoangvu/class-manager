@@ -137,7 +137,15 @@ export default function DashboardPage() {
   const isWeekend = currentDayOfWeek === 8;
   const todayDayConfig = TIMETABLE_DAYS.find((d) => d.day === (isWeekend ? 2 : currentDayOfWeek));
 
-  const todaySchedule = TIMETABLE_PERIODS.map((period) => {
+  const todaySchedule = TIMETABLE_PERIODS
+    .filter((period) => {
+      const targetDay = isWeekend ? 2 : currentDayOfWeek;
+      if (targetDay === 7) {
+        return [1, 2, 3, 6, 7, 8].includes(period.period);
+      }
+      return true;
+    })
+    .map((period) => {
     const targetDay = isWeekend ? 2 : currentDayOfWeek;
     const entry = timetable.find(
       (t) => t.day_of_week === targetDay && t.period === period.period

@@ -69,7 +69,8 @@ export const DEFAULT_SCHOOL_YEAR = '2026-2027';
 
 // =============================================
 // Timetable Constants (Secondary School Standard)
-// 6 days (Mon-Sat) x 5 morning periods
+// 2 sessions: Morning (P1-P5) & Afternoon (P6-P10)
+// Saturday: Morning (P1-P3) & Afternoon (P6-P8)
 // =============================================
 
 export interface TimetablePeriodConfig {
@@ -77,16 +78,74 @@ export interface TimetablePeriodConfig {
   label: string;
   startTime: string; // HH:mm
   endTime: string;   // HH:mm
-  shift: 'morning';
+  shift: 'morning' | 'afternoon';
+  durationMinutes: number;
 }
 
 export const TIMETABLE_PERIODS: TimetablePeriodConfig[] = [
-  { period: 1, label: 'Tiết 1', startTime: '07:15', endTime: '08:00', shift: 'morning' },
-  { period: 2, label: 'Tiết 2', startTime: '08:05', endTime: '08:50', shift: 'morning' },
-  { period: 3, label: 'Tiết 3', startTime: '09:10', endTime: '09:55', shift: 'morning' },
-  { period: 4, label: 'Tiết 4', startTime: '10:05', endTime: '10:50', shift: 'morning' },
-  { period: 5, label: 'Tiết 5', startTime: '10:55', endTime: '11:40', shift: 'morning' },
+  // Buổi sáng: 5 tiết (Thứ Hai - Thứ Sáu), 3 tiết (Thứ Bảy: P1-P3)
+  { period: 1, label: 'Tiết 1', startTime: '07:15', endTime: '08:00', shift: 'morning', durationMinutes: 45 },
+  { period: 2, label: 'Tiết 2', startTime: '08:00', endTime: '08:45', shift: 'morning', durationMinutes: 45 },
+  { period: 3, label: 'Tiết 3', startTime: '08:55', endTime: '09:40', shift: 'morning', durationMinutes: 45 },
+  { period: 4, label: 'Tiết 4', startTime: '09:40', endTime: '10:25', shift: 'morning', durationMinutes: 45 },
+  { period: 5, label: 'Tiết 5', startTime: '10:30', endTime: '11:15', shift: 'morning', durationMinutes: 45 },
+  // Buổi chiều: 5 tiết (Thứ Hai - Thứ Sáu), 3 tiết (Thứ Bảy: P6-P8)
+  { period: 6, label: 'Tiết 6', startTime: '13:00', endTime: '13:45', shift: 'afternoon', durationMinutes: 45 },
+  { period: 7, label: 'Tiết 7', startTime: '13:45', endTime: '14:30', shift: 'afternoon', durationMinutes: 45 },
+  { period: 8, label: 'Tiết 8', startTime: '14:40', endTime: '15:25', shift: 'afternoon', durationMinutes: 45 },
+  { period: 9, label: 'Tiết 9', startTime: '15:25', endTime: '16:10', shift: 'afternoon', durationMinutes: 45 },
+  { period: 10, label: 'Tiết 10', startTime: '16:15', endTime: '17:00', shift: 'afternoon', durationMinutes: 45 },
 ];
+
+export interface SpecialSlotConfig {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  shift: 'morning' | 'afternoon';
+  durationMinutes: number;
+}
+
+const MORNING_ASSEMBLY: SpecialSlotConfig = {
+  id: 'morning_assembly',
+  name: 'Sinh hoạt đầu giờ',
+  startTime: '07:00',
+  endTime: '07:15',
+  shift: 'morning',
+  durationMinutes: 15,
+};
+
+const AFTERNOON_ASSEMBLY: SpecialSlotConfig = {
+  id: 'afternoon_assembly',
+  name: 'Sinh hoạt đầu giờ',
+  startTime: '12:45',
+  endTime: '13:00',
+  shift: 'afternoon',
+  durationMinutes: 15,
+};
+
+export const TIMETABLE_SPECIAL_SLOTS: SpecialSlotConfig[] & {
+  morningAssembly: SpecialSlotConfig;
+  afternoonAssembly: SpecialSlotConfig;
+} = Object.assign([MORNING_ASSEMBLY, AFTERNOON_ASSEMBLY], {
+  morningAssembly: MORNING_ASSEMBLY,
+  afternoonAssembly: AFTERNOON_ASSEMBLY,
+});
+
+// Danh sách các tiết học được phép theo từng ngày trong tuần (2 = Thứ Hai ... 7 = Thứ Bảy)
+export const DAY_ALLOWED_PERIODS: Record<number, number[]> = {
+  2: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // Thứ Hai: 10 tiết
+  3: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // Thứ Ba: 10 tiết (bình thường)
+  4: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // Thứ Tư: 10 tiết
+  5: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // Thứ Năm: 10 tiết
+  6: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // Thứ Sáu: 10 tiết
+  7: [1, 2, 3, 6, 7, 8],             // Thứ Bảy: 6 tiết (Sáng P1-P3, Chiều P6-P8)
+};
+
+export function isAllowedPeriodForDay(day: number, period: number): boolean {
+  const allowed = DAY_ALLOWED_PERIODS[day];
+  return allowed ? allowed.includes(period) : false;
+}
 
 export interface TimetableDayConfig {
   day: number; // 2 = Thứ Hai, 7 = Thứ Bảy
@@ -181,6 +240,13 @@ export const SUBJECT_COLOR_MAP: Record<string, SubjectColorStyle> = {
     border: 'border-stone-200',
     badgeBg: 'bg-stone-100 text-stone-800',
     dot: 'bg-stone-600',
+  },
+  SHL: { // Sinh hoạt lớp - Violet hoàng gia sang trọng
+    bg: 'bg-violet-50/90 hover:bg-violet-100/90',
+    text: 'text-violet-800 font-semibold',
+    border: 'border-violet-300',
+    badgeBg: 'bg-violet-100 text-violet-800 font-bold',
+    dot: 'bg-violet-600',
   },
 };
 

@@ -1014,20 +1014,25 @@ export const LocalStore = {
   copyTimetable(sourceClassId: string, targetClassId: string): TimetableEntryRow[] {
     const sourceEntries = this.getTimetable(sourceClassId);
     const targetAssignments = this.getSubjectAssignmentsForClass(targetClassId);
+    const targetClass = this.getClassById(targetClassId);
     const teacherMap = new Map<string, string>();
     targetAssignments.forEach((a) => teacherMap.set(a.subject_id, a.teacher_id));
 
     const now = new Date().toISOString();
-    const newEntries: TimetableEntryRow[] = sourceEntries.map((item) => ({
-      id: `tt-${targetClassId}-d${item.day_of_week}-p${item.period}`,
-      class_id: targetClassId,
-      day_of_week: item.day_of_week,
-      period: item.period,
-      subject_id: item.subject_id,
-      teacher_id: teacherMap.get(item.subject_id) || item.teacher_id,
-      created_at: now,
-      updated_at: now,
-    }));
+    const newEntries: TimetableEntryRow[] = sourceEntries.map((item) => {
+      const isSHL = item.subject_id === 'sub-shl' || (item.day_of_week === 7 && (item.period === 3 || item.period === 8));
+      const teacherId = isSHL ? (targetClass?.teacher_id || null) : (teacherMap.get(item.subject_id) || item.teacher_id);
+      return {
+        id: `tt-${targetClassId}-d${item.day_of_week}-p${item.period}`,
+        class_id: targetClassId,
+        day_of_week: item.day_of_week,
+        period: item.period,
+        subject_id: isSHL ? 'sub-shl' : item.subject_id,
+        teacher_id: teacherId,
+        created_at: now,
+        updated_at: now,
+      };
+    });
 
     return this.setTimetableForClass(targetClassId, newEntries);
   },

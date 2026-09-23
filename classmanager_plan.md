@@ -147,15 +147,21 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ### 4.1. Bảng lưới Thời khóa biểu tương tác (`/timetable`) `[ĐÃ XONG ✅]`
 * **Cấu trúc chuẩn:** 6 ngày học (Thứ Hai $\rightarrow$ Thứ Bảy) × 5 tiết buổi sáng (Tiết 1 $\rightarrow$ Tiết 5).
+### 4.1. Lưới Thời khóa biểu tương tác (`src/app/(dashboard)/timetable/page.tsx`) `[ĐÃ XONG ✅]`
+* **Cấu trúc chuẩn 2 buổi/ngày THCS (56 tiết/tuần):**
+  * Thứ Hai – Thứ Sáu (bao gồm cả Thứ Ba): 10 tiết/ngày (Sáng: Tiết 1–5, Chiều: Tiết 6–10).
+  * Thứ Bảy: 6 tiết/ngày (Sáng: Tiết 1–3, Chiều: Tiết 6–8). Không có Tiết 4, 5, 9, 10.
+  * Tiết Sinh hoạt lớp (SHL): Cố định Tiết 3 (Sáng) và Tiết 8 (Chiều) Thứ Bảy, luôn luôn do chính GVCN lớp phụ trách.
+  * Khung giờ chuẩn: 45 phút/tiết, sinh hoạt đầu giờ 15 phút (07:00–07:15 & 12:45–13:00) và giờ giải lao không phải là tiết học.
 * **Nội dung mỗi ô tiết học:**
-  * Tên môn học kèm mã môn và màu sắc nhận diện đặc trưng (Toán - Xanh dương, Ngữ văn - Xanh lá, Tiếng Anh - Tím, Vật lý - Cyan, Hóa học - Vàng hổ phách, Sinh học - Xanh cốm, Lịch sử - Đỏ hồng, Địa lý - Teal, Tin học - Indigo, Công nghệ - Stone).
+  * Tên môn học kèm mã môn và màu sắc nhận diện đặc trưng (Toán - Xanh dương, Ngữ văn - Xanh lá, Tiếng Anh - Tím, Vật lý - Cyan, Hóa học - Vàng hổ phách, Sinh học - Xanh cốm, Lịch sử - Đỏ hồng, Địa lý - Teal, Tin học - Indigo, Công nghệ - Stone, SHL - Indigo/Tím).
   * Tên giáo viên bộ môn phụ trách (tự động liên kết từ phân công chuyên môn `subject_assignments` của lớp).
 * **Thao tác nghiệp vụ:**
   * Bấm vào bất kỳ ô tiết học để gán/đổi môn học, giáo viên tự động tra cứu và điền sẵn.
-  * Hỗ trợ nút **[⚡ Xếp mẫu chuẩn]**: Áp dụng 30 tiết chuẩn phân bổ đều các môn THCS.
-  * Hỗ trợ nút **[📋 Sao chép TKB]**: Sao chép thời khóa biểu từ lớp khác sang lớp hiện tại, tự động ánh xạ lại danh sách GVBM lớp đích.
+  * Hỗ trợ nút **[⚡ Xếp mẫu chuẩn]**: Áp dụng 56 tiết chuẩn phân bổ đều các môn THCS.
+  * Hỗ trợ nút **[📋 Sao chép TKB]**: Sao chép thời khóa biểu từ lớp khác sang lớp hiện tại, tự động ánh xạ lại GVCN lớp đích vào Tiết 3 & 8 Thứ Bảy.
   * Phân quyền RBAC: Admin và GVCN có quyền sửa; GVBM hiển thị badge "Chế độ xem".
-  * Hỗ trợ giao diện Responsive: Lưới ma trận trên Desktop và Tab chọn ngày linh hoạt trên Mobile.
+  * Hỗ trợ giao diện Responsive: Lưới ma trận chia 2 buổi trên Desktop và Tab chọn ngày linh hoạt trên Mobile.
 
 ### 4.2. Điểm danh thông minh theo thời gian thực (Smart Contextual Attendance) `[ĐÃ XONG ✅]`
 * Khi giáo viên vào trang Điểm danh (`/attendance`), hệ thống tự động đối chiếu thứ trong tuần và giờ hiện tại:
@@ -214,7 +220,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
     * Sheet 1: Danh sách tổng hợp 16 lớp (GVCN, Sĩ số hiện tại / tối đa, Phòng học, Số bàn, Trạng thái).
     * Sheet 2: Danh sách 24+ giáo viên và bảng phân công chuyên môn giảng dạy các lớp.
     * Sheet 3: Bảng theo dõi chuyên cần toàn trường theo tháng của 16 lớp học.
-    * Sheet 4: Tổng hợp Thời khóa biểu toàn trường (480 tiết học của 16 lớp).
+    * Sheet 4: Tổng hợp Thời khóa biểu toàn trường (896 tiết học của 16 lớp: 16 lớp × 56 tiết).
 
 ---
 

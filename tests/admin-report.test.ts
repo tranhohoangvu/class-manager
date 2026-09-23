@@ -121,8 +121,8 @@ describe('AdminReportService — School-Wide Executive Analytics & Multi-Sheet R
       expect(data.monthlyAttendanceSheet[0]).toHaveProperty('Tên lớp');
       expect(data.monthlyAttendanceSheet[0]).toHaveProperty('Tỷ lệ chuyên cần');
 
-      // Sheet 4: Thời khóa biểu toàn trường (16 lớp x 30 tiết = 480 tiết học)
-      expect(data.timetableSheet).toHaveLength(480);
+      // Sheet 4: Thời khóa biểu toàn trường (16 lớp x 56 tiết = 896 tiết học)
+      expect(data.timetableSheet).toHaveLength(896);
       expect(data.timetableSheet[0]).toHaveProperty('Lớp học');
       expect(data.timetableSheet[0]).toHaveProperty('Thứ');
       expect(data.timetableSheet[0]).toHaveProperty('Tiết học');
