@@ -36,7 +36,7 @@ export default function SettingsPage() {
   const [deskCount, setDeskCount] = useState('20');
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
-  const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(false);
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
 
   useEffect(() => {
     if (!currentClassId) return;
@@ -50,11 +50,10 @@ export default function SettingsPage() {
       setDeskCount((cls.desk_count || 20).toString());
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    setIsSupabaseConfigured(
-      !!(url && url.startsWith('http') && key && key !== 'your_supabase_anon_key')
-    );
+    fetch('/health')
+      .then((res) => res.json())
+      .then((data) => setIsBackendConnected(data.status === 'ok'))
+      .catch(() => setIsBackendConnected(false));
   }, [currentClassId, currentClass]);
 
   const handleSaveClass = (e: React.FormEvent) => {
@@ -276,15 +275,15 @@ export default function SettingsPage() {
         </h2>
 
         <div className="p-5 rounded-xl bg-surface-subtle border border-border flex items-start gap-4">
-          {isSupabaseConfigured ? (
+          {isBackendConnected ? (
             <>
               <CheckCircle size={24} className="text-success flex-shrink-0 mt-0.5" weight="fill" />
               <div className="text-sm space-y-1">
                 <p className="font-bold text-text-primary">
-                  Đã kết nối cơ sở dữ liệu Supabase Cloud
+                  Đã kết nối Backend Node.js / Express & PostgreSQL
                 </p>
                 <p className="text-text-secondary leading-relaxed">
-                  Dữ liệu lớp học của bạn đang được đồng bộ tự động lên đám mây bảo mật.
+                  Máy chủ REST API và cơ sở dữ liệu PostgreSQL đang hoạt động bình thường, sẵn sàng đồng bộ và xác thực quyền hạn.
                 </p>
               </div>
             </>
@@ -293,13 +292,13 @@ export default function SettingsPage() {
               <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse mt-1.5 flex-shrink-0" />
               <div className="text-sm space-y-1.5">
                 <p className="font-bold text-text-primary">
-                  Đang hoạt động ở Chế độ Lưu trữ Cục bộ (Local Persistence)
+                  Chế độ Lưu trữ Cục bộ / Đang kết nối Backend
                 </p>
                 <p className="text-text-secondary leading-relaxed">
                   Tất cả thao tác (thêm/sửa học sinh, xếp chỗ ngồi, điểm danh, tạo thông báo) đều được lưu trữ trực tiếp trên trình duyệt của bạn và bảo toàn sau khi tải lại trang.
                 </p>
                 <p className="text-xs text-text-muted pt-1">
-                  Để đồng bộ lên Supabase Cloud: Nhập URL và Anon Key vào file <code className="px-1.5 py-0.5 rounded bg-surface-muted border border-border font-mono">.env.local</code> và chạy file SQL trong thư mục <code className="px-1.5 py-0.5 rounded bg-surface-muted border border-border font-mono">supabase/migrations/</code>.
+                  Để khởi chạy backend Express + PostgreSQL: chạy lệnh <code className="px-1.5 py-0.5 rounded bg-surface-muted border border-border font-mono">npm run dev</code> trong thư mục <code className="px-1.5 py-0.5 rounded bg-surface-muted border border-border font-mono">backend/</code>.
                 </p>
               </div>
             </>

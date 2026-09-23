@@ -10,28 +10,28 @@ This document catalogues all auditable business rules, constraints, and invarian
 * **Rule:** Every classroom is fixed at exactly **20 double desks** arranged in a **4 columns × 5 rows** grid, providing a total capacity of **40 seats** (2 seats per desk: Left & Right).
 * **Enforced By:**
   - `src/lib/constants.ts` (`CLASS_CONSTANTS.DESK_COUNT = 20`, `MAX_SEATS = 40`, `COLS = 4`, `ROWS = 5`)
-  - `supabase/migrations/001_initial_schema.sql` (`desk_count integer NOT NULL DEFAULT 20 CHECK (desk_count = 20)`)
+  - `backend/migrations/001_initial_schema.sql` (`desk_count integer NOT NULL DEFAULT 20 CHECK (desk_count = 20)`)
   - `src/services/class.service.ts`
 
 ### BR-002: Maximum Active Student Invariant
 * **Rule:** The number of active students (`status = 'active'`) in a class cannot exceed `class.max_students` (capped at 40). Any addition (single create or bulk import) that exceeds this ceiling is rejected.
 * **Enforced By:**
   - `src/services/student.service.ts` (`createStudent` & `importStudents`)
-  - `supabase/migrations/001_initial_schema.sql` (`check_max_students()` trigger)
+  - `backend/migrations/001_initial_schema.sql` (`check_max_students()` trigger)
   - `src/lib/validations/forms.ts` (`max_students: z.coerce.number().min(1).max(40)`)
 
 ### BR-003: Student Code Uniqueness Scoped to Class
 * **Rule:** A `student_code` (e.g., `HS01`, `6A1-01`) must be unique within its class. It cannot be duplicated across active students in the same class.
 * **Enforced By:**
   - `src/services/student.service.ts`
-  - `supabase/migrations/001_initial_schema.sql` (`UNIQUE(class_id, student_code)`)
+  - `backend/migrations/001_initial_schema.sql` (`UNIQUE(class_id, student_code)`)
 
 ### BR-004: Single Seat Invariant per Student
 * **Rule:** A student may occupy at most one seat across the classroom at any time. When assigned to a new seat, any previous seat occupied by that student must be cleared.
 * **Enforced By:**
   - `src/services/seating.service.ts` (`assignSeat`)
   - `src/lib/store.ts` (`assignSeat`)
-  - `supabase/migrations/001_initial_schema.sql` (`seats: UNIQUE(student_id)`)
+  - `backend/migrations/001_initial_schema.sql` (`seats: UNIQUE(student_id)`)
 
 ### BR-005: Seat Occupant Class Ownership
 * **Rule:** A student can only be assigned to a desk/seat belonging to their own enrolled class (`student.class_id === desk.class_id`).
@@ -53,13 +53,13 @@ This document catalogues all auditable business rules, constraints, and invarian
 * **Enforced By:**
   - `src/lib/store.ts` (`assignHomeroomTeacher`)
   - `src/services/teacher.service.ts`
-  - `supabase/migrations/001_initial_schema.sql` (`classes.teacher_id`)
+  - `backend/migrations/001_initial_schema.sql` (`classes.teacher_id`)
 
 ### BR-008: Single Subject Teacher per Class & Subject
 * **Rule:** For any given class and subject, only one teacher can be assigned as the primary subject teacher.
 * **Enforced By:**
   - `src/lib/store.ts` (`assignSubjectTeacher`)
-  - `supabase/migrations/001_initial_schema.sql` (`subject_assignments: UNIQUE(teacher_id, class_id, subject_id)`)
+  - `backend/migrations/001_initial_schema.sql` (`subject_assignments: UNIQUE(teacher_id, class_id, subject_id)`)
 
 ### BR-009: Inactive Staff Roadblock
 * **Rule:** Accounts marked with `status = 'disabled'` are barred from authenticating or performing any mutations across all services.
@@ -98,13 +98,13 @@ This document catalogues all auditable business rules, constraints, and invarian
 * **Rule:** A teacher cannot be scheduled to teach two different classes at the same day of the week and same period anywhere across the school.
 * **Enforced By:**
   - `src/services/timetable.service.ts` (`checkTeacherConflict`)
-  - `supabase/migrations/001_initial_schema.sql` (`timetable_entries: UNIQUE(teacher_id, day_of_week, period)`)
+  - `backend/migrations/001_initial_schema.sql` (`timetable_entries: UNIQUE(teacher_id, day_of_week, period)`)
 
 ### BR-014: Single Subject Slot per Class
 * **Rule:** A class can have at most one subject scheduled per day and period slot.
 * **Enforced By:**
   - `src/services/timetable.service.ts` (`checkClassConflict`)
-  - `supabase/migrations/001_initial_schema.sql` (`timetable_entries: UNIQUE(class_id, day_of_week, period)`)
+  - `backend/migrations/001_initial_schema.sql` (`timetable_entries: UNIQUE(class_id, day_of_week, period)`)
 
 ### BR-015: Centralized Timetable Governance
 * **Rule:** Teachers (both Homeroom and Subject teachers) have read-only access to timetables. Only `ADMIN` can create, modify, copy, or delete timetable entries.
@@ -137,10 +137,10 @@ This document catalogues all auditable business rules, constraints, and invarian
 * **Enforced By:**
   - `src/types/index.ts` (`AttendanceStatus`)
   - `src/services/attendance.service.ts` (`VALID_STATUSES`)
-  - `supabase/migrations/001_initial_schema.sql` (`status text CHECK (status IN ('present', 'absent', 'late', 'excused'))`)
+  - `backend/migrations/001_initial_schema.sql` (`status text CHECK (status IN ('present', 'absent', 'late', 'excused'))`)
 
 ### BR-019: Unique Daily Attendance per Student & Period
 * **Rule:** In a single day, an individual student can have only one attendance status record per subject (or date session).
 * **Enforced By:**
   - `src/lib/store.ts` (`saveAttendanceBatch`)
-  - `supabase/migrations/001_initial_schema.sql` (`attendance: UNIQUE(student_id, date)`)
+  - `backend/migrations/001_initial_schema.sql` (`attendance: UNIQUE(student_id, date)`)

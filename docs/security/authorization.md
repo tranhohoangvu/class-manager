@@ -10,20 +10,22 @@ Authorization in Class Manager is enforced at multiple layers:
 │   - Client Layout Guards (src/app/(admin)/layout.tsx)     │
 │   - Conditional Component Rendering (isHomeroom ? ... )   │
 └─────────────────────────────┬─────────────────────────────┘
-                              │
+                              │ HTTP Requests
                               ▼
 ┌───────────────────────────────────────────────────────────┐
-│              Layer 2: Domain AuthGuard (Authoritative)    │
-│   - src/services/auth-guard.ts                            │
-│   - Checks User Status, Global Role, & Per-Class Role     │
-│   - Blocks unauthorized mutations before touching data    │
+│           Layer 2: Express RBAC Middleware (Authoritative)│
+│   - backend/src/middleware/rbac.middleware.ts             │
+│   - requireRole('ADMIN' | 'TEACHER')                      │
+│   - requireClassAccess (Homeroom or Assigned Subject)     │
+│   - requireHomeroomOrAdmin (Capacity, Seating, Roster)    │
 └─────────────────────────────┬─────────────────────────────┘
-                              │
+                              │ Validated Domain Context
                               ▼
 ┌───────────────────────────────────────────────────────────┐
-│             Layer 3: Target Database RLS Policies         │
-│   - supabase/migrations/001_initial_schema.sql            │
-│   - Row Level Security (RLS) enabled on all 12 tables     │
+│           Layer 3: Domain Service Assertion Layer         │
+│   - backend/src/services/*                                │
+│   - Enforces Pedagogical Invariants (Max 2 grades/teacher)│
+│   - Strict teacher double-booking checks in Timetable     │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -48,47 +50,35 @@ Unlike traditional systems where permissions are static user attributes, permiss
 
 ---
 
-## 3. The `AuthGuard` Specification (`src/services/auth-guard.ts`)
+## 3. Server-Side Enforcement (Express Middleware)
 
-`AuthGuard` is a stateless, pure verification module called at the beginning of every service mutation:
-
-### 3.1. Core Guards
+### 3.1. Identity Derivation
+The backend **never trusts a client-supplied `teacher_id` or `user_id`**.
+The authenticated teacher's identity is strictly extracted from `req.user.id` through verified JWT session tokens:
 
 ```typescript
-// Admin verification
-isAdmin(user: UserRow | null): boolean;
-
-// Homeroom verification for specific class
-isHomeroomTeacher(user: UserRow | null, classId: string | null | undefined): boolean;
-
-// General class affiliation (either GVCN or GVBM)
-hasAccessToClass(user: UserRow | null, classId: string | null | undefined): boolean;
-
-// Timetable permissions
-canViewTimetable(user: UserRow | null, classId: string | null | undefined): boolean;
-canManageTimetable(user: UserRow | null, classId?: string | null): boolean; // ADMIN ONLY
-
-// Student mutations
-canEditStudent(user: UserRow | null, classId: string): boolean;
-
-// Seating mutations
-canManageSeating(user: UserRow | null, classId: string): boolean;
-
-// Attendance permissions
-canManageAttendance(user: UserRow | null, classId: string, subjectId?: string): boolean;
-canViewAttendance(user: UserRow | null, classId: string, subjectId?: string): boolean;
-canAttendPeriod(user: UserRow | null, classId: string, day: number, period: number): boolean;
-
-// Class & faculty administration
-canEditClassSettings(user: UserRow | null, classId: string): boolean;
-canManageTeacherAssignment(user: UserRow | null): boolean; // ADMIN ONLY
+// Example: Adding a student or recording attendance
+const teacherId = req.user.id;
 ```
+
+### 3.2. RBAC Middlewares (`backend/src/middleware/rbac.middleware.ts`)
+
+* **`requireRole('ADMIN')`**:
+  Rejects any non-administrator request with `403 Forbidden`. Used for teacher allocations, global timetable edits, and system configuration.
+* **`requireClassAccess`**:
+  Verifies that the teacher is either:
+  1. The homeroom teacher (`classes.teacher_id = req.user.id`).
+  2. Or has a membership (`class_memberships`).
+  3. Or has a subject assignment (`subject_assignments`).
+  Denied requests yield `403 Forbidden: "Bạn không được phân công giảng dạy hoặc quản lý lớp này."`.
+* **`requireHomeroomOrAdmin`**:
+  Restricts seating management, roster mutations, and class settings strictly to the assigned homeroom teacher or administrator.
 
 ---
 
-## 4. UI Authorization vs. Service Authorization
+## 4. UI Authorization vs. Authoritative Backend
 
-A common flaw in web applications is hiding buttons without verifying authorization on write operations. The codebase prevents this:
+A common flaw in web applications is hiding buttons on the frontend without server-side validation on write operations. The architecture prevents this:
 
 1. **UI Layer Hiding:**
    ```tsx
@@ -96,44 +86,11 @@ A common flaw in web applications is hiding buttons without verifying authorizat
      <Button onClick={handleDeleteStudent}>Xóa học sinh</Button>
    )}
    ```
-2. **Service Layer Assertion:**
+2. **Authoritative Backend Assertion:**
    ```typescript
-   if (!AuthGuard.canEditStudent(currentUser, student.class_id)) {
-     return failure('Bạn không có quyền xoá học sinh này. Chỉ GVCN hoặc Quản trị viên mới có quyền xoá học sinh.');
+   // Inside backend/src/services/student.service.ts
+   if (currentUser.role !== 'ADMIN' && cls.teacher_id !== currentUser.id) {
+     throw new ForbiddenError('Chỉ GVCN hoặc Quản trị viên mới có quyền xoá học sinh.');
    }
    ```
-   Even if a user bypasses the UI or invokes methods via the browser console, the Service Layer halts execution and returns a typed failure response.
-
----
-
-## 5. PostgreSQL Row-Level Security (RLS) Mapping
-
-The target Supabase migration (`001_initial_schema.sql`) implements identical rules at the database engine level using helper security functions:
-
-```sql
--- Helper: Checks if auth.uid() has active ADMIN role
-CREATE OR REPLACE FUNCTION is_admin() RETURNS boolean AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'ADMIN' AND status = 'active'
-  );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Helper: Checks if auth.uid() has access to a class
-CREATE OR REPLACE FUNCTION has_class_access(p_class_id uuid) RETURNS boolean AS $$
-BEGIN
-  IF is_admin() THEN RETURN true; END IF;
-  RETURN EXISTS (
-    SELECT 1 FROM classes WHERE id = p_class_id AND teacher_id = auth.uid()
-  ) OR EXISTS (
-    SELECT 1 FROM class_memberships WHERE class_id = p_class_id AND teacher_id = auth.uid()
-  );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-```
-
-RLS Policies enforce:
-- `students`: Read allowed if `has_class_access(class_id)`. Write allowed only if `is_admin()` or `classes.teacher_id = auth.uid()`.
-- `timetable_entries`: Read allowed if `has_class_access(class_id)`. Write restricted to `is_admin()`.
-- `attendance`: Write allowed if user has class access for that student.
+   Even if a user bypasses the UI or invokes the REST endpoint directly via curl or DevTools console, the backend halts execution, rolls back any transaction, and responds with `403 Forbidden`.

@@ -1,105 +1,132 @@
 # Deployment Architecture
 
-## 1. Hosting & Runtime Model
+## 1. Production Hosting & Runtime Model
 
-The application is structured as a **Next.js 16 (App Router)** deployment running on Node.js or edge runtime environments (e.g., Vercel, AWS Amplify, Docker container).
+The production deployment of **Class Manager** is partitioned into three decoupled tiers:
+1. **Frontend Tier**: Next.js 16 App Router application deployed on frontend hosting (Render / Vercel).
+2. **Backend Tier**: Node.js + Express + TypeScript REST API deployed as a **Render Web Service**.
+3. **Database Tier**: Relational **Render PostgreSQL** database.
 
 ```mermaid
-graph LR
-    subgraph Hosting ["Production Environment (Vercel / Node.js)"]
-        Edge["Edge / CDN Network"]
-        Server["Next.js 16 Runtime (Turbopack Engine)"]
-        Static["Static Assets (.next/static, public/*)"]
-    end
-
+graph TD
     subgraph Client ["Client Device (Browser)"]
-        BrowserApp["React 19 SPA"]
-        Storage["Browser localStorage (cm_thcs_*)"]
+        BrowserApp["React 19 SPA (Next.js 16)"]
     end
 
-    subgraph Database ["Future / Target Backend"]
-        Supabase["Supabase Cloud / PostgreSQL"]
+    subgraph FrontendHosting ["Frontend Tier (Render / Vercel)"]
+        NextServer["Next.js App Server & Static CDN"]
+        NextConfig["API Proxy / Rewrites (/api/*, /health)"]
     end
 
-    BrowserApp <--> Edge
-    Edge --> Static
-    Edge --> Server
-    BrowserApp <--> Storage
-    Server -.->|"Future Supabase Client"| Supabase
+    subgraph BackendHosting ["Backend Tier (Render Web Service)"]
+        ExpressApp["Express + Node.js + TypeScript"]
+        AuthMiddleware["Authentication & RBAC Middleware"]
+        Controllers["Express Controllers & Validators"]
+        Services["Business Logic & Domain Invariants"]
+        HealthEndpoint["GET /health"]
+    end
+
+    subgraph DatabaseTier ["Database Tier (Render PostgreSQL)"]
+        PgDatabase[("PostgreSQL 16 Engine<br/>12 Tables, Triggers, Constraints")]
+    end
+
+    BrowserApp -->|"HTTPS / User Interaction"| NextServer
+    NextServer -->|"Proxy / Reverse Route"| NextConfig
+    NextConfig -->|"REST API / JSON<br/>(Bearer Token / Cookie)"| ExpressApp
+    ExpressApp --> AuthMiddleware
+    AuthMiddleware --> Controllers
+    Controllers --> Services
+    Services -->|"Parameterized SQL<br/>(pg Connection Pool)"| PgDatabase
+    ExpressApp -.-> HealthEndpoint
 ```
 
 ---
 
-## 2. Build Pipeline & Production Artifacts
+## 2. Render Web Service (Express Backend)
 
-### 2.1. Compilation via Turbopack
-The production build is executed with:
-```bash
-npm run build
-```
-Under the hood, Next.js 16 uses Turbopack to compile the 18 application routes, generating static HTML/JS bundles.
+### 2.1. Service Settings
+- **Service Type**: Web Service
+- **Environment**: Node
+- **Root Directory**: `backend`
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npm run start`
+- **Health Check Path**: `/health`
 
-### 2.2. Route Inventory at Build Time
-All routes compile as dynamic or client-rendered pages (`○ Static` / `ƒ Dynamic`):
-
-| Route Path | Type | Description |
-| :--- | :---: | :--- |
-| `/` | Client Redirect | Checks auth status and redirects to `/login`, `/dashboard`, or `/admin/dashboard` |
-| `/login` | Client Page | 1-Click test accounts and authentication form |
-| `/access-denied` | Client Page | 403 Forbidden roadblock view |
-| `/dashboard` | Client Page | Classroom executive overview and today's schedule |
-| `/students` | Client Page | Student roster, filtering, Excel import/export |
-| `/students/[id]` | Dynamic Page | Detailed student profile, attendance record, parent contact cards |
-| `/seating` | Client Page | 20-desk classroom layout, dual perspective, live attendance overlay |
-| `/attendance` | Client Page | Smart period attendance, quick filters, admin copy action |
-| `/history` | Client Page | Date-range attendance matrix, period KPIs |
-| `/timetable` | Client Page | 2-shift weekly schedule, conflict prevention, print view |
-| `/announcements` | Client Page | Class bulletin board |
-| `/settings` | Client Page | Class metadata configuration, capacity controls |
-| `/admin/dashboard`| Client Page | School-wide attendance overview, grade breakdown, report export |
-| `/admin/classes` | Client Page | 16-class directory, room assignments, GVCN allocation |
-| `/admin/teachers` | Client Page | Faculty directory, 2-grade limit checks, subject assignments |
-| `/admin/settings` | Client Page | System settings & school metadata |
+### 2.2. Environment Variables
+| Variable | Example / Purpose | Secret? |
+| :--- | :--- | :---: |
+| `PORT` | Set automatically by Render (e.g., `10000` or `4000`) | No |
+| `NODE_ENV` | `production` | No |
+| `DATABASE_URL` | Connection string from Render PostgreSQL (`postgresql://...`) | Yes |
+| `JWT_SECRET` | 32+ character random secret for signing tokens | Yes |
+| `CORS_ORIGIN` | Allowed frontend origin URL (e.g. `https://classmanager.onrender.com`) | No |
 
 ---
 
-## 3. Environment Configuration
+## 3. Render PostgreSQL (Database)
 
-### 3.1. Current Environment Variables (`.env.local`)
-The application currently runs in self-contained prototype mode. The `.env.local` file contains Supabase configuration placeholders:
+### 3.1. Provisioning & Connection
+- **Engine**: PostgreSQL 16+
+- **Access**: Internal connection string used by the backend in the same region (avoids public internet egress and latency).
+- **SSL**: Encrypted connections enforced with `{ rejectUnauthorized: false }`.
 
+### 3.2. Migration Execution
+Database migrations are versioned under `backend/migrations/` and executed sequentially:
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# Execute migrations against Render PostgreSQL
+DATABASE_URL="postgresql://user:password@render-host/class_manager" npm run migrate
 ```
+Migration sequence:
+1. `001_initial_schema.sql` (Tables: users, classes, students, desks, seats, attendance...)
+2. `002_constraints.sql` (Unique keys and check constraints)
+3. `003_indexes.sql` (Query performance indexes)
+4. `004_functions.sql` (Triggers and capacity functions)
+5. `005_triggers.sql` (Auto updated_at and max students triggers)
+6. `006_seed.sql` (Seed dataset with bcrypt hashed accounts)
 
-### 3.2. Middleware Detection (`src/middleware.ts`)
-The Edge Middleware checks whether valid Supabase credentials have been configured:
+---
+
+## 4. Frontend Configuration & Next.js Rewrites
+
+### 4.1. Local & Production Rewrites (`next.config.ts`)
+Next.js acts as an API gateway, proxying `/api/*` and `/health` requests directly to the Express backend without cross-origin configuration friction:
+
 ```typescript
-const isSupabaseConfigured =
-  supabaseUrl &&
-  supabaseUrl.startsWith('http') &&
-  supabaseKey &&
-  supabaseKey !== 'your_supabase_anon_key';
+const nextConfig: NextConfig = {
+  async rewrites() {
+    const backendUrl =
+      process.env.BACKEND_INTERNAL_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:4000";
 
-if (!isSupabaseConfigured) {
-  // If Supabase is not configured yet, allow navigating smoothly
-  return supabaseResponse;
-}
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backendUrl}/api/:path*`,
+      },
+      {
+        source: "/health",
+        destination: `${backendUrl}/health`,
+      },
+    ];
+  },
+};
 ```
-* **Current Behavior:** Because credentials are placeholder strings, the middleware bypasses Supabase session cookies and allows the client-side `AuthService` to manage sessions via `localStorage`.
-* **Production Ready:** As soon as real Supabase credentials are provided, the middleware will automatically activate server-side session refreshes and cookie validations without requiring code changes.
 
 ---
 
-## 4. Client-Side Runtime Assumptions
+## 5. Health Monitoring & Zero-Downtime Deploys
 
-1. **Storage Availability:**
-   - The browser must have `localStorage` enabled (default in modern browsers).
-   - In private/incognito windows with storage disabled, memory fallback cache prevents hard crashes.
-2. **Screen Resolutions & Viewports:**
-   - **Desktop (>= 1024px):** Displays full two-column layouts, sidebars, and full 4-column seating charts.
-   - **Tablet / Small Laptop (768px – 1023px):** Compact grid layouts with sticky table columns.
-   - **Mobile (< 768px):** Collapsible off-canvas navigation drawer (`MobileNav`), day tab selectors for timetable, and horizontally scrollable tables.
-3. **Printing Environment:**
-   - Supports CSS `@media print` with paper size presets (`@page { size: landscape; margin: 8mm; }`) for A4 seating charts and weekly timetables.
+Render continuously polls the `/health` endpoint:
+- **Endpoint**: `GET /health`
+- **Behavior**: Executes a lightweight `SELECT 1` query to verify PostgreSQL connectivity.
+- **Success Response**: `HTTP 200 OK`
+  ```json
+  {
+    "status": "ok",
+    "database": "connected",
+    "timestamp": "2026-09-23T10:45:00.000Z"
+  }
+  ```
+- **Failure Response**: `HTTP 503 Service Unavailable` if database connection drops.
+- Render holds incoming traffic to the new instance until `/health` returns `200 OK`, guaranteeing zero-downtime rollouts.

@@ -2,38 +2,46 @@
 
 ## 1. Authentication Mechanism
 
-The application currently operates with a **Client-Side Tokenized Session Model** backed by `localStorage` and managed via `AuthService` (`src/lib/auth.ts`) and `AuthContext` (`src/contexts/auth-context.tsx`).
-
-In addition, an Edge Middleware (`src/middleware.ts`) is pre-configured with `@supabase/ssr` to intercept requests, refresh session cookies, and protect routes as soon as live Supabase credentials are provided.
+Authentication in Class Manager is managed by the self-managed Express backend (`backend/src/services/auth.service.ts`) using secure password hashing with **bcrypt**, signed **JSON Web Tokens (JWT)**, and secure **HTTP-only cookies** (`token`) with Bearer token fallback.
 
 ```mermaid
 sequenceDiagram
     actor User
     participant UI as Login Page (/login)
     participant AuthCtx as AuthContext
-    participant AuthSvc as AuthService
-    participant Store as LocalStore
+    participant ApiClient as API Client (src/lib/api-client.ts)
+    participant Express as Express /api/auth/login
+    participant Bcrypt as bcrypt.compare
+    participant Pg as PostgreSQL (users)
     participant Router as Next.js Router
 
-    User->>UI: Enter email & password (or click 1-Click persona)
+    User->>UI: Enter email & password (or select test persona)
     UI->>AuthCtx: login(email, password)
-    AuthCtx->>AuthSvc: login(email, password)
-    AuthSvc->>Store: getUsers()
-    Store-->>AuthSvc: UserRow[]
+    AuthCtx->>ApiClient: api.auth.login(email, password)
+    ApiClient->>Express: POST /api/auth/login { email, password }
+    Express->>Pg: SELECT * FROM users WHERE email = $1
+    Pg-->>Express: user row (with password_hash, status)
 
     alt Email Not Found
-        AuthSvc-->>AuthCtx: { success: false, error: "Email không tồn tại..." }
+        Express-->>ApiClient: 401 Unauthorized { error: "Email không tồn tại..." }
+        ApiClient-->>AuthCtx: throw ApiError
         AuthCtx-->>UI: Display error toast
     else User Disabled (status === 'disabled')
-        AuthSvc-->>AuthCtx: { success: false, error: "Tài khoản bị vô hiệu hóa..." }
+        Express-->>ApiClient: 401 Unauthorized { error: "Tài khoản bị vô hiệu hóa..." }
+        ApiClient-->>AuthCtx: throw ApiError
         AuthCtx-->>UI: Display error toast
     else Password Mismatch
-        AuthSvc-->>AuthCtx: { success: false, error: "Mật khẩu không chính xác." }
+        Express->>Bcrypt: compare(password, user.password_hash)
+        Bcrypt-->>Express: false
+        Express-->>ApiClient: 401 Unauthorized { error: "Mật khẩu không chính xác." }
+        ApiClient-->>AuthCtx: throw ApiError
         AuthCtx-->>UI: Display error toast
     else Credentials Valid & Active
-        AuthSvc->>AuthSvc: Generate session object (user, token, loginAt)
-        AuthSvc->>AuthSvc: localStorage.setItem('cm_auth_session', JSON)
-        AuthSvc-->>AuthCtx: { success: true, user }
+        Express->>Bcrypt: compare(password, user.password_hash)
+        Bcrypt-->>Express: true
+        Express->>Express: signToken(user) -> JWT
+        Express-->>ApiClient: 200 OK + Set-Cookie: token=... (HttpOnly, Secure)
+        ApiClient-->>AuthCtx: { user, token }
         AuthCtx->>AuthCtx: setUser(user)
         alt user.role === 'ADMIN'
             AuthCtx->>Router: router.push('/admin/dashboard')
@@ -47,30 +55,24 @@ sequenceDiagram
 
 ## 2. Session Model & Storage
 
-### 2.1. Session Interface
-The active session object stored under `localStorage` key `cm_auth_session`:
-
-```typescript
-export interface AuthSession {
-  user: UserRow;
-  token: string;       // Formatted as `mock-token-${user.id}-${timestamp}`
-  loginAt: string;     // ISO 8601 string timestamp
-}
-```
+### 2.1. Backend Authentication Context
+On each incoming authenticated request:
+1. `authenticate` middleware (`backend/src/middleware/auth.middleware.ts`) extracts the token from the `token` cookie or `Authorization: Bearer <token>` header.
+2. Verifies the cryptographic signature using `JWT_SECRET`.
+3. Checks that the user exists and is not disabled (`status !== 'disabled'`).
+4. Attaches `req.user = { id, email, name, role, status }` to Express `Request`.
 
 ### 2.2. Session Validation on Boot
 When any protected page mounts:
 1. `AuthProvider` triggers `refreshUser()`.
-2. `AuthService.getCurrentUser()` reads `cm_auth_session`.
-3. If a session exists, it cross-checks `LocalStore.getUserById(session.user.id)`.
-4. If the user was disabled or removed, `AuthService.logout()` is called automatically, revoking access.
+2. Calls `GET /api/auth/me` with cookie credentials.
+3. If the token is expired, corrupted, or user account was disabled, access is rejected and client redirects to `/login`.
 
 ### 2.3. Logout Flow
 Calling `logout()`:
-- Clears `cm_auth_session` from `localStorage`.
-- Clears `cm_active_class_id` from `localStorage`.
-- Resets React state `user = null`.
-- Navigates the client to `/login`.
+1. Sends `POST /api/auth/logout` to the backend.
+2. Backend responds with `clearCookie('token')`.
+3. Client resets React state `user = null` and navigates to `/login`.
 
 ---
 
@@ -89,11 +91,9 @@ The `/login` route exposes 6 pre-configured user scenarios designed to test dist
 
 ---
 
-## 4. Supabase SSR Middleware Integration Roadmap
+## 4. Route Protection Middleware (`src/middleware.ts`)
 
-The application includes an Edge Middleware at `src/middleware.ts`. When connected to Supabase:
-1. Every incoming HTTP request passes through `createServerClient`.
-2. Supabase reads auth cookies via `request.cookies.getAll()`.
-3. Calls `supabase.auth.getUser()`.
-4. If unauthenticated, redirects to `/login`.
-5. If authenticated and attempting to visit `/login`, redirects to `/dashboard`.
+The Next.js edge middleware guards route navigation:
+1. Inspects the incoming request for session token cookie.
+2. Unauthenticated requests to protected paths (`/dashboard`, `/students`, `/timetable`, etc.) are held or handled by client layout guards.
+3. Authenticated requests attempting to visit `/login` are automatically redirected to `/dashboard`.

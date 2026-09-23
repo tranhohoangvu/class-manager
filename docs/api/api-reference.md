@@ -1,187 +1,258 @@
-# Application Service Layer (API) Reference
+# REST API Reference (Express Backend)
 
-## 1. Network / HTTP API Status
+## 1. Overview & Base URL
 
-> [!IMPORTANT]
-> **HTTP REST Endpoints & Server Actions:** `None (Not found in codebase)`
-> 
-> The codebase currently does not expose external HTTP API routes (`/api/*` or `route.ts`) or Next.js Server Actions (`'use server'`).
-> All business workflows and data queries are orchestrated through an in-memory/client-side **Application Service Layer** located in `src/services/`.
-> 
-> When migrating to Supabase or a backend API, these Service methods serve as the exact functional specification for remote RPC / REST endpoints.
+The **Class Manager REST API** is an Express + TypeScript service deployed on Render Web Service and proxied locally through Next.js at `/api/*`.
 
----
-
-## 2. Common Types & Return Contract
-
-All mutating methods return an `OperationResult<T>` discriminated union:
-
-```typescript
-export type OperationResult<T = void> =
-  | { success: true; data: T; error?: never }
-  | { success: false; error: string; data?: never };
-```
+* **Local Base URL**: `http://localhost:4000/api`
+* **Production Base URL**: `https://<render-service-url>/api`
+* **Health Check**: `GET /health`
+* **Response Format**: Standard JSON `{ data: ... }` for success and `{ error: { code, message } }` for errors.
+* **Authentication**: Credentials via HTTP-only cookie `token` or header `Authorization: Bearer <token>`.
 
 ---
 
-## 3. Service Reference
+## 2. API Endpoints Catalog
 
-### 3.1. `StudentService` (`src/services/student.service.ts`)
+### 2.1. Authentication (`/api/auth`)
 
-#### `getStudents(classId?: string): StudentRow[]`
-* **Purpose:** Retrieves all students enrolled in a class (or all students in the school if `classId` is omitted).
-* **Authorization:** Public query.
+#### `POST /api/auth/login`
+* **Description**: Authenticate with email and password. Sets HTTP-only session cookie.
+* **Auth**: None (Public)
+* **Request Body**:
+  ```json
+  {
+    "email": "an.nguyen@classmanager.local",
+    "password": "teacher1"
+  }
+  ```
+* **Success Response (200 OK)**:
+  ```json
+  {
+    "data": {
+      "user": {
+        "id": "u-tea-01",
+        "name": "Thầy Nguyễn Văn An",
+        "email": "an.nguyen@classmanager.local",
+        "phone": "0912345601",
+        "role": "TEACHER",
+        "status": "active"
+      },
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+  }
+  ```
+* **Errors**: `400 Bad Request` (validation error), `401 Unauthorized` (invalid credentials or disabled account).
 
-#### `getStudentById(id: string): StudentRow | null`
-* **Purpose:** Retrieves a single student by unique ID.
+#### `POST /api/auth/logout`
+* **Description**: Clears the session cookie.
+* **Auth**: None
+* **Success Response (200 OK)**:
+  ```json
+  {
+    "data": {
+      "message": "Đăng xuất thành công."
+    }
+  }
+  ```
 
-#### `createStudent(data: StudentFormData, classId: string, currentUser: UserRow | null): OperationResult<StudentRow>`
-* **Purpose:** Adds a new student to a class.
-* **Authorization:** `AuthGuard.canEditStudent` (Requires `HOMEROOM_TEACHER` in `classId` or `ADMIN`).
-* **Validation & Invariants:**
-  - Validates `data` with `studentSchema` (Zod).
-  - Checks if `classId` exists.
-  - Verifies `data.student_code` is unique within `classId`.
-  - Enforces `activeCount < class.max_students` (max 40).
-
-#### `importStudents(classId: string, studentsData: StudentFormData[], currentUser: UserRow | null): OperationResult<{ count: number; imported: StudentRow[] }>`
-* **Purpose:** Batch imports multiple student records from an uploaded file.
-* **Authorization:** `AuthGuard.canEditStudent` (Requires `HOMEROOM_TEACHER` or `ADMIN`).
-* **Validation & Invariants:**
-  - Verifies non-empty array.
-  - Verifies non-empty `student_code` and `full_name` on each row.
-  - Checks code uniqueness within uploaded file.
-  - Checks code uniqueness against existing class roster.
-  - Enforces `activeCount + studentsData.length <= class.max_students`.
-
-#### `updateStudent(id: string, data: Partial<StudentFormData>, currentUser: UserRow | null): OperationResult<StudentRow>`
-* **Purpose:** Updates personal details of an existing student.
-* **Authorization:** `AuthGuard.canEditStudent`.
-* **Validation:** If `student_code` is changed, verifies uniqueness within the student's class.
-
-#### `deleteStudent(id: string, currentUser: UserRow | null): OperationResult<boolean>`
-* **Purpose:** Deletes a student from the class and frees their seat if occupied.
-* **Authorization:** `AuthGuard.canEditStudent`.
-
----
-
-### 3.2. `SeatingService` (`src/services/seating.service.ts`)
-
-#### `getDesks(classId?: string): DeskWithSeats[]`
-* **Purpose:** Retrieves the 20-desk classroom layout with seated student details.
-
-#### `assignSeat(seatId: string, studentId: string | null, classId: string, currentUser: UserRow | null): OperationResult<DeskWithSeats[]>`
-* **Purpose:** Assigns a student to a specific seat, or vacates a seat if `studentId` is `null`.
-* **Authorization:** `AuthGuard.canManageSeating` (Requires `HOMEROOM_TEACHER` or `ADMIN`).
-* **Validation:** Verifies `studentId` belongs to `classId`. Automatically clears previous seat if the student was already seated.
-
-#### `swapSeats(seatId1: string, seatId2: string, classId: string, currentUser: UserRow | null): OperationResult<DeskWithSeats[]>`
-* **Purpose:** Atomically exchanges occupants between two seats.
-* **Authorization:** `AuthGuard.canManageSeating`.
-* **Validation:** Rejects if `seatId1 === seatId2`.
-
-#### `randomizeSeating(classId: string, currentUser: UserRow | null): OperationResult<DeskWithSeats[]>`
-* **Purpose:** Uniformly shuffles student seat assignments across all 40 seats using the Fisher-Yates algorithm.
-* **Authorization:** `AuthGuard.canManageSeating`.
-
-#### `clearAllSeats(classId: string, currentUser: UserRow | null): OperationResult<DeskWithSeats[]>`
-* **Purpose:** Resets the seating layout by unassigning all students.
-* **Authorization:** `AuthGuard.canManageSeating`.
+#### `GET /api/auth/me`
+* **Description**: Returns the active authenticated user profile.
+* **Auth**: Required (`Bearer` or cookie)
+* **Success Response (200 OK)**:
+  ```json
+  {
+    "data": {
+      "user": { ... }
+    }
+  }
+  ```
 
 ---
 
-### 3.3. `AttendanceService` (`src/services/attendance.service.ts`)
+### 2.2. Classes (`/api/classes`)
 
-#### `getAttendanceRecords(classId?: string, subjectId?: string, currentUser?: UserRow | null): AttendanceRow[]`
-* **Purpose:** Retrieves attendance records filtered by class and subject.
-* **Authorization:** Checked via `AuthGuard.canViewAttendance`. GVCN can view all subjects; pure GVBM can only view their own assigned subject.
+#### `GET /api/classes`
+* **Description**: Retrieves classes accessible to the current user (all classes for ADMIN, assigned classes for TEACHER).
+* **Auth**: Required
 
-#### `getAttendanceForDate(dateStr: string, classId?: string, subjectId?: string, currentUser?: UserRow | null): AttendanceRow[]`
-* **Purpose:** Retrieves attendance records for a specific date (`YYYY-MM-DD`).
+#### `GET /api/classes/:id`
+* **Description**: Retrieves a single class by ID.
+* **Auth**: Required (Class access or ADMIN)
 
-#### `saveAttendanceBatch(dateStr: string, entries: Array<{ student_id: string; status: AttendanceStatus; note: string }>, classId: string, subjectId: string | undefined, currentUser: UserRow | null): OperationResult<void>`
-* **Purpose:** Saves a batch of attendance statuses for students in a class.
-* **Authorization:** `AuthGuard.canManageAttendance`. Rejects unless `currentUser` is assigned to teach `subjectId` in `classId` (or is `ADMIN`).
-* **Validation:** Date regex `YYYY-MM-DD`, valid statuses (`present`, `absent`, `late`, `excused`), student ID validation.
+#### `POST /api/classes`
+* **Description**: Creates a new class, auto-generating 20 desks and 40 seats.
+* **Auth**: Required (`ADMIN` only)
+* **Request Body**:
+  ```json
+  {
+    "name": "Lớp 6A5",
+    "grade": 6,
+    "room_name": "Phòng 105 — Nhà A",
+    "school_year": "2026 - 2027",
+    "teacher_id": "u-tea-01",
+    "max_students": 40
+  }
+  ```
 
-#### `getAttendanceHistory(classId: string): { dates: string[]; studentStats: any[]; needAttention: any[]; totalDatesRecorded: number }`
-* **Purpose:** Aggregates multi-date attendance matrix and student compliance rates.
+#### `PATCH /api/classes/:id`
+* **Description**: Updates class settings (name, room name, capacity).
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
 
----
-
-### 3.4. `TimetableService` (`src/services/timetable.service.ts`)
-
-#### `getTimetableForClass(classId: string, currentUser?: UserRow | null): TimetableEntryRow[]`
-* **Purpose:** Retrieves weekly schedule for a class.
-* **Authorization:** `AuthGuard.canViewTimetable` (Requires user to be assigned to the class or `ADMIN`).
-
-#### `getCurrentPeriodInfo(now?: Date): CurrentPeriodInfo`
-* **Purpose:** Evaluates current clock time against official secondary school schedule (Periods 1–10, assemblies, breaks).
-
-#### `getCurrentSession(classId: string, now?: Date): CurrentSessionInfo`
-* **Purpose:** Identifies ongoing subject and instructor for the active class in real time.
-
-#### `checkTeacherConflict(teacherId: string | null | undefined, dayOfWeek: number, period: number, excludeEntryId?: string, targetClassId?: string): TimetableConflict | null`
-* **Purpose:** Scans all 16 classes to ensure teacher is not double-booked at the given day/period.
-
-#### `checkClassConflict(classId: string, dayOfWeek: number, period: number, excludeEntryId?: string): TimetableConflict | null`
-* **Purpose:** Ensures a class does not have two subjects scheduled at the same day/period.
-
-#### `validateTimetableEntry(entry: TimetableEntryInput, excludeEntryId?: string): TimetableValidationResult`
-* **Purpose:** Validates shift constraints, Saturday rules, Homeroom period rules, and teacher/class conflicts.
-
-#### `saveEntry(classId: string, dayOfWeek: number, period: number, subjectId: string, teacherId: string | null, currentUser: UserRow | null): OperationResult<TimetableEntryRow>`
-* **Purpose:** Creates or updates a timetable slot.
-* **Authorization:** `ADMIN` only (`AuthGuard.canManageTimetable`).
-
-#### `deleteEntry(entryId: string, currentUser: UserRow | null): OperationResult<void>`
-* **Purpose:** Clears a scheduled slot.
-* **Authorization:** `ADMIN` only.
-
-#### `copyTimetable(sourceClassId: string, targetClassId: string, currentUser: UserRow | null): OperationResult<{ copiedCount: number }>`
-* **Purpose:** Duplicates an entire 28-period schedule from one class to another, re-mapping GVCN for Saturday Homeroom and rolling back on any teacher conflict.
-* **Authorization:** `ADMIN` only.
-
-#### `applyStandardTemplate(targetClassId: string, currentUser: UserRow | null): OperationResult<{ count: number }>`
-* **Purpose:** Populates class with the 28-period Ministry curriculum template.
-* **Authorization:** `ADMIN` only.
+#### `POST /api/classes/:id/archive`
+* **Description**: Archives a class.
+* **Auth**: Required (`ADMIN` only)
 
 ---
 
-### 3.5. `TeacherService` (`src/services/teacher.service.ts`)
+### 2.3. Students (`/api/classes/:classId/students` & `/api/students`)
 
-#### `checkGradeLimit(teacherId: string, targetClassId: string): { allowed: boolean; error?: string }`
-* **Purpose:** Enforces that a teacher cannot instruct across more than **two distinct grades** school-wide.
+#### `GET /api/classes/:classId/students`
+* **Description**: Lists all students enrolled in a class.
+* **Auth**: Required (Class access)
 
-#### `assignHomeroomTeacher(classId: string, teacherId: string | null, currentUser: UserRow | null): OperationResult<void>`
-* **Purpose:** Assigns the primary GVCN for a class.
-* **Authorization:** `ADMIN` only (`AuthGuard.canManageTeacherAssignment`).
+#### `POST /api/classes/:classId/students`
+* **Description**: Enrolls a student in a class.
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
+* **Request Body**:
+  ```json
+  {
+    "student_code": "HS041",
+    "full_name": "Nguyễn Hoàng Nam",
+    "gender": "male",
+    "date_of_birth": "2015-05-12",
+    "phone": "0987654321",
+    "email": "nam.nh@student.local"
+  }
+  ```
 
-#### `assignSubjectTeacher(classId: string, subjectId: string, teacherId: string | null, currentUser: UserRow | null): OperationResult<void>`
-* **Purpose:** Assigns a subject teacher to a class subject.
-* **Authorization:** `ADMIN` only. Enforces the 2-grade limit.
+#### `POST /api/classes/:classId/students/import`
+* **Description**: Bulk imports students with capacity checks.
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
+
+#### `PATCH /api/students/:id`
+* **Description**: Updates student information.
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
+
+#### `DELETE /api/students/:id`
+* **Description**: Removes student from class and clears occupied seat.
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
 
 ---
 
-### 3.6. `ClassService` (`src/services/class.service.ts`)
+### 2.4. Seating (`/api/classes/:classId/seating`)
 
-#### `updateClassSettings(classId: string, data: ClassSettingsFormData, currentUser: UserRow | null): OperationResult<ClassRow>`
-* **Purpose:** Updates classroom room name, school year, and capacity.
-* **Authorization:** `HOMEROOM_TEACHER` or `ADMIN`.
-* **Validation:** Prevents reducing `max_students` below the current active enrollment count.
+#### `GET /api/classes/:classId/seating`
+* **Description**: Retrieves the standardized 20-desk classroom layout with seated student details.
+* **Auth**: Required (Class access)
+
+#### `POST /api/classes/:classId/seating/assign`
+* **Description**: Assigns or unassigns a student to a seat.
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
+* **Request Body**: `{ "seat_id": "...", "student_id": "..." }`
+
+#### `POST /api/classes/:classId/seating/swap`
+* **Description**: Atomically swaps two seats.
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
+* **Request Body**: `{ "seat_id_1": "...", "seat_id_2": "..." }`
+
+#### `POST /api/classes/:classId/seating/randomize`
+* **Description**: Performs a uniform Fisher-Yates shuffle of active students into seats.
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
+
+#### `POST /api/classes/:classId/seating/clear`
+* **Description**: Clears all seat assignments.
+* **Auth**: Required (`HOMEROOM_TEACHER` or `ADMIN`)
 
 ---
 
-### 3.7. `AdminReportService` (`src/services/admin-report.service.ts`)
+### 2.5. Attendance (`/api/classes/:classId/attendance`)
 
-#### `getSchoolAttendanceOverview(): SchoolAttendanceOverview`
-* **Purpose:** Rollup metrics of today's attendance across all 16 classes and 480 students.
+#### `GET /api/classes/:classId/attendance?date=YYYY-MM-DD&subject_id=...`
+* **Description**: Retrieves daily attendance status per student for the specified subject.
+* **Auth**: Required (GVCN has full view; GVBM can view assigned subject only; ADMIN has full view).
 
-#### `getGradeAttendanceStats(): GradeAttendanceStat[]`
-* **Purpose:** Compliance breakdown by grade (Khối 6, 7, 8, 9).
+#### `POST /api/classes/:classId/attendance`
+* **Description**: Atomically saves a batch of attendance marks.
+* **Auth**: Required (Teacher assigned to subject, or ADMIN).
+* **Request Body**:
+  ```json
+  {
+    "date": "2026-09-23",
+    "subject_id": "sub-mat",
+    "entries": [
+      { "student_id": "stu-1", "status": "present", "note": "" },
+      { "student_id": "stu-2", "status": "late", "note": "Đi muộn 10 phút" }
+    ]
+  }
+  ```
 
-#### `getClassAttendanceStats(): ClassAttendanceStat[]`
-* **Purpose:** Detailed compliance stats for every individual class.
+#### `GET /api/classes/:classId/attendance/history?start_date=...&end_date=...`
+* **Description**: Retrieves attendance records over a date range.
+* **Auth**: Required (Class access)
 
-#### `generateSchoolReportWorkbookData(): SchoolReportWorkbookData`
-* **Purpose:** Prepares structured tabular data for the 4-sheet master Excel workbook export.
+---
+
+### 2.6. Timetable (`/api/classes/:classId/timetable`)
+
+#### `GET /api/classes/:classId/timetable`
+* **Description**: Retrieves the weekly schedule for the class.
+* **Auth**: Required (Class access or ADMIN)
+
+#### `POST /api/classes/:classId/timetable/entries`
+* **Description**: Sets or updates a single period entry with school-wide conflict check.
+* **Auth**: Required (`ADMIN` only)
+
+#### `DELETE /api/classes/timetable/entries/:id`
+* **Description**: Deletes a period entry.
+* **Auth**: Required (`ADMIN` only)
+
+#### `POST /api/classes/:classId/timetable/copy`
+* **Description**: Copies timetable from source class with SHL homeroom teacher remapping.
+* **Auth**: Required (`ADMIN` only)
+
+#### `POST /api/classes/:classId/timetable/clear`
+* **Description**: Clears all periods for the class.
+* **Auth**: Required (`ADMIN` only)
+
+---
+
+### 2.7. Announcements & Student Notes
+
+* `GET /api/classes/:classId/announcements`
+* `POST /api/classes/:classId/announcements` (`HOMEROOM_TEACHER` or `ADMIN`)
+* `PATCH /api/classes/:classId/announcements/:id/pin` (`HOMEROOM_TEACHER` or `ADMIN`)
+* `DELETE /api/classes/:classId/announcements/:id` (`HOMEROOM_TEACHER` or `ADMIN`)
+* `GET /api/notes/student/:studentId` (`HOMEROOM_TEACHER` or `ADMIN`)
+* `POST /api/notes/student/:studentId` (`HOMEROOM_TEACHER` or `ADMIN`)
+* `DELETE /api/notes/:id/student/:studentId` (`HOMEROOM_TEACHER` or `ADMIN`)
+
+---
+
+### 2.8. Teachers & Reports (`ADMIN` only)
+
+* `GET /api/teachers`
+* `POST /api/teachers`
+* `PATCH /api/teachers/:id`
+* `POST /api/teachers/:id/toggle-status`
+* `POST /api/teachers/assign-homeroom`
+* `POST /api/teachers/assign-subject` (Enforces max 2 grades per teacher)
+* `DELETE /api/teachers/subject-assignments/:id`
+* `GET /api/reports/school-summary`
+* `GET /api/reports/grade-attendance`
+
+---
+
+### 2.9. Health Endpoint
+
+#### `GET /health`
+* **Description**: Cloud service liveness check verifying PostgreSQL connectivity.
+* **Auth**: Public
+* **Response**: `HTTP 200 OK`
+  ```json
+  {
+    "status": "ok",
+    "database": "connected",
+    "timestamp": "2026-09-23T10:45:00.000Z"
+  }
+  ```

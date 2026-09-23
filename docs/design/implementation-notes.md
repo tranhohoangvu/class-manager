@@ -1,6 +1,6 @@
 # Implementation Notes, Technical Debt & Migration Roadmap
 
-This document outlines observable technical debt, edge cases, historical documentation discrepancies, and the migration checklist to Supabase/PostgreSQL.
+This document outlines technical architecture decisions, historical documentation discrepancies, and the migration architecture to Node.js, Express, and PostgreSQL deployed on Render.
 
 ---
 
@@ -16,37 +16,44 @@ During the codebase audit, certain discrepancies between early documentation and
 
 ---
 
-## 2. Known Limitations & Technical Debt
+## 2. Technical Decisions & Architectural Upgrades
+ 
+### 2.1. Dual-Persistence & REST API Integration
+* **Implementation:** The client application provides both offline-ready fallback (`LocalStore`) and a full REST API client (`src/lib/api-client.ts`) connecting to the standalone Express backend.
+* **Impact:** In development/standalone mode, the app functions offline; when connected to the backend, mutations persist to native PostgreSQL on Render with multi-device synchronization.
 
-### 2.1. Client-Side State Persistence
-* **Limitation:** All mutations persist only to the active browser's `localStorage`. Opening the application in another browser or incognito window starts with the default seed data.
-* **Impact:** Multiple teachers cannot collaborate in real time on separate devices until the Supabase backend is connected.
-
-### 2.2. Mock Authentication & Plaintext Passwords
-* **Limitation:** In `src/lib/mock-data.ts`, test accounts have plaintext passwords (`admin`, `teacher1`, `teacher23`). In `src/lib/auth.ts`, session verification compares passwords directly.
-* **Impact:** Suitable only for local demonstration and automated testing. In production, Supabase Auth handles bcrypt hashing and secure HTTP-only cookie issuance.
+### 2.2. Production Authentication & Security Hardening
+* **Implementation:** Passwords in PostgreSQL are hashed with `bcryptjs` (10 rounds). The Express backend validates credentials, issues signed JWTs in `httpOnly`, `sameSite: 'lax'` cookies, and extracts claims via `auth.middleware.ts`.
+* **Impact:** Full protection against XSS token theft, CSRF-resistant cookies, and timing-safe password verification.
 
 ### 2.3. Browser Memory Cache vs. Multi-Tab Synchronization
-* **Limitation:** `LocalStore` maintains an in-memory object `memoryCache`. If a user mutates data in Tab A, Tab B will only synchronize upon a full page reload or when reading keys that bypass the cache.
-* **Impact:** Minor in single-tab usage; would require a `storage` event listener for multi-tab sync.
+* **Limitation:** In offline `LocalStore` mode, `memoryCache` maintains state in memory. When connecting to the backend via `/api/*`, all queries reflect live database state.
 
 ---
 
-## 3. Concrete Supabase Migration Checklist
+## 3. Completed Backend Architecture & Render Deployment
 
-When transitioning from `LocalStore` to Supabase:
+The backend has been migrated from Supabase to a self-managed Node.js + Express + PostgreSQL architecture ready for deployment to Render:
 
-1. **Environment Setup:**
-   - Create a project on Supabase Cloud or self-hosted Supabase.
-   - Update `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-2. **Execute Database Migrations:**
-   - Run `supabase/migrations/001_initial_schema.sql` to generate tables, constraints, indexes, triggers, and RLS policies.
-   - Run `supabase/seed.sql` to populate initial subjects, classes, 20 desks per class, and teacher profiles.
-3. **Activate Edge Middleware (`src/middleware.ts`):**
-   - The middleware will automatically detect valid credentials and begin validating auth tokens via `supabase.auth.getUser()`.
-4. **Service Layer Transition:**
-   - Swap `LocalStore.*` calls in `src/services/*` to Supabase client calls:
-     - `StudentService`: `supabase.from('students').insert(...)`
-     - `AttendanceService`: `supabase.from('attendance').upsert(...)`
-     - `TimetableService`: `supabase.from('timetable_entries').insert(...)`
-   - Because all UI components call `src/services/*`, zero UI component modifications are required.
+1. **Backend Service (`backend/`):**
+   - Express 5 + TypeScript layered architecture (`controllers/`, `services/`, `repositories/`, `middleware/`, `validators/`, `config/`).
+   - Connection pool via `pg.Pool` with SSL rejection handling for Render PostgreSQL.
+   - Centralized error handling (`AppError` -> `{ error: { code, message, details } }`).
+   - Zod schema validation for all endpoints.
+
+2. **Database Migrations (`backend/migrations/`):**
+   - `001_initial_schema.sql`: 12 relational tables including unified `users` table.
+   - `002_constraints.sql`: Grade limits, seat capacities, and timetable unique constraints.
+   - `003_indexes.sql`: Foreign key and query optimization indexes.
+   - `004_functions.sql` & `005_triggers.sql`: PostgreSQL triggers for capacity and grade limits.
+   - `006_seed.sql`: Pre-hashed bcrypt credentials and full school master data.
+   - Migration runner: `npm run migrate` in `backend/`.
+
+3. **Frontend Integration:**
+   - Centralized `api-client.ts` with transparent authentication cookie handling.
+   - Next.js rewrites in `next.config.ts` proxying `/api/:path*` and `/health` to `http://localhost:4000` (or `BACKEND_URL`).
+   - Edge middleware in `src/middleware.ts` verifying session cookies without any third-party SDK dependencies.
+
+4. **Render Deployment:**
+   - Database: Render PostgreSQL instance with standard `DATABASE_URL`.
+   - Web Service: Node.js environment running `npm run build && npm start` in `backend/` with health check at `/health`.

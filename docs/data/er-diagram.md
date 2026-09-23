@@ -1,14 +1,14 @@
 # Entity-Relationship (ER) Diagram
 
-This diagram documents the complete relational schema defined in `supabase/migrations/001_initial_schema.sql` and mirrored in the `LocalStore` architecture.
+This diagram documents the complete PostgreSQL relational schema implemented in `backend/migrations/001_initial_schema.sql`.
 
 ```mermaid
 erDiagram
-    PROFILES ||--o{ CLASSES : "homeroom advises (teacher_id)"
-    PROFILES ||--o{ CLASS_MEMBERSHIPS : "belongs to"
-    PROFILES ||--o{ SUBJECT_ASSIGNMENTS : "assigned to teach"
-    PROFILES ||--o{ TIMETABLE_ENTRIES : "instructs period"
-    PROFILES ||--o{ ATTENDANCE : "recorded by"
+    USERS ||--o{ CLASSES : "homeroom advises (teacher_id)"
+    USERS ||--o{ CLASS_MEMBERSHIPS : "belongs to"
+    USERS ||--o{ SUBJECT_ASSIGNMENTS : "assigned to teach"
+    USERS ||--o{ TIMETABLE_ENTRIES : "instructs period"
+    USERS ||--o{ ATTENDANCE : "recorded by"
 
     CLASSES ||--o{ CLASS_MEMBERSHIPS : "has teachers"
     CLASSES ||--o{ SUBJECT_ASSIGNMENTS : "has subject courses"
@@ -28,10 +28,11 @@ erDiagram
 
     DESKS ||--|{ SEATS : "contains 2 seats (left/right)"
 
-    PROFILES {
-        uuid id PK
-        string name
+    USERS {
+        string id PK
         string email UK
+        string password_hash
+        string name
         string phone
         string role
         string status
@@ -41,15 +42,15 @@ erDiagram
     }
 
     SUBJECTS {
-        uuid id PK
+        string id PK
         string code UK
         string name
         timestamptz created_at
     }
 
     CLASSES {
-        uuid id PK
-        uuid teacher_id FK
+        string id PK
+        string teacher_id FK
         string name
         int grade
         string room_name
@@ -62,35 +63,35 @@ erDiagram
     }
 
     CLASS_MEMBERSHIPS {
-        uuid id PK
-        uuid teacher_id FK
-        uuid class_id FK
+        string id PK
+        string teacher_id FK
+        string class_id FK
         string role
         timestamptz created_at
     }
 
     SUBJECT_ASSIGNMENTS {
-        uuid id PK
-        uuid teacher_id FK
-        uuid class_id FK
-        uuid subject_id FK
+        string id PK
+        string teacher_id FK
+        string class_id FK
+        string subject_id FK
         timestamptz created_at
     }
 
     TIMETABLE_ENTRIES {
-        uuid id PK
-        uuid class_id FK
+        string id PK
+        string class_id FK
         int day_of_week
         int period
-        uuid subject_id FK
-        uuid teacher_id FK
+        string subject_id FK
+        string teacher_id FK
         timestamptz created_at
         timestamptz updated_at
     }
 
     STUDENTS {
-        uuid id PK
-        uuid class_id FK
+        string id PK
+        string class_id FK
         string student_code UK
         string full_name
         string gender
@@ -104,8 +105,8 @@ erDiagram
     }
 
     DESKS {
-        uuid id PK
-        uuid class_id FK
+        string id PK
+        string class_id FK
         int desk_number UK
         int row_num
         int col_num
@@ -113,18 +114,18 @@ erDiagram
     }
 
     SEATS {
-        uuid id PK
-        uuid desk_id FK
+        string id PK
+        string desk_id FK
         string side
-        uuid student_id FK,UK
+        string student_id FK
     }
 
     ATTENDANCE {
-        uuid id PK
-        uuid student_id FK
-        uuid class_id FK
-        uuid teacher_id FK
-        uuid subject_id FK
+        string id PK
+        string student_id FK
+        string class_id FK
+        string teacher_id FK
+        string subject_id FK
         date date
         string status
         string note
@@ -133,8 +134,8 @@ erDiagram
     }
 
     ANNOUNCEMENTS {
-        uuid id PK
-        uuid class_id FK
+        string id PK
+        string class_id FK
         string title
         string content
         boolean is_pinned
@@ -143,22 +144,11 @@ erDiagram
     }
 
     STUDENT_NOTES {
-        uuid id PK
-        uuid student_id FK
-        uuid class_id FK
+        string id PK
+        string student_id FK
+        string class_id FK
         string content
         timestamptz created_at
         timestamptz updated_at
     }
 ```
-
----
-
-## Key Cardinalities & Constraints Summary
-
-1. **`CLASSES` $\rightarrow$ `DESKS`:** Exactly `1 : 20` (fixed physical classroom standard).
-2. **`DESKS` $\rightarrow$ `SEATS`:** Exactly `1 : 2` (`left` and `right`).
-3. **`STUDENTS` $\leftrightarrow$ `SEATS`:** `0..1 : 0..1` (A student can occupy at most one seat; a seat can have at most one student).
-4. **`CLASSES` $\rightarrow$ `STUDENTS`:** `1 : 0..40` (Capped at `max_students <= 40`).
-5. **`CLASSES` $\leftrightarrow$ `TIMETABLE_ENTRIES`:** `1 : 28` (Standard secondary school week: 5 periods M–F, 3 periods Sat).
-6. **`PROFILES` (Teachers) $\leftrightarrow$ `CLASSES` (Grades):** Enforced `grade_count <= 2` across all subject assignments and homeroom assignments.

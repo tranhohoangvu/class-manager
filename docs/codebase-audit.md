@@ -1,7 +1,7 @@
 # CLASS MANAGER — BÁO CÁO AUDIT TOÀN DIỆN CODEBASE
-**Ngày thực hiện:** 22/09/2026  
-**Phiên bản hệ thống:** Prototype THCS Scale (16 lớp, 480 học sinh, 24 giáo viên, 10 môn học)  
-**Mục tiêu:** Đánh giá hiện trạng kiến trúc, bảo mật, tính toàn vẹn dữ liệu và chuẩn bị lộ trình nâng cấp lên mức Production-Ready (LocalStore layer chuẩn hóa, sẵn sàng cho Supabase trong tương lai).
+**Ngày thực hiện:** 22/09/2026 (Cập nhật Backend Migration: 23/09/2026)  
+**Phiên bản hệ thống:** THCS Scale (16 lớp, 480 học sinh, 24 giáo viên, 10 môn học)  
+**Mục tiêu:** Đánh giá hiện trạng kiến trúc, bảo mật, tính toàn vẹn dữ liệu và lộ trình phát triển hệ thống hoàn chỉnh (Node.js + Express + PostgreSQL + Render).
 
 ---
 
@@ -45,7 +45,7 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
   - `(dashboard)`: Dành cho hoạt động giảng dạy của Giáo viên (GVCN / GVBM).
   - `(admin)`: Dành cho Ban Giám hiệu / Quản trị viên trường học.
   - `(auth)`: Màn hình đăng nhập mock (1-Click demo accounts theo vai trò).
-- **Middleware (`src/middleware.ts`):** Được viết sẵn cho Supabase Auth, nhưng hiện tại bỏ qua (`bypass`) vì chưa cấu hình Supabase URL/Anon Key thật. Phân quyền hiện tại hoàn toàn phụ thuộc vào client layout guards (`useEffect` trong layout).
+- **Middleware (`src/middleware.ts`):** Kiểm tra token / session cookie (`token`, `cm_auth_session`). Phân quyền route groups giữa `(dashboard)` và `(admin)` được kiểm tra tại edge middleware và context guards.
 
 ---
 
@@ -73,9 +73,9 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
 - **CRIT-01: Tầng Mutation hoàn toàn thiếu RBAC (Bảo mật chỉ nằm ở giao diện UI)**
   - *Hiện trạng:* Các phương thức trong `LocalStore` như `addStudent`, `updateStudent`, `deleteStudent`, `assignSeat`, `swapSeats`, `saveAttendanceBatch`, `addAnnouncement`, `deleteNote` hoàn toàn không nhận diện `userId` hay `userRole`.
   - *Rủi ro:* Bất kỳ component nào (hoặc thao tác qua DevTools console) đều có thể gọi `LocalStore.deleteStudent` hay `LocalStore.assignSeat` mà không hề bị chặn, dù user đăng nhập đang là GVBM hoặc thậm chí là tài khoản bị khóa.
-- **CRIT-02: Không có Service / Repository Abstraction Layer (Coupling cao)**
-  - *Hiện trạng:* Các UI components (`students/page.tsx`, `seating/page.tsx`, v.v.) gọi trực tiếp `LocalStore.method()`.
-  - *Rủi ro:* Khi chuyển sang Supabase hoặc REST API thực tế, toàn bộ file giao diện sẽ phải bị đập đi viết lại (breaking change).
+- **CRIT-02: Không có Service / Repository Abstraction Layer (Đã giải quyết)**
+  - *Hiện trạng ban đầu:* Các UI components gọi trực tiếp storage.
+  - *Giải pháp:* Đã phân tầng dịch vụ `src/services/*` và xây dựng REST client `src/lib/api-client.ts` giao tiếp với Express API backend độc lập.
 - **CRIT-03: Thiếu Data Validation & Invariant Enforcements ở tầng Data**
   - *Hiện trạng:* `LocalStore.addStudent` không kiểm tra trùng `student_code` trong cùng lớp, không kiểm tra giới hạn `max_students` (30 hoặc 45).
   - *Hiện trạng:* `LocalStore.assignSeat` không kiểm tra học sinh có thuộc lớp đó hay không.
@@ -124,8 +124,8 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
      {isHomeroom && <Button onClick={handleDeleteStudent}>Xóa</Button>}
      ```
    - Nếu ai đó mở Console hoặc can thiệp gọi API, `LocalStore.deleteStudent(id)` sẽ chạy mà không có lớp guard nào kiểm tra `canDeleteStudent(currentUser, studentId)`.
-2. **Thiếu Author/Audit Trail:**
-   - Bảng `student_notes` và `announcements` không lưu `author_id`. Khi chuyển sang Supabase, không thể xác định ai là người tạo hoặc chỉnh sửa note để áp dụng RLS Policy (`auth.uid() = author_id`).
+2. **Thiếu Author/Audit Trail (Đã giải quyết trong Schema mới):**
+   - Bảng `student_notes` và `announcements` trong PostgreSQL schema hiện tại đã có cột `author_id` (FK `users.id`), lưu trữ đầy đủ danh tính người tạo để kiểm tra quyền hạn.
 
 ---
 
@@ -217,7 +217,7 @@ Theo đúng trình tự 10 Phase đã được quy định:
 ### 8. Remaining Issues
 - Không có lỗi kiến trúc nghiêm trọng. Toàn bộ các flow hoạt động mượt mà, TypeScript biên dịch 0 lỗi, production build Next.js thành công.
 
-### 9. Deferred (Chủ đích trì hoãn sang giai đoạn sau)
-- **Supabase Real Connection:** Chưa cấu hình URL và API Key thật (sẵn sàng schema mapping tại `docs/data-model.md`).
-- **Supabase Auth / Real Session:** Tiếp tục dùng mock session an toàn ở client layer.
+### 9. Completed Backend Architecture & Deployment
+- **Express REST API Backend:** Đã xây dựng hoàn chỉnh tại `backend/` với TypeScript, `pg.Pool`, middleware JWT auth, RBAC, Zod validation, và cấu hình Render Web Service.
+- **PostgreSQL Database:** Schema 12 bảng, triggers, indexes, và seed data sẵn sàng trên Render PostgreSQL.
 - **Cổng Phụ huynh / Học sinh (Parent / Student Portal):** Dự kiến ở các phiên bản tiếp theo.

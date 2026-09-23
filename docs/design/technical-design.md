@@ -13,7 +13,7 @@ All UI pages across `src/app/(dashboard)` and `src/app/(admin)` import and invok
 > Inferred from implementation
 
 1. **Decoupling UI from Storage Technology:**
-   By placing all authorization checks, input validation (Zod), and domain invariants inside `src/services/*`, the UI components treat the service layer as an abstract contract. When the project transitions to a remote PostgreSQL backend (e.g. Supabase RPC or REST API), only the service internals need to switch from `LocalStore` to `fetch()` / Supabase client calls. Zero UI component files will need refactoring.
+   By placing all authorization checks, input validation (Zod), and domain invariants inside `src/services/*`, the UI components treat the service layer as an abstract contract. When the project transitioned to a remote Node.js + Express REST API backed by PostgreSQL, the service internals and client network calls transitioned seamlessly via `src/lib/api-client.ts` with zero UI component breaking changes.
 2. **Defensive Invariant Protection:**
    Placing business logic (such as checking duplicate student codes or class capacity) in the service layer prevents accidental state corruption caused by UI component bugs or direct console tampering.
 

@@ -1,7 +1,7 @@
 # CLASS MANAGER — HỆ THỐNG DATA MODEL & DATA CONTRACTS
-**Phiên bản:** 2.0 (Chuẩn hóa cho THCS Scale & Sẵn sàng cho Supabase Migration)  
+**Phiên bản:** 3.0 (Chuẩn hóa cho THCS Scale & Hoàn thiện Backend Migration Native PostgreSQL)  
 **Tác giả:** Antigravity Team  
-**Mục tiêu:** Định nghĩa chuẩn mực cấu trúc dữ liệu cho tất cả các thực thể (Entities), quan hệ (Relationships), ràng buộc tính toàn vẹn (Integrity Constraints) và phân quyền (Role Access/RLS), đảm bảo việc lưu trữ hiện tại trong `LocalStore` hoàn toàn tương thích và dễ dàng migrate lên PostgreSQL/Supabase.
+**Mục tiêu:** Định nghĩa chuẩn mực cấu trúc dữ liệu cho tất cả các thực thể (Entities), quan hệ (Relationships), ràng buộc tính toàn vẹn (Integrity Constraints) và phân quyền (Role Access/RBAC), hỗ trợ đầy đủ cơ chế lưu trữ quan hệ chuẩn trên PostgreSQL và lưu trữ offline `LocalStore`.
 
 ---
 
@@ -57,7 +57,7 @@ Mô tả tài khoản người dùng trong hệ thống trường học (Admin h
 - **Role Access:**
   - `ADMIN`: Xem tất cả, tạo mới, chỉnh sửa, khóa/mở khóa, đặt lại mật khẩu.
   - `TEACHER`: Xem thông tin cá nhân của mình.
-- **Supabase Mapping:** Bảng `auth.users` kết hợp bảng `public.profiles`.
+- **Database Mapping:** Bảng native PostgreSQL `users` (chứa `password_hash` bcrypt 10 rounds, vai trò, môn học chính).
 
 ---
 
@@ -90,7 +90,7 @@ Danh mục môn học chính khóa cấp THCS (10 môn).
   - `ADMIN`: Quản lý toàn diện (tạo mới, đổi GVCN, lưu trữ lớp).
   - `HOMEROOM_TEACHER`: Quản trị nội bộ lớp (học sinh, chỗ ngồi, điểm danh, thông báo).
   - `SUBJECT_TEACHER`: Xem thông tin lớp, xem danh sách học sinh, điểm danh môn mình dạy.
-- **Supabase Mapping:** Bảng `public.classes`.
+- **Database Mapping:** Bảng `public.classes`.
 
 ---
 
@@ -243,18 +243,26 @@ Mô tả một tiết học cụ thể trong tuần của lớp học (Khung chu
 
 ---
 
-## 3. MIGRATION ROADMAP TỚI SUPABASE / POSTGRESQL
+## 3. CẤU TRÚC MIGRATION POSTGRESQL THỰC TẾ
 
-Khi chuyển đổi từ `LocalStore` sang Supabase thật trong tương lai, schema sẽ được thực thi theo các bước:
+Hệ thống backend sử dụng bộ migration SQL độc lập tại thư mục `backend/migrations/`, sẵn sàng thực thi trên bất kỳ máy chủ PostgreSQL chuẩn (Render PostgreSQL, AWS RDS, Docker, hoặc local):
 
-1. Tạo extension UUID: `CREATE EXTENSION IF NOT EXISTS "pgcrypto";`
-2. Tạo các bảng cơ sở: `subjects`, `classes`, `class_memberships`, `subject_assignments`.
-3. Tạo bảng thời khóa biểu: `timetable_entries` với 2 constraint ràng buộc ngăn xung đột:
-   - `CONSTRAINT uq_class_slot UNIQUE (class_id, day_of_week, period)`
-   - `CONSTRAINT uq_teacher_slot UNIQUE (teacher_id, day_of_week, period)`
-4. Cập nhật bảng `students` với unique constraint `UNIQUE(class_id, student_code)`.
-5. Cập nhật bảng `attendance` với composite unique key: `(student_id, date, subject_id)`.
-6. Tạo Trigger kiểm tra:
-   - `trg_check_max_students`: Chặn thêm học sinh khi lớp đã đủ sĩ số.
-   - `trg_check_teacher_grades_limit`: Chặn phân công giáo viên dạy quá 2 khối.
-7. Thiết lập RLS Policies tương ứng với các checks trong `src/services/auth-guard.ts`.
+1. **`001_initial_schema.sql`**:
+   - Kích hoạt extension: `CREATE EXTENSION IF NOT EXISTS "pgcrypto";`
+   - Tạo 12 bảng cốt lõi: `users`, `subjects`, `classes`, `class_memberships`, `subject_assignments`, `students`, `desks`, `seats`, `attendance`, `announcements`, `student_notes`, `timetable_entries`.
+2. **`002_constraints.sql`**:
+   - Ràng buộc sĩ số lớp học (`desk_count = 20`, `max_students <= 40`).
+   - Ràng buộc ngăn xung đột thời khóa biểu:
+     - `CONSTRAINT uq_timetable_class_slot UNIQUE (class_id, day_of_week, period)`
+     - `CONSTRAINT uq_timetable_teacher_slot UNIQUE (teacher_id, day_of_week, period)`
+   - Ràng buộc điểm danh duy nhất theo ngày và môn: `UNIQUE(student_id, date, subject_id)`.
+3. **`003_indexes.sql`**:
+   - Chỉ mục tối ưu hóa truy vấn tìm kiếm, lọc theo `class_id`, `teacher_id`, `date`, `day_of_week`.
+4. **`004_functions.sql` & `005_triggers.sql`**:
+   - `check_max_students()`: Chặn thêm học sinh khi sĩ số vượt trần `max_students`.
+   - `check_teacher_grade_limit()`: Đảm bảo giáo viên không bị phân công dạy quá 2 khối.
+   - `update_updated_at_column()`: Tự động cập nhật timestamp `updated_at`.
+5. **`006_seed.sql`**:
+   - Nạp dữ liệu trường THCS chuẩn (16 lớp, 480 học sinh, 20 bàn/lớp, 40 chỗ ngồi, 24 giáo viên với mật khẩu bcrypt, thời khóa biểu 2 ca).
+6. **Migration Runner**:
+   - Script `backend/scripts/migrate.ts` tự động theo dõi bảng `_migrations` và chạy tuần tự các tệp SQL theo transaction.

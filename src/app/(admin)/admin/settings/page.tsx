@@ -87,7 +87,7 @@ export default function AdminSettingsPage() {
               LocalStorage Repository (Prototype)
             </span>
             <span className="text-text-muted block">
-              Dữ liệu được cô lập theo classId, sẵn sàng ánh xạ sang Supabase PostgreSQL.
+              Dữ liệu được cô lập theo classId, kết nối đồng bộ với Backend Express REST API và PostgreSQL.
             </span>
           </div>
 

@@ -25,7 +25,8 @@ graph TD
         ExcelFiles["Spreadsheet Files (.xlsx, .csv)<br/>(Bulk Roster Import & 4-Sheet School Export)"]
         PrintEngine["Browser Print Engine<br/>(CSS @media print Landscape A4)"]
         Messaging["External Parent Communication<br/>(Direct Tel, SMS, Zalo Chat Links)"]
-        TargetSupabase["Target Supabase Cloud<br/>(PostgreSQL + RLS + auth.users)"]
+        BackendAPI["Node.js + Express REST API<br/>(Render Web Service)"]
+        PostgresDB["PostgreSQL Database<br/>(Render PostgreSQL)"]
     end
 
     Admin -->|"Manages faculty, classes, timetable, reports"| AppShell
@@ -43,7 +44,10 @@ graph TD
     AdminModule --> ExcelFiles
     ClassModule --> PrintEngine
     ClassModule --> Messaging
-    AuthModule -.->|"Future Session Sync"| TargetSupabase
+    AuthModule -->|"JWT & Session Auth"| BackendAPI
+    ClassModule -->|"REST API /api/*"| BackendAPI
+    AdminModule -->|"REST API /api/*"| BackendAPI
+    BackendAPI <-->|"pg connection pool"| PostgresDB
 ```
 
 ---
@@ -57,4 +61,5 @@ graph TD
 | **Excel Generator (`xlsx`)** | Egest | Generates multi-sheet Excel files for school reporting and attendance matrices. | `src/lib/export.ts` |
 | **Print Engine (`@media print`)** | Egest | Renders borderless, landscape A4 pages for classroom seating charts and weekly timetables. | `src/app/globals.css` |
 | **Parent Telephony / Zalo** | Egest URI | Launches `tel:`, `sms:`, and `https://zalo.me/` protocol handlers for 1-touch parent communication. | `src/app/(dashboard)/students/[id]/page.tsx` |
-| **Supabase SSR Client** | Network (Stub) | Pre-configured SSR client and cookie refresher ready for PostgreSQL migration. | `src/middleware.ts`, `src/lib/supabase/*` |
+| **Express REST API Client** | Network | Centralized REST client calling backend endpoints via Next.js proxy or direct base URL. | `src/lib/api-client.ts`, `backend/src/*` |
+| **Render PostgreSQL** | Database | Relational database hosting 12 normalized tables with triggers, indexes, and constraints. | `backend/src/config/database.ts` |

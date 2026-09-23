@@ -2,16 +2,16 @@
 
 <p align="center">
   <strong>A modern, production-ready school management platform engineered for middle schools (THCS).</strong><br>
-  Built with Next.js 16 (App Router), TypeScript, TailwindCSS, Service-Layer Architecture, and Per-Class RBAC.
+  Built with Next.js 16 (App Router), Node.js, Express, TypeScript, PostgreSQL, and Render Deployment.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-16.3-black?style=flat-square&logo=next.js" alt="Next.js">
+  <img src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-green?style=flat-square&logo=express" alt="Express Backend">
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-blue?style=flat-square&logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Deployment-Render-46E3B7?style=flat-square&logo=render" alt="Render">
   <img src="https://img.shields.io/badge/TypeScript-5.x-blue?style=flat-square&logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/TailwindCSS-v4-38bdf8?style=flat-square&logo=tailwindcss" alt="TailwindCSS">
   <img src="https://img.shields.io/badge/Testing-Vitest-yellow?style=flat-square&logo=vitest" alt="Vitest">
-  <img src="https://img.shields.io/badge/Architecture-Service%20Layer-emerald?style=flat-square" alt="Service Layer">
-  <img src="https://img.shields.io/badge/Data%20Contracts-Supabase%20Ready-3ecf8e?style=flat-square&logo=supabase" alt="Supabase Ready">
 </p>
 
 ---
@@ -19,33 +19,66 @@
 ## 📑 Table of Contents
 
 1. [Overview & School Scale](#-overview)
-2. [Key Features](#-key-features)
+2. [Target Architecture](#️-architecture)
+3. [Key Features](#-key-features)
    - [Dynamic Per-Class RBAC Matrix](#1-dynamic-per-class-rbac-matrix)
    - [Interactive Seating Chart (4×5 Grid / 20 Desks)](#2-interactive-seating-chart-45-classroom-grid--20-desks--40-seats)
    - [Subject-Aware Attendance Engine](#3-subject-aware-attendance-engine--quick-actions)
    - [Interactive Timetable & Conflict Prevention](#4-interactive-timetable--conflict-prevention-engine-timetable)
    - [Student Operations & Bulk Excel Import](#5-student-operations--bulk-excel-import)
-   - [Premium Visual Design System](#6-premium-visual-design-system)
-3. [Architecture & Data Layer](#️-architecture--data-access-layer)
 4. [Technology Stack](#️-technology-stack)
 5. [Quick Start & Running Locally](#-quick-start)
-6. [Demo Personas (1-Click Login)](#-demo-personas-1-click-login)
-7. [Comprehensive Documentation](#-documentation)
-8. [License](#-license)
+6. [Render Deployment Guide](#-render-deployment-guide)
+7. [Demo Personas (1-Click Login)](#-demo-personas-1-click-login)
+8. [Comprehensive Documentation](#-documentation)
+9. [License](#-license)
 
 ---
 
 ## 📖 Overview
 
-**Class Manager** models the exact operational and pedagogical structure of **Trường THCS Nguyễn Tất Thành** (Năm học: 2026 - 2027). The system features an enterprise-grade **Application Service Layer** that completely abstracts UI components from storage, enforces **Domain-Level Role-Based Access Control (RBAC)** across all mutations, and protects critical data invariants.
+**Class Manager** models the operational and pedagogical structure of **Trường THCS Nguyễn Tất Thành** (Năm học: 2026 - 2027). The system is powered by a self-managed full-stack architecture with a Next.js 16 frontend and a dedicated Node.js + Express + TypeScript backend connected to a native PostgreSQL database deployed on Render.
 
 ### 🏫 School Scale & Deterministic Dataset (Năm học 2026 - 2027)
 - **Đơn vị**: Trường THCS Nguyễn Tất Thành
 - **4 Grades**: Khối 6, Khối 7, Khối 8, Khối 9
 - **16 Classes**: 6A1–6A4, 7A1–7A4, 8A1–8A4, 9A1–9A4
-- **480 Students**: Exactly 30 students per class with realistic demographic and contact data
+- **480 Students**: 30 students per class with realistic demographic and contact data
 - **10 Core Subjects**: Mathematics, Literature, English, Physics, Chemistry, Biology, History, Geography, Informatics, Technology
 - **20 Desks / 40 Seats per Class**: 20 double desks arranged in a standardized 4×5 classroom layout (4 vertical columns × 5 rows)
+
+---
+
+## 🏛️ Architecture
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                     Next.js 16 Frontend                     │
+│  - App Router (18 routes)                                   │
+│  - Centralized API Client (src/lib/api-client.ts)           │
+│  - Client Layout & Route Guards                             │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ HTTP / REST API
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│               Node.js + Express + TypeScript                │
+│  (backend/src/)                                             │
+│  ├── routes/         (auth, classes, students, seating...)  │
+│  ├── controllers/    (request mapping & response format)    │
+│  ├── services/       (business logic & transaction coord)   │
+│  ├── middleware/     (auth, RBAC, Zod validation, error)    │
+│  ├── repositories/   (PostgreSQL queries via 'pg' pool)     │
+│  └── config/         (env, CORS, database, JWT settings)    │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ Parameterized SQL queries
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     PostgreSQL Database                     │
+│  - 12 Relational Tables with constraints, triggers, indexes │
+│  - Migrations: backend/migrations/ (001 -> 006)             │
+│  - Deployment: Render PostgreSQL                            │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -67,132 +100,110 @@ Permissions adapt dynamically based on the teacher's active class role:
 
 ### 2. Interactive Seating Chart (4×5 Classroom Grid / 20 Desks / 40 Seats)
 - **Standardized Classroom Geometry**: 20 double desks arranged in 4 columns × 5 rows (40 seats max).
-- **Dual Visual Perspectives**: Switch seamlessly between *Nhìn từ cuối lớp* (View from back) and *Nhìn từ bục giảng* (View from teacher's podium), with automatic `localStorage` preference persistence.
-- **Live Attendance Overlay**: Instant visual badges directly on seats (`✓ Có mặt`, `✕ Vắng`, `⏰ Muộn`, `📋 Phép`) helping teachers immediately identify missing students during lectures.
-- **Gender Balance Highlighting**: Filter and highlight male / female students to easily balance seating arrangements between rows.
-- **Fisher-Yates Randomization**: Instant, mathematically uniform seating shuffle with 1-to-1 seat invariance.
-- **Official A4 Print Layout**: Dedicated landscape print stylesheet (`@media print`) rendering the seating chart with school title header and official BGH / GVCN signature blocks.
+- **Dual Visual Perspectives**: Switch seamlessly between *Nhìn từ cuối lớp* (View from back) and *Nhìn từ bục giảng* (View from teacher's podium).
+- **Live Attendance Overlay**: Instant visual badges directly on seats (`✓ Có mặt`, `✕ Vắng`, `⏰ Muộn`, `📋 Phép`).
+- **Fisher-Yates Randomization**: Uniform seating shuffle with strict 1-to-1 seat invariance.
+- **Official A4 Print Layout**: Dedicated landscape print stylesheet (`@media print`).
 
 ### 3. Subject-Aware Attendance Engine & Quick Actions
-- **Strict Pedagogical RBAC**: Both GVCN and GVBM only take attendance for periods/subjects they are actively assigned to teach. GVCN has read-only access to view all subject records for comprehensive student monitoring.
-- **Real-Time Context Detection**: Automatically synchronizes with current clock time and period schedule to pre-select ongoing subject and teacher.
-- **Quick Status Tabs**: Filter students instantly by `Tất cả`, `Chưa có mặt` (Unaccounted / Absent or Late), `Có mặt`, `Vắng`, `Muộn`, and `Có phép`.
-- **1-Click School Admin Report**: Copy formatted morning absence summary to clipboard for immediate reporting to School Leadership via Zalo or SMS.
-- **Advanced Time Range Filtering (`/history`)**: Filter attendance history by `Tuần này`, `Tháng này`, `Tất cả`, or `Tùy chọn khoảng ngày`. Real-time recalculation of student attendance rates and period KPIs.
+- **Strict Pedagogical RBAC**: Both GVCN and GVBM only take attendance for periods/subjects they are actively assigned to teach.
+- **Real-Time Context Detection**: Synchronizes with current clock time and period schedule to pre-select ongoing subject and teacher.
+- **1-Click School Admin Report**: Copy formatted morning absence summary to clipboard for immediate reporting.
 
-### 4. Interactive Timetable & Conflict Prevention Engine (`/timetable`)
+### 4. Interactive Timetable & Conflict Prevention Engine
 - **Phân chia ca học theo khối chuẩn THCS 2 buổi**:
-  - **Khối 6 & Khối 9 → Ca Sáng**: Tiết 1–5 (Thứ 2–6), Tiết 1–3 (Thứ 7). Thứ 7 Tiết 3 cố định **Sinh hoạt lớp** do chính **GVCN** phụ trách.
-  - **Khối 7 & Khối 8 → Ca Chiều**: Tiết 6–10 (Thứ 2–6), Tiết 6–8 (Thứ 7). Thứ 7 Tiết 8 cố định **Sinh hoạt lớp** do chính **GVCN** phụ trách.
-  - Tuyệt đối không có Tiết 4/5 Thứ 7 sáng và Tiết 9/10 Thứ 7 chiều. Chuẩn 28 tiết/lớp/tuần × 16 lớp = 448 tiết toàn trường.
-- **Collapsible UI (Ẩn/Hiện tiết ca đối diện linh hoạt)**:
-  - Khối sáng hỗ trợ ẩn/hiện các hàng tiết chiều và ngược lại thông qua nút bấm và banner ca học. Các hàng không bị xóa bỏ hẳn mà giữ nguyên tính toàn vẹn của lưới học phần.
-- **Phân quyền Thời khóa biểu (Quản trị tập trung - Giáo viên không thể tự sửa)**:
-  - **Giáo viên (`TEACHER`)**: Hoàn toàn **không thể tự chỉnh sửa bất kỳ thứ gì liên quan tới thời khóa biểu** (không sửa môn, không đổi GV, không xếp mẫu, không sao chép hoặc xóa tiết). Giáo viên chỉ có quyền xem thời khóa biểu của các lớp mình được phân công giảng dạy (bao gồm vai trò GVCN và GVBM).
-  - **Quản trị viên (`ADMIN`)**: Có toàn quyền cấu hình, xếp mẫu, chỉnh sửa và quản lý toàn bộ 16 lớp trong trường.
-- **Strict School-Wide Conflict Prevention**:
-  - **Teacher Conflict Check**: Ngăn chặn tuyệt đối xung đột giáo viên dạy 2 lớp cùng ngày cùng tiết trên phạm vi toàn trường.
-  - **Class Conflict Check**: Mỗi ô tiết học của lớp chỉ có tối đa 1 môn học.
-  - **Atomic Transaction & Rollback**: Sao chép TKB và Xếp mẫu chuẩn tự động ánh xạ lại GVCN và rollback an toàn nếu phát hiện xung đột chéo.
-- **Smart Real-Time Period Calculator**: Nhận diện tiết học, giải lao và sinh hoạt đầu giờ theo thời gian thực (`getCurrentPeriodInfo`).
-- **Official A4 Landscape Print View**: Hỗ trợ in bảng thời khóa biểu chuẩn khổ A4 ngang có chữ ký Ban Giám hiệu và GVCN.
-
-### 5. Student Operations & Bulk Excel Import
-- **Bulk Excel Import (`/students`)**: Upload student rosters via `.xlsx`, `.xls`, or `.csv` with auto-column mapping.
-- **Pre-Import Data Validation**: Automatic duplicate check (within file and against existing students) and strict class capacity enforcement (max 40 students).
-- **Official Template Generator**: 1-click download of standardized sample template (`mau_danh_sach_hoc_sinh.xlsx`).
-- **Parent Contact Center (`/students/[id]`)**: Instant 1-touch actions for direct phone calling (`tel:`), SMS messaging (`sms:`), and Zalo chat (`https://zalo.me/`).
-- **1-Click Pre-formatted Notification Templates**: Ready-to-send school templates for Unexcused Absences, Tardiness Alerts, Periodic Attendance Reports, and Parent Conference Requests.
-
-### 6. Premium Visual Design System
-The visual language is engineered specifically for modern Vietnamese educational institutions:
-- **True 16px Standard Typography & Hierarchy**: Confident editorial typography with Vietnamese diacritics support.
-- **Warm Paper Multi-Surface Architecture**: OKLCH semantic palette (`--bg`, `--surface`, `--surface-muted`, and scholastic indigo `--accent`).
-- **Tactile Inputs & Physical Scale**: 46–50px touch targets, 58–62px table rows, and micro-press physics.
-- **Mobile-First Responsive Shell**: Off-canvas drawer navigation overlay and sticky mobile top bar (`MobileNav`) for phone and tablet viewports.
-
----
-
-## 🏗️ Architecture & Data Access Layer
-
-The codebase features a clean, multi-tiered architecture with strict isolation between presentation and storage:
-
-```text
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Presentation / UI Layer                         │
-│   Next.js 16 Pages · UI Components · StateViews (Loading/Empty/Error)  │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ (Calls typed Service Methods)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                    Application Services & RBAC Guard                   │
-│   StudentService · SeatingService · AttendanceService · ClassService   │
-│   AnnouncementService · NoteService · TeacherService · AuthGuard       │
-│   - Enforces Role Permissions (Admin vs. GVCN vs. GVBM)                │
-│   - Enforces Domain Invariants (Max 2 grades, Max 40 students, 1:1)    │
-│   - Zod Schema Validation on every input                               │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ (Returns OperationResult<T>)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Local Persistence Layer                         │
-│   LocalStore with automatic versioning (cm_data_version)               │
-│   Ready for seamless Supabase PostgreSQL migration (docs/data-model.md)│
-└────────────────────────────────────────────────────────────────────────┘
-```
+  - Khối 6 & 9 → Ca Sáng: Tiết 1–5 (Thứ 2–6), Tiết 1–3 (Thứ 7).
+  - Khối 7 & 8 → Ca Chiều: Tiết 6–10 (Thứ 2–6), Tiết 6–8 (Thứ 7).
+- **Strict School-Wide Conflict Prevention**: Ngăn chặn giáo viên dạy trùng tiết trên phạm vi toàn trường.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Next.js 16](https://nextjs.org/) (Turbopack, App Router)
-- **Language**: [TypeScript 5](https://www.typescriptlang.org/) (Strict type safety, 0 compiler errors)
-- **Styling**: [TailwindCSS v4](https://tailwindcss.com/) with semantic OKLCH design tokens
-- **Testing**: [Vitest](https://vitest.dev/) automated unit & integration test suite (91 tests passing, 8/8 test files)
-- **Excel Processing**: [xlsx](https://www.npmjs.com/package/xlsx) (Import & Export engine)
-- **Validation**: [Zod](https://zod.dev/)
-- **Icons**: [@phosphor-icons/react](https://phosphoricons.com/)
-- **Toast Notifications**: [Sonner](https://sonner.emilkowal.ski/)
+- **Frontend**: [Next.js 16](https://nextjs.org/) (App Router, Turbopack), [TypeScript 5](https://www.typescriptlang.org/), [TailwindCSS v4](https://tailwindcss.com/), [@phosphor-icons/react](https://phosphoricons.com/), [Sonner](https://sonner.emilkowal.ski/), [xlsx](https://www.npmjs.com/package/xlsx)
+- **Backend**: [Node.js](https://nodejs.org/) & [Express](https://expressjs.com/), [TypeScript 5](https://www.typescriptlang.org/), [Zod](https://zod.dev/), [bcryptjs](https://www.npmjs.com/package/bcryptjs), [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken), [pg](https://node-postgres.com/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/) (12 relational tables with constraints, triggers, indexes, and parameterized queries)
+- **Testing**: [Vitest](https://vitest.dev/) automated test suite (91 passing unit tests)
+- **Cloud Deployment**: [Render](https://render.com/) Web Service (Express API) + Render PostgreSQL
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start & Running Locally
 
-### Installation
+### 1. Prerequisites
+- Node.js >= 20
+- PostgreSQL database (local or cloud)
+
+### 2. Backend Setup & Database Migration
 
 ```bash
-# Clone the repository
-git clone https://github.com/tranhohoangvu/class-manager.git
-cd class-manager
+cd backend
 
 # Install dependencies
 npm install
 
-# Run the development server
+# Configure environment
+cp .env.example .env
+# Edit .env and set your DATABASE_URL
+
+# Run database migrations and seed data
+npm run migrate
+
+# Start backend in development mode (port 4000)
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+The Express API will be running on `http://localhost:4000`. Health check endpoint: `http://localhost:4000/health`.
 
-### Automated Testing
+### 3. Frontend Setup
 
 ```bash
-# Run Vitest test suite
+# In the project root
+npm install
+
+# Start Next.js development server (port 3000)
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser. Next.js automatically rewrites `/api/*` and `/health` requests to the Express backend.
+
+### 4. Running Automated Tests
+
+```bash
 npm test
 ```
 
-### Production Build
+---
 
-```bash
-# Verify TypeScript & compile production bundle
-npm run build
-```
+## ☁️ Render Deployment Guide
+
+### Backend: Render Web Service
+1. **Repository**: Point Render to your repository.
+2. **Root Directory**: `backend`
+3. **Environment**: `Node`
+4. **Build Command**: `npm install && npm run build`
+5. **Start Command**: `npm run start`
+6. **Health Check Path**: `/health`
+7. **Environment Variables**:
+   - `DATABASE_URL`: Connection string from your Render PostgreSQL instance.
+   - `PORT`: Automatically set by Render.
+   - `NODE_ENV`: `production`
+   - `JWT_SECRET`: A secure random 32-character string.
+   - `CORS_ORIGIN`: Your deployed frontend origin (e.g., `https://classmanager.onrender.com` or Vercel URL).
+
+### Database: Render PostgreSQL
+1. Create a **PostgreSQL** instance on Render.
+2. Note the **Internal Database URL** (for backend in same Render region) or **External Database URL**.
+3. Run the initial migration once from your CLI or Render Shell:
+   ```bash
+   DATABASE_URL="your-render-db-url" npm run migrate
+   ```
 
 ---
 
 ## 👥 Demo Personas (1-Click Login)
 
-The `/login` page provides quick-access profiles for all test cases:
+The `/login` page provides quick-access profiles:
 
 | Role Scenario | Account | Email | Password | Context |
 | :--- | :--- | :--- | :--- | :--- |
@@ -207,18 +218,16 @@ The `/login` page provides quick-access profiles for all test cases:
 
 ## 📚 Documentation
 
-The complete, reverse-engineered technical specification and design system for Class Manager is available in the [`/docs`](docs/README.md) directory:
+The complete technical specification is available in [`/docs`](docs/README.md):
 
 - **[Master Technical Documentation Index](docs/README.md)**
-- [System Architecture](docs/architecture/system-architecture.md) & [Module Architecture](docs/architecture/module-architecture.md)
-- [Functional Overview](docs/requirements/functional-overview.md) & [Business Rules Catalog](docs/requirements/business-rules.md)
+- [System Architecture](docs/architecture/system-architecture.md) & [Deployment Architecture](docs/architecture/deployment-architecture.md)
+- [Module Architecture](docs/architecture/module-architecture.md)
 - [Database Design](docs/data/database-design.md) & [ER Diagram](docs/data/er-diagram.md)
-- [Application Service Layer (API) Reference](docs/api/api-reference.md)
-- [Authentication & RBAC Security Model](docs/security/authorization.md)
+- [REST API Reference](docs/api/api-reference.md)
+- [Authentication Architecture](docs/security/authentication.md) & [Authorization / RBAC](docs/security/authorization.md)
+- [Functional Overview](docs/requirements/functional-overview.md) & [Business Rules Catalog](docs/requirements/business-rules.md)
 - [Workflows & Walkthroughs](docs/workflows/)
-- [Mermaid Diagrams (Use Cases, Class, Sequence, Activity, State, C4 Context)](docs/diagrams/class-diagrams.md)
-- [Feature-to-Code Traceability Matrix](docs/traceability/feature-to-code.md)
-- [Historical UI/UX & Codebase Audits](docs/ui-ux-audit.md)
 
 ---
 

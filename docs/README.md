@@ -1,8 +1,8 @@
 # Class Manager — Technical Documentation Specification
 
 > **System:** Class Manager (Trường THCS Nguyễn Tất Thành — Niên khóa 2026 - 2027)  
-> **Architecture:** Next.js 16 App Router · TypeScript · Service-Layer Architecture · Per-Class RBAC · Supabase PostgreSQL Ready  
-> **Source of Truth:** Active implementation in codebase (`src/`, `supabase/`, `tests/`)
+> **Architecture:** Next.js 16 App Router · Node.js + Express + TypeScript API · Native PostgreSQL · Per-Class RBAC · Render Ready  
+> **Source of Truth:** Active implementation in codebase (`src/`, `backend/`, `tests/`)
 
 ---
 
@@ -25,7 +25,7 @@ docs/
 │   └── business-rules.md                    # Auditable catalog of business rules (BR-001 to BR-019)
 │
 ├── data/
-│   ├── database-design.md                   # Dual-storage reality: LocalStore vs. PostgreSQL/Supabase
+│   ├── database-design.md                   # Relational PostgreSQL Database Schema (Render Hosted)
 │   └── er-diagram.md                        # Complete Mermaid Entity-Relationship Diagram (12 tables)
 │
 ├── api/
@@ -53,7 +53,7 @@ docs/
 │
 ├── design/
 │   ├── technical-design.md                  # Technical decisions, OKLCH tokens, offline-first rationale
-│   └── implementation-notes.md              # Limitations, historical documentation diffs, Supabase roadmap
+│   └── implementation-notes.md              # Migration architecture, technical notes, and Render deployment
 │
 └── traceability/
     └── feature-to-code.md                   # Full traceability matrix from UI to Service to DB and Tests
@@ -81,7 +81,7 @@ docs/
 * [API Reference](api/api-reference.md): Specification of the TypeScript domain services (`StudentService`, `SeatingService`, `AttendanceService`, `TimetableService`, `ClassService`, `TeacherService`, `AdminReportService`, `AuthGuard`). Clarifies that HTTP REST endpoints are not present.
 
 ### 5. Security & RBAC
-* [Authentication](security/authentication.md): Client-side session management (`cm_auth_session`), test personas, and Supabase SSR integration.
+* [Authentication](security/authentication.md): JWT token & HTTP-only cookie authentication, session lifecycle, and 6 test personas.
 * [Authorization & RBAC](security/authorization.md): Dynamic per-class authorization matrix, `AuthGuard` assertions, and PostgreSQL Row-Level Security (RLS) policies.
 
 ### 6. Core Workflows & Walkthroughs
@@ -102,7 +102,7 @@ docs/
 
 ### 8. Technical Decisions & Traceability
 * [Technical Design & Rationale](design/technical-design.md): Inferred design decisions, Fisher-Yates shuffle, OKLCH tokens, and A4 print styling.
-* [Implementation Notes & Roadmap](design/implementation-notes.md): Known limitations, historical documentation differences, and Supabase migration roadmap.
+* [Implementation Notes & Roadmap](design/implementation-notes.md): Migration architecture, technical notes, and Render deployment specifications.
 * [Feature-to-Code Traceability](traceability/feature-to-code.md): End-to-end matrix mapping requirements to UI pages, services, store keys, and Vitest test suites.
 
 ---
