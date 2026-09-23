@@ -70,7 +70,7 @@ Permissions adapt dynamically based on the teacher's active class role:
 | **Student Management** | Full CRUD | Read-Only Profile View | Full System Access |
 | **Seating Arrangement** | Swap, Randomize, Assign, Clear | View-Only Layout | View-Only |
 | **Attendance (Điểm danh)** | Mark Assigned Subject; View All Class Records (Read-Only) | Mark & View Assigned Subject Only | Full System Access (Mark & View All) |
-| **Timetable (Thời khóa biểu)** | Full CRUD & Fast Templates (Conflict Check) | Read-Only View | Full Configuration |
+| **Timetable (Thời khóa biểu)** | Read-Only View (Assigned Classes) | Read-Only View (Assigned Classes) | Full Configuration & Edits (All 16 Classes) |
 | **Student Notes** | Create & Delete Notes | Denied | View Only |
 | **Announcements** | Create, Pin, Delete | Read-Only | Manage All |
 | **Class Settings** | Full Configuration | Denied | Full Configuration |
@@ -98,9 +98,9 @@ Permissions adapt dynamically based on the teacher's active class role:
   - Tuyệt đối không có Tiết 4/5 Thứ 7 sáng và Tiết 9/10 Thứ 7 chiều. Chuẩn 28 tiết/lớp/tuần × 16 lớp = 448 tiết toàn trường.
 - **Collapsible UI (Ẩn/Hiện tiết ca đối diện linh hoạt)**:
   - Khối sáng hỗ trợ ẩn/hiện các hàng tiết chiều và ngược lại thông qua nút bấm và banner ca học. Các hàng không bị xóa bỏ hẳn mà giữ nguyên tính toàn vẹn của lưới học phần.
-- **Phân quyền xem Thời khóa biểu (AuthGuard)**:
-  - **Giáo viên (`TEACHER`)**: Chỉ xem được thời khóa biểu của các lớp mình được phân công giảng dạy (bao gồm vai trò GVCN và GVBM).
-  - **Quản trị viên (`ADMIN`)**: Có toàn quyền xem và thiết lập cho toàn bộ 16 lớp trong trường.
+- **Phân quyền Thời khóa biểu (Quản trị tập trung - Giáo viên không thể tự sửa)**:
+  - **Giáo viên (`TEACHER`)**: Hoàn toàn **không thể tự chỉnh sửa bất kỳ thứ gì liên quan tới thời khóa biểu** (không sửa môn, không đổi GV, không xếp mẫu, không sao chép hoặc xóa tiết). Giáo viên chỉ có quyền xem thời khóa biểu của các lớp mình được phân công giảng dạy (bao gồm vai trò GVCN và GVBM).
+  - **Quản trị viên (`ADMIN`)**: Có toàn quyền cấu hình, xếp mẫu, chỉnh sửa và quản lý toàn bộ 16 lớp trong trường.
 - **Strict School-Wide Conflict Prevention**:
   - **Teacher Conflict Check**: Ngăn chặn tuyệt đối xung đột giáo viên dạy 2 lớp cùng ngày cùng tiết trên phạm vi toàn trường.
   - **Class Conflict Check**: Mỗi ô tiết học của lớp chỉ có tối đa 1 môn học.
@@ -129,7 +129,7 @@ The visual language is engineered specifically for modern Vietnamese educational
 - **Framework**: [Next.js 16](https://nextjs.org/) (Turbopack, App Router)
 - **Language**: [TypeScript 5](https://www.typescriptlang.org/) (Strict type safety, 0 compiler errors)
 - **Styling**: [TailwindCSS v4](https://tailwindcss.com/) with semantic design tokens
-- **Testing**: [Vitest](https://vitest.dev/) automated unit & integration test suite (89 tests passing, 8/8 test files)
+- **Testing**: [Vitest](https://vitest.dev/) automated unit & integration test suite (91 tests passing, 8/8 test files)
 - **Excel Processing**: [xlsx](https://www.npmjs.com/package/xlsx) (Import & Export engine)
 - **Validation**: [Zod](https://zod.dev/)
 - **Icons**: [@phosphor-icons/react](https://phosphoricons.com/)

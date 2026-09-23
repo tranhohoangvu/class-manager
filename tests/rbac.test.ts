@@ -54,13 +54,16 @@ describe('RBAC & AuthGuard Tests', () => {
     expect(AuthGuard.canManageSeating(mockAdmin, 'c-6a1')).toBe(true);
     expect(AuthGuard.canManageAttendance(mockAdmin, 'c-6a1')).toBe(true);
     expect(AuthGuard.canManageTeacherAssignment(mockAdmin)).toBe(true);
+    expect(AuthGuard.canManageTimetable(mockAdmin, 'c-6a1')).toBe(true);
   });
 
-  it('Homeroom Teacher (GVCN) should have management rights in their own class (excluding unassigned attendance)', () => {
+  it('Homeroom Teacher (GVCN) should have management rights in their own class (excluding unassigned attendance and timetable)', () => {
     expect(AuthGuard.isHomeroomTeacher(mockGVCN_6A1, 'c-6a1')).toBe(true);
     expect(AuthGuard.canEditStudent(mockGVCN_6A1, 'c-6a1')).toBe(true);
     expect(AuthGuard.canManageSeating(mockGVCN_6A1, 'c-6a1')).toBe(true);
     expect(AuthGuard.canManageAnnouncement(mockGVCN_6A1, 'c-6a1')).toBe(true);
+    // GVCN CANNOT edit/manage timetable (Only Admin can)
+    expect(AuthGuard.canManageTimetable(mockGVCN_6A1, 'c-6a1')).toBe(false);
 
     // GVCN CANNOT take general attendance without subject
     expect(AuthGuard.canManageAttendance(mockGVCN_6A1, 'c-6a1')).toBe(false);
@@ -92,6 +95,7 @@ describe('RBAC & AuthGuard Tests', () => {
     expect(AuthGuard.canEditStudent(mockGVBM_Cuong, 'c-6a1')).toBe(false);
     expect(AuthGuard.canManageSeating(mockGVBM_Cuong, 'c-6a1')).toBe(false);
     expect(AuthGuard.canManageAnnouncement(mockGVBM_Cuong, 'c-6a1')).toBe(false);
+    expect(AuthGuard.canManageTimetable(mockGVBM_Cuong, 'c-6a1')).toBe(false);
   });
 
   it('Attendance VIEW Scope: GVCN can view entire homeroom class, GVBM can only view their own subjects', () => {

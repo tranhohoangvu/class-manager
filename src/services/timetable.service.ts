@@ -528,8 +528,8 @@ export const TimetableService = {
     teacherId: string | null,
     currentUser: UserRow | null
   ): OperationResult<TimetableEntryRow> {
-    if (!AuthGuard.isHomeroomTeacher(currentUser, classId)) {
-      return failure('Chỉ Giáo viên chủ nhiệm hoặc Quản trị viên mới có quyền xếp Thời khóa biểu.');
+    if (!AuthGuard.canManageTimetable(currentUser, classId)) {
+      return failure('Chỉ Quản trị viên mới có quyền xếp Thời khóa biểu. Giáo viên không được phép tự ý thay đổi Thời khóa biểu.');
     }
 
     if (dayOfWeek < 2 || dayOfWeek > 7) {
@@ -676,8 +676,8 @@ export const TimetableService = {
       return failure('Không tìm thấy tiết học cần cập nhật.');
     }
 
-    if (!AuthGuard.isHomeroomTeacher(currentUser, currentEntry.class_id)) {
-      return failure('Chỉ Giáo viên chủ nhiệm hoặc Quản trị viên mới có quyền cập nhật Thời khóa biểu.');
+    if (!AuthGuard.canManageTimetable(currentUser, currentEntry.class_id)) {
+      return failure('Chỉ Quản trị viên mới có quyền cập nhật Thời khóa biểu. Giáo viên không được phép tự ý thay đổi Thời khóa biểu.');
     }
 
     const cls = LocalStore.getClassById(currentEntry.class_id);
@@ -741,8 +741,8 @@ export const TimetableService = {
     period: number,
     currentUser: UserRow | null
   ): OperationResult<boolean> {
-    if (!AuthGuard.isHomeroomTeacher(currentUser, classId)) {
-      return failure('Chỉ Giáo viên chủ nhiệm hoặc Quản trị viên mới có quyền xóa tiết học.');
+    if (!AuthGuard.canManageTimetable(currentUser, classId)) {
+      return failure('Chỉ Quản trị viên mới có quyền xóa tiết học.');
     }
 
     const cls = LocalStore.getClassById(classId);
@@ -764,8 +764,8 @@ export const TimetableService = {
     classId: string,
     currentUser: UserRow | null
   ): OperationResult<TimetableEntryRow[]> {
-    if (!AuthGuard.isHomeroomTeacher(currentUser, classId)) {
-      return failure('Chỉ Giáo viên chủ nhiệm hoặc Quản trị viên mới có quyền thiết lập mẫu Thời khóa biểu.');
+    if (!AuthGuard.canManageTimetable(currentUser, classId)) {
+      return failure('Chỉ Quản trị viên mới có quyền thiết lập mẫu Thời khóa biểu.');
     }
 
     // Sinh các entries mẫu cho classId
@@ -810,8 +810,8 @@ export const TimetableService = {
     targetClassId: string,
     currentUser: UserRow | null
   ): OperationResult<TimetableEntryRow[]> {
-    if (!AuthGuard.isHomeroomTeacher(currentUser, targetClassId)) {
-      return failure('Bạn không có quyền chỉnh sửa Thời khóa biểu của lớp đích.');
+    if (!AuthGuard.canManageTimetable(currentUser, targetClassId)) {
+      return failure('Chỉ Quản trị viên mới có quyền sao chép Thời khóa biểu.');
     }
 
     if (sourceClassId === targetClassId) {
@@ -901,8 +901,8 @@ export const TimetableService = {
     classId: string,
     currentUser: UserRow | null
   ): OperationResult<boolean> {
-    if (!AuthGuard.isHomeroomTeacher(currentUser, classId)) {
-      return failure('Chỉ Giáo viên chủ nhiệm hoặc Quản trị viên mới có quyền xóa Thời khóa biểu.');
+    if (!AuthGuard.canManageTimetable(currentUser, classId)) {
+      return failure('Chỉ Quản trị viên mới có quyền xóa Thời khóa biểu.');
     }
 
     const ok = LocalStore.clearTimetable(classId);

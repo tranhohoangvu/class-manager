@@ -374,7 +374,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
         1,
         entry!.subject_id,
         entry!.teacher_id,
-        homeroomUser6A1
+        adminUser
       );
       expect(res.success).toBe(true);
       expect(res.data?.id).toBe(entry!.id);
@@ -385,8 +385,8 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
     });
 
     it('22. Hàm copy/mẫu thời khóa biểu tuân thủ đầy đủ 28 tiết/tuần', () => {
-      // Áp dụng mẫu chuẩn 28 tiết
-      const res = TimetableService.applyStandardTemplate(classId, homeroomUser6A1);
+      // Áp dụng mẫu chuẩn 28 tiết bởi Admin
+      const res = TimetableService.applyStandardTemplate(classId, adminUser);
       expect(res.success).toBe(true);
       expect(res.data?.length).toBe(28);
 
@@ -414,7 +414,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
         updated_at: new Date().toISOString(),
       };
 
-      const copyRes = TimetableService.copyFromClass('c-6a1', 'c-6a2', teacher6A2);
+      const copyRes = TimetableService.copyFromClass('c-6a1', 'c-6a2', adminUser);
       expect(copyRes.success).toBe(false);
       expect(copyRes.error).toContain('xung đột');
     });
@@ -504,12 +504,27 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
   });
 
   describe('RBAC & CRUD Permissions', () => {
-    it('cho phép GVCN hoặc Admin chỉnh sửa một tiết học hợp lệ', () => {
+    it('chỉ cho phép Quản trị viên (ADMIN) chỉnh sửa một tiết học hợp lệ', () => {
       // Lấy tiết học hiện tại của 6A1 ở Thứ Hai Tiết 1 (Toán, Thầy An)
       const currentEntry = LocalStore.getTimetableEntry(classId, 2, 1);
       expect(currentEntry).not.toBeNull();
 
-      // Cập nhật lại tiết học
+      // Cập nhật lại tiết học bởi ADMIN -> Thành công
+      const res = TimetableService.saveEntry(
+        classId,
+        2,
+        1,
+        'sub-mat',
+        homeroomUser6A1.id,
+        adminUser
+      );
+
+      expect(res.success).toBe(true);
+      expect(res.data?.subject_id).toBe('sub-mat');
+      expect(res.data?.teacher_id).toBe(homeroomUser6A1.id);
+    });
+
+    it('chặn Giáo viên chủ nhiệm (GVCN) không được tự ý chỉnh sửa TKB của lớp', () => {
       const res = TimetableService.saveEntry(
         classId,
         2,
@@ -519,9 +534,8 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
         homeroomUser6A1
       );
 
-      expect(res.success).toBe(true);
-      expect(res.data?.subject_id).toBe('sub-mat');
-      expect(res.data?.teacher_id).toBe(homeroomUser6A1.id);
+      expect(res.success).toBe(false);
+      expect(res.error).toContain('Chỉ Quản trị viên mới có quyền');
     });
 
     it('chặn giáo viên bộ môn khác không được chỉnh sửa TKB của lớp', () => {
@@ -535,15 +549,21 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
       );
 
       expect(res.success).toBe(false);
-      expect(res.error).toContain('Chỉ Giáo viên chủ nhiệm hoặc Quản trị viên');
+      expect(res.error).toContain('Chỉ Quản trị viên mới có quyền');
     });
 
-    it('cho phép xóa một tiết học thông thường (không phải SHL)', () => {
-      const deleteRes = TimetableService.deleteEntry(classId, 2, 1, homeroomUser6A1);
+    it('cho phép Quản trị viên xóa một tiết học thông thường (không phải SHL)', () => {
+      const deleteRes = TimetableService.deleteEntry(classId, 2, 1, adminUser);
       expect(deleteRes.success).toBe(true);
 
       const entry = LocalStore.getTimetableEntry(classId, 2, 1);
       expect(entry).toBeNull();
+    });
+
+    it('chặn Giáo viên chủ nhiệm (GVCN) tự xóa tiết học', () => {
+      const deleteRes = TimetableService.deleteEntry(classId, 2, 2, homeroomUser6A1);
+      expect(deleteRes.success).toBe(false);
+      expect(deleteRes.error).toContain('Chỉ Quản trị viên mới có quyền');
     });
   });
 
@@ -635,7 +655,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
         1,
         entry!.subject_id,
         entry!.teacher_id,
-        homeroomUser6A1
+        adminUser
       );
       expect(res.success).toBe(true);
       expect(res.data?.id).toBe(entry!.id);
@@ -714,9 +734,8 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
     // Case 9: Copy TKB có conflict -> Từ chối, báo danh sách xung đột, dữ liệu lớp đích không đổi
     it('Case 9: Copy TKB có conflict -> Từ chối, báo danh sách xung đột, dữ liệu lớp đích không đổi', () => {
       const targetClassBefore = LocalStore.getTimetable('c-6a2');
-      const teacher6A2 = LocalStore.getUserById('u-tea-02') || adminUser;
 
-      const copyRes = TimetableService.copyFromClass('c-6a1', 'c-6a2', teacher6A2);
+      const copyRes = TimetableService.copyFromClass('c-6a1', 'c-6a2', adminUser);
       expect(copyRes.success).toBe(false);
       expect(copyRes.error).toContain('xung đột');
 
@@ -727,7 +746,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
 
     // Case 10: Áp dụng template khi có conflict -> Từ chối và liệt kê các tiết xung đột
     it('Case 10: Áp dụng template khi có conflict -> Từ chối và liệt kê các tiết xung đột', () => {
-      const res6A1 = TimetableService.applyStandardTemplate('c-6a1', homeroomUser6A1);
+      const res6A1 = TimetableService.applyStandardTemplate('c-6a1', adminUser);
       expect(res6A1.success).toBe(true);
 
       const templateEntries = LocalStore.getTimetable('c-6a1');

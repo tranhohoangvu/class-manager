@@ -155,17 +155,17 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
   * Khung giờ chuẩn: 45 phút/tiết, sinh hoạt đầu giờ 15 phút (07:00–07:15 & 12:45–13:00) và giờ giải lao không phải là tiết học.
 * **Giao diện Ẩn/Hiện linh hoạt (Collapsible UI — Không bỏ hẳn hàng):**
   * Khối sáng hỗ trợ ẩn/hiện các hàng tiết chiều và ngược lại thông qua nút bấm thanh lọc và banner ca học. Các hàng không bị xóa bỏ hẳn mà giữ nguyên tính toàn vẹn của lưới học phần.
-* **Phân quyền xem Thời khóa biểu (AuthGuard):**
-  * **Giáo viên (`TEACHER`):** Chỉ xem được thời khóa biểu của các lớp mình phụ trách giảng dạy (bao gồm lớp chủ nhiệm và lớp được phân công bộ môn).
-  * **Quản trị viên (`ADMIN`):** Xem và quản lý toàn bộ 16 lớp trong trường.
+* **Phân quyền Thời khóa biểu (AuthGuard & Quản trị tập trung):**
+  * **Giáo viên (`TEACHER`):** Hoàn toàn **không thể tự chỉnh sửa bất kỳ thứ gì liên quan tới thời khóa biểu** (không sửa môn, không đổi GV, không xếp mẫu, không sao chép hoặc xóa tiết). Giáo viên chỉ xem được thời khóa biểu của các lớp mình phụ trách giảng dạy (bao gồm lớp chủ nhiệm và lớp được phân công bộ môn).
+  * **Quản trị viên (`ADMIN`):** Quản lý tập trung toàn trường; toàn quyền tạo, sửa, xếp mẫu, sao chép hoặc xóa TKB cho toàn bộ 16 lớp.
 * **Nội dung mỗi ô tiết học:**
   * Tên môn học kèm mã môn và màu sắc nhận diện đặc trưng (Toán - Xanh dương, Ngữ văn - Xanh lá, Tiếng Anh - Tím, Vật lý - Cyan, Hóa học - Vàng hổ phách, Sinh học - Xanh cốm, Lịch sử - Đỏ hồng, Địa lý - Teal, Tin học - Indigo, Công nghệ - Stone, SHL - Indigo/Tím).
   * Tên giáo viên bộ môn phụ trách (tự động liên kết từ phân công chuyên môn `subject_assignments` của lớp).
-* **Thao tác nghiệp vụ:**
+* **Thao tác nghiệp vụ (Dành riêng cho Quản trị viên):**
   * Bấm vào bất kỳ ô tiết học để gán/đổi môn học, giáo viên tự động tra cứu và điền sẵn.
   * Hỗ trợ nút **[⚡ Xếp mẫu chuẩn]**: Áp dụng 28 tiết chuẩn phân bổ đều các môn THCS theo khối.
   * Hỗ trợ nút **[📋 Sao chép TKB]**: Sao chép thời khóa biểu từ lớp khác sang lớp hiện tại, tự động ánh xạ lại GVCN lớp đích vào Tiết 3 (Sáng) hoặc Tiết 8 (Chiều) Thứ Bảy.
-  * Phân quyền RBAC: Admin và GVCN có quyền sửa; GVBM hiển thị badge "Chế độ xem".
+  * Phân quyền RBAC: Chỉ Admin có quyền chỉnh sửa; Giáo viên hiển thị badge "Chế độ chỉ xem".
   * Hỗ trợ giao diện Responsive: Lưới ma trận chia 2 buổi trên Desktop và Tab chọn ngày linh hoạt trên Mobile.
 
 ### 4.2. Điểm danh thông minh theo thời gian thực (Smart Contextual Attendance) `[ĐÃ XONG ✅]`

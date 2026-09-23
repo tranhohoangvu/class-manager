@@ -157,7 +157,7 @@ export default function TimetablePage() {
     }
   }, []);
 
-  const canEdit = user?.role === 'ADMIN' || activeClass?.teacher_id === user?.id;
+  const canEdit = AuthGuard.canManageTimetable(user, activeClass?.id);
 
   // Handle class switch from page chips
   const handleSelectClass = (clsId: string) => {
@@ -193,7 +193,7 @@ export default function TimetablePage() {
   // Open slot edit modal
   const handleOpenEdit = (day: number, period: number) => {
     if (!canEdit) {
-      toast.info('Bạn chỉ có quyền xem Thời khóa biểu.');
+      toast.info('Chỉ Quản trị viên mới có quyền chỉnh sửa Thời khóa biểu.');
       return;
     }
     if (!isAllowedPeriodForClass(classGrade, day, period)) {

@@ -48,6 +48,15 @@ export const AuthGuard = {
   },
 
   /**
+   * Check if user can edit, create, delete, or modify timetable entries.
+   * Business Rule: ONLY Admin can edit/manage timetable.
+   * Teachers (including Homeroom and Subject teachers) CANNOT edit anything related to timetable.
+   */
+  canManageTimetable(user: UserRow | null, _classId?: string | null): boolean {
+    return this.isAdmin(user);
+  },
+
+  /**
    * Check if user can add, edit, or delete students in a class.
    * Business Rule: Only Homeroom Teacher or Admin can manage students.
    */
