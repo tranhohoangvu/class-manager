@@ -75,42 +75,43 @@ Permissions adapt dynamically based on the teacher's active class role:
 | **Class Settings** | Full Configuration | Denied | Full Configuration |
 | **Teacher Allocation** | View Team | View Team | Assign GVCN & 10 GVBM |
 
-### 2. Interactive Seating Chart (5×5 Classroom Grid)
-- **Visual Classroom Layout**: 25 desks (5 columns × 5 rows) facing the blackboard.
-- **Fisher-Yates Randomization**: Instant, mathematically uniform seating shuffle.
-- **2-Click Seat Swapping**: Select any two seats to smoothly exchange student locations.
-- **Strict 1-to-1 Invariant**: A student can only occupy 1 seat in their assigned class.
+### 2. Interactive Seating Chart (4×5 Classroom Grid / 20 Desks / 40 Seats)
+- **Standardized Classroom Geometry**: 20 double desks arranged in 4 columns × 5 rows (40 seats max).
+- **Dual Visual Perspectives**: Switch seamlessly between *Nhìn từ cuối lớp* (View from back) and *Nhìn từ bục giảng* (View from teacher's podium), with automatic `localStorage` preference persistence.
+- **Live Attendance Overlay**: Instant visual badges directly on seats (`✓ Có mặt`, `✕ Vắng`, `⏰ Muộn`, `📋 Phép`) helping teachers immediately identify missing students during lectures.
+- **Gender Balance Highlighting**: Filter and highlight male / female students to easily balance seating arrangements between rows.
+- **Fisher-Yates Randomization**: Instant, mathematically uniform seating shuffle with 1-to-1 seat invariance.
+- **Official A4 Print Layout**: Dedicated landscape print stylesheet (`@media print`) rendering the seating chart with school title header and official BGH / GVCN signature blocks.
 
-### 3. Subject-Aware Attendance Engine
-- **Session Attendance**: GVBM marks attendance for their assigned subject period.
-- **Homeroom General Attendance**: GVCN takes daily class attendance.
-- **Timezone Safety**: Local date computation (`YYYY-MM-DD`) preventing UTC rollover issues.
-- **Attendance History Matrix**: Comprehensive date-by-date student tracking table with real-time rate calculations.
+### 3. Subject-Aware Attendance Engine & Quick Actions
+- **Session & Homeroom Attendance**: GVBM marks attendance for their assigned subject period; GVCN takes daily morning attendance.
+- **Quick Status Tabs**: Filter students instantly by `Tất cả`, `Chưa có mặt` (Unaccounted / Absent or Late), `Có mặt`, `Vắng`, `Muộn`, and `Có phép`.
+- **1-Click School Admin Report**: Copy formatted morning absence summary to clipboard for immediate reporting to School Leadership via Zalo or SMS.
+- **Advanced Time Range Filtering (`/history`)**: Filter attendance history by `Tuần này`, `Tháng này`, `Tất cả`, or `Tùy chọn khoảng ngày`. Real-time recalculation of student attendance rates and period KPIs.
 
-### 4. Excel & PDF / Print Capabilities
-- **Export Students to Excel**: Download `.xlsx` roster including STT, Student Code, Full Name, Gender, DOB, Class, Desk Position, Status with full Vietnamese Unicode support.
-- **Export Attendance to Excel**: Download `.xlsx` monthly attendance matrix (Students × Dates) with summary totals.
-- **A4 Print Layout**: Specialized `@media print` CSS for printing classroom seating diagrams and class rosters directly.
+### 4. Student Operations & Bulk Excel Import
+- **Bulk Excel Import (`/students`)**: Upload student rosters via `.xlsx`, `.xls`, or `.csv` with auto-column mapping.
+- **Pre-Import Data Validation**: Automatic duplicate check (within file and against existing students) and strict class capacity enforcement (max 40 students).
+- **Official Template Generator**: 1-click download of standardized sample template (`mau_danh_sach_hoc_sinh.xlsx`).
+- **Parent Contact Center (`/students/[id]`)**: Instant 1-touch actions for direct phone calling (`tel:`), SMS messaging (`sms:`), and Zalo chat (`https://zalo.me/`).
+- **1-Click Pre-formatted Notification Templates**: Ready-to-send school templates for Unexcused Absences, Tardiness Alerts, Periodic Attendance Reports, and Parent Conference Requests.
 
-### 5. Premium Visual Redesign & Design System
-The visual language has been completely redesigned from the ground up to feel like a bespoke, professional education product rather than an AI-generated CRUD dashboard:
-
-- **True 16px Standard Typography & Hierarchy**: Restored standard 16px root scale with confident, editorial type hierarchy (Page titles: 28–36px bold, section titles: 20–24px, table rows: 15–16px, captions/badges: 13–14px). Monospace font for student codes, tabular numbers, and dates.
-- **Warm Paper Multi-Surface Architecture**: Built on OKLCH color spaces with a warm neutral paper canvas (`--bg`), crisp card surfaces (`--surface`), soft warm tints (`--surface-muted`), and scholastic indigo accents (`--accent: oklch(0.48 0.16 260)`).
-- **Tactile Inputs & Physical Scale**: Expanded interactive controls to 46–50px touch targets (`Button`, `Input`, `Select`, `Textarea`), 58–62px table rows with 16–18px cell padding, and micro-press physics (`active:scale-[0.98]`).
-- **Spatial Classroom Seating Chart**: Visual 25-desk (50-seat) grid facing a realistic slate chalkboard. Desks represent genuine 2-student wooden units with student initials, gender icons, unseated student drawer, and 2-click instant swapping with floating action banner.
-- **Fast, Accessible Attendance Workflow**: High-contrast, tactile status toggles (`● Có mặt`, `● Vắng`, `● Muộn`, `● Phép`) with distinct semantic colorings, sticky bottom summary bar, and 1-click "Tất cả có mặt" bulk action.
-- **Mobile-First Responsive Shell**: 260px desktop sidebar with active indicator pills, paired with an off-canvas drawer navigation overlay and sticky mobile top bar (`MobileNav`) for phone and tablet viewports.
+### 5. Premium Visual Design System
+The visual language is engineered specifically for modern Vietnamese educational institutions:
+- **True 16px Standard Typography & Hierarchy**: Confident editorial typography with Vietnamese diacritics support.
+- **Warm Paper Multi-Surface Architecture**: OKLCH semantic palette (`--bg`, `--surface`, `--surface-muted`, and scholastic indigo `--accent`).
+- **Tactile Inputs & Physical Scale**: 46–50px touch targets, 58–62px table rows, and micro-press physics.
+- **Mobile-First Responsive Shell**: Off-canvas drawer navigation overlay and sticky mobile top bar (`MobileNav`) for phone and tablet viewports.
 
 ---
 
 ## 🛠️ Technology Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (Turbopack, App Router)
-- **Language**: [TypeScript 5](https://www.typescriptlang.org/) (Strict type safety)
+- **Language**: [TypeScript 5](https://www.typescriptlang.org/) (Strict type safety, 0 compiler errors)
 - **Styling**: [TailwindCSS v4](https://tailwindcss.com/) with semantic design tokens
-- **Testing**: [Vitest](https://vitest.dev/) automated unit test suite
-- **Excel Export**: [xlsx](https://www.npmjs.com/package/xlsx)
+- **Testing**: [Vitest](https://vitest.dev/) automated unit & integration test suite (27 tests passing)
+- **Excel Processing**: [xlsx](https://www.npmjs.com/package/xlsx) (Import & Export engine)
 - **Validation**: [Zod](https://zod.dev/)
 - **Icons**: [@phosphor-icons/react](https://phosphoricons.com/)
 - **Toast Notifications**: [Sonner](https://sonner.emilkowal.ski/)

@@ -106,7 +106,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ## 3. CẢI TIẾN 3 — ĐIỂM DANH & QUẢN LÝ HỌC SINH `[ĐÃ HOÀN THÀNH ✅]`
 
-> **Trạng thái:** Đã triển khai hoàn tất 100%, vượt qua toàn bộ 27 test cases Vitest và kiểm tra kiểu TypeScript (`tsc --noEmit`).
+> **Trạng thái:** Đã triển khai hoàn tất 100%, vượt qua toàn bộ 27 test cases Vitest, kiểm tra kiểu TypeScript (`tsc --noEmit`), và đẩy lên nhánh `main` (Commit `fe0763b`).
 
 ### 3.1. Tính năng Nhập học sinh hàng loạt từ file Excel (Import Students via Excel/CSV) `[ĐÃ XONG ✅]`
 * **Vấn đề:** Đầu năm học, GVCN phải nhập từng học sinh một rất mất thời gian.
@@ -200,11 +200,11 @@ gantt
     Lưu góc nhìn ưa thích & CSS in A4 sơ đồ      :done, a3, 2026-09-24, 1d
     section Giai đoạn 2 (UX & Thời khóa biểu)
     Lọc Chuyên cần & Giới tính trên sơ đồ lớp     :done, b1, 2026-09-24, 1d
-    Lọc học sinh vắng đầu giờ & lọc ngày Lịch sử  :b2, 2026-09-25, 1d
+    Lọc học sinh vắng đầu giờ & lọc ngày Lịch sử  :done, b2, 2026-09-25, 1d
     Xây dựng module Thời khóa biểu (/timetable)   :b3, 2026-09-25, 2d
     section Giai đoạn 3 (Automation & Admin)
+    Import danh sách học sinh từ file Excel       :done, c2, 2026-09-28, 2d
     Tích hợp TKB thông minh vào Điểm danh         :c1, 2026-09-27, 1d
-    Import danh sách học sinh từ file Excel       :c2, 2026-09-28, 2d
     Thống kê chuyên cần toàn trường Admin         :c3, 2026-09-29, 1d
     Kiểm thử Vitest & Đóng gói hoàn thiện         :c4, 2026-09-30, 1d
 ```
