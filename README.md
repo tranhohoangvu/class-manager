@@ -92,13 +92,21 @@ Permissions adapt dynamically based on the teacher's active class role:
 - **Advanced Time Range Filtering (`/history`)**: Filter attendance history by `Tuần này`, `Tháng này`, `Tất cả`, or `Tùy chọn khoảng ngày`. Real-time recalculation of student attendance rates and period KPIs.
 
 ### 4. Interactive Timetable & Conflict Prevention Engine (`/timetable`)
-- **6 Days × 5 Periods Matrix**: Standardized 30-period secondary school schedule (Monday to Saturday, Morning sessions).
+- **Phân chia ca học theo khối chuẩn THCS 2 buổi**:
+  - **Khối 6 & Khối 9 → Ca Sáng**: Tiết 1–5 (Thứ 2–6), Tiết 1–3 (Thứ 7). Thứ 7 Tiết 3 cố định **Sinh hoạt lớp** do chính **GVCN** phụ trách.
+  - **Khối 7 & Khối 8 → Ca Chiều**: Tiết 6–10 (Thứ 2–6), Tiết 6–8 (Thứ 7). Thứ 7 Tiết 8 cố định **Sinh hoạt lớp** do chính **GVCN** phụ trách.
+  - Tuyệt đối không có Tiết 4/5 Thứ 7 sáng và Tiết 9/10 Thứ 7 chiều. Chuẩn 28 tiết/lớp/tuần × 16 lớp = 448 tiết toàn trường.
+- **Collapsible UI (Ẩn/Hiện tiết ca đối diện linh hoạt)**:
+  - Khối sáng hỗ trợ ẩn/hiện các hàng tiết chiều và ngược lại thông qua nút bấm và banner ca học. Các hàng không bị xóa bỏ hẳn mà giữ nguyên tính toàn vẹn của lưới học phần.
+- **Phân quyền xem Thời khóa biểu (AuthGuard)**:
+  - **Giáo viên (`TEACHER`)**: Chỉ xem được thời khóa biểu của các lớp mình được phân công giảng dạy (bao gồm vai trò GVCN và GVBM).
+  - **Quản trị viên (`ADMIN`)**: Có toàn quyền xem và thiết lập cho toàn bộ 16 lớp trong trường.
 - **Strict School-Wide Conflict Prevention**:
-  - **Teacher Conflict Check**: Enforces invariant that a teacher cannot teach two different classes at the same day and period. Scans the entire school timetable across all grades (6–9).
-  - **Class Conflict Check**: Each slot in a class contains at most one entry.
-  - **Atomic Transaction & Rollback**: Batch operations (`copyFromClass`, `applyStandardTemplate`) validate all target entries and roll back with detailed conflict breakdowns if collisions occur.
-- **Smart Real-Time Period Calculator**: Evaluates current time against THCS bell schedule (`getCurrentPeriodInfo`) to flag active, break, and upcoming sessions.
-- **Official A4 Landscape Print View**: Formal bulletin-board timetable layout with school header, subject palette, and signature blocks.
+  - **Teacher Conflict Check**: Ngăn chặn tuyệt đối xung đột giáo viên dạy 2 lớp cùng ngày cùng tiết trên phạm vi toàn trường.
+  - **Class Conflict Check**: Mỗi ô tiết học của lớp chỉ có tối đa 1 môn học.
+  - **Atomic Transaction & Rollback**: Sao chép TKB và Xếp mẫu chuẩn tự động ánh xạ lại GVCN và rollback an toàn nếu phát hiện xung đột chéo.
+- **Smart Real-Time Period Calculator**: Nhận diện tiết học, giải lao và sinh hoạt đầu giờ theo thời gian thực (`getCurrentPeriodInfo`).
+- **Official A4 Landscape Print View**: Hỗ trợ in bảng thời khóa biểu chuẩn khổ A4 ngang có chữ ký Ban Giám hiệu và GVCN.
 
 ### 5. Student Operations & Bulk Excel Import
 - **Bulk Excel Import (`/students`)**: Upload student rosters via `.xlsx`, `.xls`, or `.csv` with auto-column mapping.
@@ -121,7 +129,7 @@ The visual language is engineered specifically for modern Vietnamese educational
 - **Framework**: [Next.js 16](https://nextjs.org/) (Turbopack, App Router)
 - **Language**: [TypeScript 5](https://www.typescriptlang.org/) (Strict type safety, 0 compiler errors)
 - **Styling**: [TailwindCSS v4](https://tailwindcss.com/) with semantic design tokens
-- **Testing**: [Vitest](https://vitest.dev/) automated unit & integration test suite (27 tests passing)
+- **Testing**: [Vitest](https://vitest.dev/) automated unit & integration test suite (89 tests passing, 8/8 test files)
 - **Excel Processing**: [xlsx](https://www.npmjs.com/package/xlsx) (Import & Export engine)
 - **Validation**: [Zod](https://zod.dev/)
 - **Icons**: [@phosphor-icons/react](https://phosphoricons.com/)

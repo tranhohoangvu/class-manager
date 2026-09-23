@@ -18,11 +18,16 @@ import {
   CalendarBlank,
   BookOpen,
   WarningCircle,
+  Eye,
+  EyeSlash,
+  CaretDown,
+  CaretUp,
+  Lock,
 } from '@phosphor-icons/react';
 import { useCurrentClass } from '@/contexts/class-context';
 import { useAuth } from '@/contexts/auth-context';
 import { LocalStore } from '@/lib/store';
-import { TimetableService, CurrentPeriodInfo } from '@/services';
+import { TimetableService, CurrentPeriodInfo, AuthGuard } from '@/services';
 import {
   TimetableEntryRow,
   SubjectRow,
@@ -34,6 +39,10 @@ import {
   TIMETABLE_DAYS,
   SUBJECT_COLOR_MAP,
   DEFAULT_SUBJECT_COLOR,
+  getGradeShift,
+  isAllowedPeriodForClass,
+  getClassHomeroomSlot,
+  getClassAllowedPeriods,
 } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -41,7 +50,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 export default function TimetablePage() {
-  const { currentClassId, currentClass, isHomeroom, isSubjectTeacher, teacherSubjects } = useCurrentClass();
+  const { currentClassId, currentClass, isHomeroom, switchClass } = useCurrentClass();
   const { user } = useAuth();
 
   const [timetable, setTimetable] = useState<TimetableEntryRow[]>([]);
@@ -50,6 +59,15 @@ export default function TimetablePage() {
   const [allClasses, setAllClasses] = useState<ClassRow[]>([]);
   const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Class Selection & View State
+  const [selectedClassId, setSelectedClassId] = useState<string>(currentClassId || 'c-6a1');
+  const [gradeFilter, setGradeFilter] = useState<number | 'all'>('all');
+
+  // Toggle show/hide the opposite session rows (collapse/expand)
+  // For morning classes: control whether afternoon rows (P6-P10) are visible
+  // For afternoon classes: control whether morning rows (P1-P5) are visible
+  const [showOppositeShift, setShowOppositeShift] = useState<boolean>(false);
 
   // Edit Cell Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -66,18 +84,57 @@ export default function TimetablePage() {
   // Mobile selected day tab (2..7)
   const [mobileSelectedDay, setMobileSelectedDay] = useState<number>(2);
 
+  // Allowed classes for current user:
+  // - ADMIN: Can view all classes in the school.
+  // - TEACHERS: Can ONLY view timetable of classes they teach (Homeroom or Subject teacher).
+  const allowedClasses = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'ADMIN') {
+      return allClasses;
+    }
+    return allClasses.filter((c) => AuthGuard.canViewTimetable(user, c.id));
+  }, [allClasses, user]);
+
+  // Sync selectedClassId if currentClassId changes from external switcher
+  useEffect(() => {
+    if (currentClassId) {
+      if (user?.role === 'ADMIN' || allowedClasses.some((c) => c.id === currentClassId)) {
+        setSelectedClassId(currentClassId);
+      }
+    }
+  }, [currentClassId, allowedClasses, user]);
+
+  // Ensure selectedClassId stays within allowedClasses for teachers
+  useEffect(() => {
+    if (user && user.role !== 'ADMIN' && allowedClasses.length > 0) {
+      if (!allowedClasses.some((c) => c.id === selectedClassId)) {
+        setSelectedClassId(allowedClasses[0].id);
+      }
+    }
+  }, [allowedClasses, selectedClassId, user]);
+
+  // Resolve active class from allowed classes
+  const activeClass =
+    allowedClasses.find((c) => c.id === selectedClassId) ||
+    allowedClasses[0] ||
+    null;
+  const activeClassId = activeClass?.id || selectedClassId || 'c-6a1';
+
   // Load class data
   const loadData = () => {
-    if (!currentClassId) return;
-    const entries = TimetableService.getTimetableForClass(currentClassId);
+    const classes = LocalStore.getClasses().filter((c) => c.status === 'active');
+    setAllClasses(classes);
+
+    const targetId = activeClassId || (classes.length > 0 ? classes[0].id : null);
+    if (!targetId) return;
+
+    const entries = TimetableService.getTimetableForClass(targetId, user);
     const subjs = LocalStore.getSubjects();
     const usrs = LocalStore.getUsers().filter((u) => u.role === 'TEACHER');
-    const classes = LocalStore.getClasses().filter((c) => c.status === 'active');
 
     setTimetable(entries);
     setSubjects(subjs);
     setTeachers(usrs);
-    setAllClasses(classes);
     setPeriodInfo(TimetableService.getCurrentPeriodInfo());
     setIsLoaded(true);
   };
@@ -89,7 +146,7 @@ export default function TimetablePage() {
       setPeriodInfo(TimetableService.getCurrentPeriodInfo());
     }, 60000);
     return () => clearInterval(interval);
-  }, [currentClassId]);
+  }, [activeClassId]);
 
   // Set default mobile tab to today's day of week (if Monday..Saturday)
   useEffect(() => {
@@ -100,7 +157,13 @@ export default function TimetablePage() {
     }
   }, []);
 
-  const canEdit = isHomeroom || user?.role === 'ADMIN';
+  const canEdit = user?.role === 'ADMIN' || activeClass?.teacher_id === user?.id;
+
+  // Handle class switch from page chips
+  const handleSelectClass = (clsId: string) => {
+    setSelectedClassId(clsId);
+    switchClass(clsId);
+  };
 
   // Map entries for quick lookup: [day-period] => TimetableEntryRow
   const timetableMap = useMemo(() => {
@@ -123,21 +186,25 @@ export default function TimetablePage() {
     return map;
   }, [teachers]);
 
+  const classGrade = activeClass?.grade || 6;
+  const classShift = getGradeShift(classGrade);
+  const homeroomSlot = getClassHomeroomSlot(classGrade);
+
   // Open slot edit modal
   const handleOpenEdit = (day: number, period: number) => {
     if (!canEdit) {
       toast.info('Bạn chỉ có quyền xem Thời khóa biểu.');
       return;
     }
-    if (day === 7 && [4, 5, 9, 10].includes(period)) {
-      toast.info(`Thứ Bảy không có Tiết ${period}.`);
+    if (!isAllowedPeriodForClass(classGrade, day, period)) {
+      toast.info(`Lớp ${activeClass?.name} học ca ${classShift === 'morning' ? 'Sáng' : 'Chiều'}, không học Tiết ${period}.`);
       return;
     }
     const entry = timetableMap.get(`${day}-${period}`);
     setEditingSlot({ day, period });
-    if (day === 7 && (period === 3 || period === 8)) {
+    if (day === 7 && period === homeroomSlot.period) {
       setEditSubjectId('sub-shl');
-      setEditTeacherId(currentClass?.teacher_id || '');
+      setEditTeacherId(activeClass?.teacher_id || '');
     } else {
       setEditSubjectId(entry?.subject_id || '');
       setEditTeacherId(entry?.teacher_id || '');
@@ -150,8 +217,8 @@ export default function TimetablePage() {
   const handleSubjectChange = (subjectId: string) => {
     setEditSubjectId(subjectId);
     setEditError(null);
-    if (currentClassId && subjectId) {
-      const assignments = LocalStore.getSubjectAssignmentsForClass(currentClassId);
+    if (activeClassId && subjectId) {
+      const assignments = LocalStore.getSubjectAssignmentsForClass(activeClassId);
       const match = assignments.find((a) => a.subject_id === subjectId);
       if (match) {
         setEditTeacherId(match.teacher_id);
@@ -161,12 +228,12 @@ export default function TimetablePage() {
 
   // Save slot edit
   const handleSaveSlot = () => {
-    if (!currentClassId || !editingSlot) return;
+    if (!activeClassId || !editingSlot) return;
 
     if (!editSubjectId) {
       // Clear this slot
       const res = TimetableService.deleteEntry(
-        currentClassId,
+        activeClassId,
         editingSlot.day,
         editingSlot.period,
         user
@@ -184,7 +251,7 @@ export default function TimetablePage() {
     }
 
     const res = TimetableService.saveEntry(
-      currentClassId,
+      activeClassId,
       editingSlot.day,
       editingSlot.period,
       editSubjectId,
@@ -205,9 +272,9 @@ export default function TimetablePage() {
 
   // Delete slot button in modal
   const handleDeleteSlot = () => {
-    if (!currentClassId || !editingSlot) return;
+    if (!activeClassId || !editingSlot) return;
     const res = TimetableService.deleteEntry(
-      currentClassId,
+      activeClassId,
       editingSlot.day,
       editingSlot.period,
       user
@@ -225,9 +292,9 @@ export default function TimetablePage() {
 
   // Reset to standard template
   const handleApplyTemplate = () => {
-    if (!currentClassId) return;
+    if (!activeClassId) return;
     if (window.confirm('Bạn có chắc muốn áp dụng Thời khóa biểu mẫu chuẩn cho lớp học này? Dữ liệu hiện tại sẽ được cập nhật lại theo khung chuẩn.')) {
-      const res = TimetableService.applyStandardTemplate(currentClassId, user);
+      const res = TimetableService.applyStandardTemplate(activeClassId, user);
       if (res.success) {
         toast.success('Đã xếp nhanh Thời khóa biểu theo mẫu chuẩn!');
         loadData();
@@ -239,11 +306,11 @@ export default function TimetablePage() {
 
   // Copy from another class
   const handleCopyFromClass = () => {
-    if (!currentClassId || !sourceClassId) {
+    if (!activeClassId || !sourceClassId) {
       toast.error('Vui lòng chọn lớp học nguồn để sao chép.');
       return;
     }
-    const res = TimetableService.copyFromClass(sourceClassId, currentClassId, user);
+    const res = TimetableService.copyFromClass(sourceClassId, activeClassId, user);
     if (res.success) {
       toast.success('Đã sao chép Thời khóa biểu thành công!');
       setCopyError(null);
@@ -257,9 +324,9 @@ export default function TimetablePage() {
 
   // Clear all
   const handleClearAll = () => {
-    if (!currentClassId) return;
+    if (!activeClassId) return;
     if (window.confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa toàn bộ Thời khóa biểu của lớp này?')) {
-      const res = TimetableService.clearTimetable(currentClassId, user);
+      const res = TimetableService.clearTimetable(activeClassId, user);
       if (res.success) {
         toast.success('Đã xóa sạch Thời khóa biểu của lớp.');
         loadData();
@@ -274,7 +341,21 @@ export default function TimetablePage() {
     window.print();
   };
 
-  if (!isLoaded || !currentClass) {
+  if (isLoaded && allowedClasses.length === 0) {
+    return (
+      <div className="p-8 max-w-2xl mx-auto text-center space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 mx-auto flex items-center justify-center border border-amber-200">
+          <Lock size={32} />
+        </div>
+        <h2 className="text-xl font-bold text-text-primary">Chưa có phân công lớp học</h2>
+        <p className="text-sm text-text-muted">
+          Bạn chưa được phân công làm giáo viên chủ nhiệm hoặc giáo viên bộ môn cho lớp nào. Vui lòng liên hệ Quản trị viên để được phân công lớp.
+        </p>
+      </div>
+    );
+  }
+
+  if (!isLoaded || !activeClass) {
     return (
       <div className="p-8 space-y-6">
         <div className="h-8 w-48 bg-surface-muted rounded animate-pulse" />
@@ -283,9 +364,161 @@ export default function TimetablePage() {
     );
   }
 
-  const homeroomTeacher = currentClass.teacher_id
-    ? LocalStore.getUserById(currentClass.teacher_id)
+  const homeroomTeacher = activeClass.teacher_id
+    ? LocalStore.getUserById(activeClass.teacher_id)
     : null;
+
+  const renderPeriodRow = (period: (typeof TIMETABLE_PERIODS)[0]) => {
+    return (
+      <tr key={period.period} className="hover:bg-surface-muted/30 transition-colors">
+        {/* Period Label Header Column */}
+        <td className="py-3.5 px-3 bg-surface-muted/30 text-center border-r border-border">
+          <span className="text-xs font-bold text-text-primary block">
+            {period.label}
+          </span>
+          <span className="text-[11px] text-text-muted font-medium mt-0.5 block">
+            {period.startTime} - {period.endTime}
+          </span>
+        </td>
+
+        {/* Day Columns */}
+        {TIMETABLE_DAYS.map((day) => {
+          const isAllowedSlot = isAllowedPeriodForClass(classGrade, day.day, period.period);
+          const isSatSHL = day.day === 7 && period.period === homeroomSlot.period;
+          const entry = timetableMap.get(`${day.day}-${period.period}`);
+          const subj = entry ? subjectsMap.get(entry.subject_id) : null;
+          const teacher = entry && entry.teacher_id ? teachersMap.get(entry.teacher_id) : null;
+          const colorStyle = (subj && SUBJECT_COLOR_MAP[subj.code]) || DEFAULT_SUBJECT_COLOR;
+
+          const isOngoing =
+            periodInfo?.dayOfWeek === day.day &&
+            periodInfo?.period === period.period;
+
+          if (!isAllowedSlot) {
+            const isSatEmpty = day.day === 7 && [4, 5, 9, 10].includes(period.period);
+            return (
+              <td
+                key={day.day}
+                className="py-2.5 px-3 border-l border-border bg-surface-muted/15 text-center align-middle"
+              >
+                <div className="h-full min-h-[72px] rounded-xl border border-dashed border-border/40 bg-surface-muted/25 flex flex-col items-center justify-center text-text-muted/40 select-none">
+                  <span className="text-xs font-bold">—</span>
+                  <span className="text-[10px] font-medium">
+                    {isSatEmpty
+                      ? 'Không có tiết'
+                      : classShift === 'morning'
+                      ? 'Ca Chiều'
+                      : 'Ca Sáng'}
+                  </span>
+                </div>
+              </td>
+            );
+          }
+
+          if (isSatSHL) {
+            return (
+              <td
+                key={day.day}
+                onClick={() => canEdit && handleOpenEdit(day.day, period.period)}
+                className={cn(
+                  'py-2.5 px-3 border-l border-border transition-all align-top',
+                  canEdit ? 'cursor-pointer hover:bg-violet-50/20' : '',
+                  isOngoing ? 'bg-violet-100/50 ring-2 ring-inset ring-violet-500' : ''
+                )}
+              >
+                <div
+                  className={cn(
+                    'h-full min-h-[72px] p-2.5 rounded-xl border border-violet-300 bg-gradient-to-br from-violet-50 via-purple-50/70 to-indigo-50/50 shadow-2xs flex flex-col justify-between transition-all group relative'
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="w-2 h-2 rounded-full bg-violet-600 animate-pulse flex-shrink-0" />
+                      <span className="text-xs font-black text-violet-950 leading-tight truncate">
+                        Sinh hoạt lớp
+                      </span>
+                    </div>
+                    <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-violet-600 text-white shadow-2xs flex-shrink-0">
+                      SHL
+                    </span>
+                  </div>
+
+                  <div className="mt-1 flex items-center justify-between text-[11px]">
+                    <span className="truncate font-semibold text-violet-900 group-hover:text-violet-950">
+                      {homeroomTeacher ? (
+                        `GVCN: ${homeroomTeacher.name.replace('Thầy ', '').replace('Cô ', '')}`
+                      ) : (
+                        <span className="text-rose-600 font-bold">Chưa gán GVCN</span>
+                      )}
+                    </span>
+                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-violet-200/80 text-violet-800 flex-shrink-0">
+                      Cố định
+                    </span>
+                  </div>
+                </div>
+              </td>
+            );
+          }
+
+          return (
+            <td
+              key={day.day}
+              onClick={() => canEdit && handleOpenEdit(day.day, period.period)}
+              className={cn(
+                'py-2.5 px-3 border-l border-border transition-all align-top',
+                canEdit ? 'cursor-pointer hover:bg-accent/5' : '',
+                isOngoing ? 'bg-blue-50/40 ring-1 ring-inset ring-blue-400' : ''
+              )}
+            >
+              {subj ? (
+                <div
+                  className={cn(
+                    'h-full min-h-[72px] p-2.5 rounded-xl border flex flex-col justify-between transition-all group relative',
+                    colorStyle.bg,
+                    colorStyle.border
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-1">
+                    <span className={cn('text-xs font-bold leading-tight line-clamp-1', colorStyle.text)}>
+                      {subj.name}
+                    </span>
+                    <span className={cn('text-[9px] font-extrabold px-1.5 py-0.2 rounded border', colorStyle.badgeBg, colorStyle.border)}>
+                      {subj.code}
+                    </span>
+                  </div>
+
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-text-secondary">
+                    <span className="truncate text-text-muted group-hover:text-text-primary transition-colors">
+                      {teacher ? teacher.name.replace('Thầy ', '').replace('Cô ', '') : '—'}
+                    </span>
+                    {canEdit && (
+                      <PencilSimple
+                        size={12}
+                        className="opacity-0 group-hover:opacity-100 text-text-muted transition-opacity ml-1 flex-shrink-0"
+                      />
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    'h-full min-h-[72px] rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-text-muted/60 hover:text-accent hover:border-accent/40 hover:bg-surface-muted/40 transition-all p-2',
+                    canEdit ? 'cursor-pointer' : 'opacity-40'
+                  )}
+                >
+                  {canEdit ? (
+                    <Plus size={16} />
+                  ) : (
+                    <span className="text-[11px]">—</span>
+                  )}
+                </div>
+              )}
+            </td>
+          );
+        })}
+      </tr>
+    );
+  };
 
   return (
     <>
@@ -298,16 +531,24 @@ export default function TimetablePage() {
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-                Thời khóa biểu — {currentClass.name}
+                Thời khóa biểu — {activeClass.name}
               </h1>
+              <span className={cn(
+                "text-[11px] font-bold px-3 py-0.5 rounded-full border",
+                classShift === 'morning'
+                  ? "bg-amber-50 text-amber-900 border-amber-200"
+                  : "bg-indigo-50 text-indigo-900 border-indigo-200"
+              )}>
+                {classShift === 'morning' ? '☀️ Ca Sáng (Khối 6, 9 · Tiết 1–5)' : '🌤️ Ca Chiều (Khối 7, 8 · Tiết 6–10)'}
+              </span>
               {!canEdit && (
-                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-surface-muted text-text-muted border border-border">
                   Chế độ chỉ xem
                 </span>
               )}
             </div>
             <p className="text-xs text-text-muted mt-1">
-              {currentClass.room_name || 'Chưa xếp phòng'} · Năm học {currentClass.school_year} · GVCN:{' '}
+              {activeClass.room_name || 'Chưa xếp phòng'} · Năm học {activeClass.school_year} · GVCN:{' '}
               <span className="font-medium text-text-secondary">{homeroomTeacher?.name || 'Chưa gán'}</span>
             </p>
           </div>
@@ -354,6 +595,139 @@ export default function TimetablePage() {
               </>
             )}
           </div>
+        </div>
+
+        {/* =============================================
+            CLASS SELECTOR & GRADE SHIFT FILTER BAR
+            ============================================= */}
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/70">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
+                Lớp đang xem:
+              </span>
+              <span className="text-sm font-extrabold text-text-primary">
+                {activeClass.name}
+              </span>
+              <span className={cn(
+                "text-[10px] font-bold px-2 py-0.5 rounded-full border",
+                classShift === 'morning'
+                  ? "bg-amber-50 text-amber-900 border-amber-200"
+                  : "bg-indigo-50 text-indigo-900 border-indigo-200"
+              )}>
+                {classShift === 'morning' ? '☀️ Ca Sáng (Khối 6, 9)' : '🌤️ Ca Chiều (Khối 7, 8)'}
+              </span>
+            </div>
+
+            {/* Toggle Show/Hide Opposite Shift Rows */}
+            <button
+              type="button"
+              onClick={() => setShowOppositeShift(!showOppositeShift)}
+              className={cn(
+                'px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 self-start sm:self-auto',
+                showOppositeShift
+                  ? 'bg-surface-muted text-text-primary border-border hover:bg-surface-muted/80'
+                  : 'bg-accent/10 text-accent border-accent/30 hover:bg-accent/20'
+              )}
+            >
+              {showOppositeShift ? (
+                <>
+                  <EyeSlash size={15} />
+                  <span>{classShift === 'morning' ? 'Ẩn các tiết ca Chiều' : 'Ẩn các tiết ca Sáng'}</span>
+                </>
+              ) : (
+                <>
+                  <Eye size={15} />
+                  <span>{classShift === 'morning' ? 'Hiện các tiết ca Chiều' : 'Hiện các tiết ca Sáng'}</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Grade Filter Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <button
+              type="button"
+              onClick={() => setGradeFilter('all')}
+              className={cn(
+                'px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer',
+                gradeFilter === 'all'
+                  ? 'bg-text-primary text-surface shadow-2xs'
+                  : 'bg-surface-muted/60 text-text-secondary hover:text-text-primary hover:bg-surface-muted border border-border/50'
+              )}
+            >
+              Tất cả ({allowedClasses.length} lớp)
+            </button>
+            {[
+              { grade: 6, label: 'Khối 6', shift: '☀️ Ca Sáng' },
+              { grade: 7, label: 'Khối 7', shift: '🌤️ Ca Chiều' },
+              { grade: 8, label: 'Khối 8', shift: '🌤️ Ca Chiều' },
+              { grade: 9, label: 'Khối 9', shift: '☀️ Ca Sáng' },
+            ]
+              .filter((g) => allowedClasses.some((c) => c.grade === g.grade))
+              .map((g) => {
+                const count = allowedClasses.filter((c) => c.grade === g.grade).length;
+                return (
+                  <button
+                    key={g.grade}
+                    type="button"
+                    onClick={() => setGradeFilter(g.grade)}
+                    className={cn(
+                      'px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border',
+                      gradeFilter === g.grade
+                        ? 'bg-accent text-white border-accent shadow-2xs font-bold'
+                        : 'bg-surface-muted/60 border-border/50 text-text-secondary hover:text-text-primary hover:bg-surface-muted'
+                    )}
+                  >
+                    <span>{g.label}</span>
+                    <span className="text-[10px] opacity-85 font-normal">({count} lớp · {g.shift})</span>
+                  </button>
+                );
+              })}
+          </div>
+
+          {/* Class Quick-Select Chips */}
+          <div className="flex items-center gap-2 flex-wrap pt-0.5">
+            {allowedClasses
+              .filter((c) => gradeFilter === 'all' || c.grade === gradeFilter)
+              .map((c) => {
+                const isSelected = c.id === activeClassId;
+                const shift = getGradeShift(c.grade);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => handleSelectClass(c.id)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border',
+                      isSelected
+                        ? shift === 'morning'
+                          ? 'bg-amber-500 text-white border-amber-600 shadow-xs ring-2 ring-amber-300'
+                          : 'bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-300'
+                        : 'bg-surface border-border text-text-secondary hover:text-text-primary hover:border-accent/50'
+                    )}
+                  >
+                    <span>{c.name}</span>
+                    <span className={cn(
+                      'text-[9px] px-1.5 py-0.2 rounded font-semibold',
+                      isSelected
+                        ? 'bg-white/20 text-white'
+                        : shift === 'morning'
+                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                        : 'bg-indigo-50 text-indigo-800 border border-indigo-200'
+                    )}>
+                      {shift === 'morning' ? 'Sáng' : 'Chiều'}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+          {user?.role !== 'ADMIN' && (
+            <div className="flex items-center gap-1.5 text-[11px] text-text-muted pt-1">
+              <Lock size={12} className="text-text-muted" />
+              <span>Chỉ hiển thị các lớp bạn được phân công giảng dạy hoặc chủ nhiệm ({allowedClasses.length} lớp).</span>
+            </div>
+          )}
         </div>
 
         {/* Real-time Current Period Notification Banner */}
@@ -425,12 +799,16 @@ export default function TimetablePage() {
         {/* Mobile View: Day Card List */}
         <div className="md:hidden space-y-3">
           {TIMETABLE_PERIODS.filter((p) => {
-            if (mobileSelectedDay === 7) {
-              return [1, 2, 3, 6, 7, 8].includes(p.period);
+            if (mobileSelectedDay === 7 && [4, 5, 9, 10].includes(p.period)) {
+              return false;
             }
-            return true;
+            if (showOppositeShift) {
+              return true;
+            }
+            return isAllowedPeriodForClass(classGrade, mobileSelectedDay, p.period);
           }).map((period) => {
-            const isSaturdaySHL = mobileSelectedDay === 7 && (period.period === 3 || period.period === 8);
+            const isAllowedSlot = isAllowedPeriodForClass(classGrade, mobileSelectedDay, period.period);
+            const isSaturdaySHL = mobileSelectedDay === 7 && period.period === homeroomSlot.period;
             const entry = timetableMap.get(`${mobileSelectedDay}-${period.period}`);
             const subj = entry ? subjectsMap.get(entry.subject_id) : null;
             const teacher = entry && entry.teacher_id ? teachersMap.get(entry.teacher_id) : null;
@@ -439,6 +817,27 @@ export default function TimetablePage() {
             const isCurrentPeriod =
               periodInfo?.dayOfWeek === mobileSelectedDay &&
               periodInfo?.period === period.period;
+
+            if (!isAllowedSlot) {
+              return (
+                <div
+                  key={period.period}
+                  className="p-3 rounded-2xl border border-dashed border-border/60 bg-surface-muted/20 flex items-center justify-between text-text-muted"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-surface-muted text-text-muted border border-border">
+                      {period.label}
+                    </span>
+                    <span className="text-[11px]">
+                      {period.startTime} - {period.endTime}
+                    </span>
+                  </div>
+                  <span className="text-xs font-medium italic">
+                    {classShift === 'morning' ? 'Ca Chiều' : 'Ca Sáng'} (Lớp không học)
+                  </span>
+                </div>
+              );
+            }
 
             return (
               <div
@@ -553,230 +952,165 @@ export default function TimetablePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {/* Morning Session Banner */}
-                <tr className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-blue-50/90 border-b border-blue-200/80">
-                  <td colSpan={7} className="py-2 px-4">
+                {/* 1. MORNING SESSION BANNER */}
+                <tr className={cn(
+                  "border-b border-border/80 transition-colors",
+                  classShift === 'morning'
+                    ? "bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-blue-50/90"
+                    : "bg-surface-muted/50"
+                )}>
+                  <td colSpan={7} className="py-2.5 px-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                        <span className="text-xs font-black uppercase tracking-wider text-blue-950">
-                          Buổi Sáng (Tiết 1 – Tiết 5)
+                        <span className={cn(
+                          "w-2.5 h-2.5 rounded-full",
+                          classShift === 'morning' ? "bg-blue-600 animate-pulse" : "bg-gray-400"
+                        )} />
+                        <span className={cn(
+                          "text-xs font-black uppercase tracking-wider",
+                          classShift === 'morning' ? "text-blue-950" : "text-text-muted"
+                        )}>
+                          Buổi Sáng (Tiết 1 – Tiết 5 · 07:15 – 11:30)
+                        </span>
+                        <span className={cn(
+                          "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                          classShift === 'morning'
+                            ? "bg-blue-100 text-blue-900 border border-blue-200"
+                            : "bg-surface text-text-muted border border-border"
+                        )}>
+                          {classShift === 'morning' ? 'Ca học chính khóa của lớp' : `Khối ${classGrade} không học ca này`}
                         </span>
                       </div>
-                      <span className="text-[11px] font-medium text-blue-800 bg-white/80 px-2.5 py-0.5 rounded-full border border-blue-200">
-                        07:00 – 07:15: Sinh hoạt đầu giờ (15 phút)
-                      </span>
+                      <div className="flex items-center gap-3">
+                        {classShift === 'afternoon' && (
+                          <button
+                            type="button"
+                            onClick={() => setShowOppositeShift(!showOppositeShift)}
+                            className="text-xs font-bold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-white/80 px-2.5 py-1 rounded-lg border border-border shadow-2xs"
+                          >
+                            {showOppositeShift ? (
+                              <>
+                                <EyeSlash size={14} />
+                                <span>Ẩn các tiết ca Sáng</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye size={14} />
+                                <span>Hiện các tiết ca Sáng</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                        <span className="text-[11px] font-medium text-blue-800 bg-white/80 px-2.5 py-0.5 rounded-full border border-blue-200">
+                          07:00 – 07:15: Sinh hoạt đầu giờ (15 phút)
+                        </span>
+                      </div>
                     </div>
                   </td>
                 </tr>
 
-                {TIMETABLE_PERIODS.map((period) => {
-                  const isBreakAfterP2 = period.period === 2;
-                  const isBreakAfterP4 = period.period === 4;
-                  const isAfternoonHeader = period.period === 5;
-                  const isBreakAfterP7 = period.period === 7;
-                  const isBreakAfterP9 = period.period === 9;
+                {/* 2. MORNING ROWS (P1-P5) - rendered if morning class or expanded */}
+                {(classShift === 'morning' || showOppositeShift) && (
+                  <>
+                    {renderPeriodRow(TIMETABLE_PERIODS[0])}
+                    {renderPeriodRow(TIMETABLE_PERIODS[1])}
+                    {/* Break after P2 (10 mins) */}
+                    <tr className="bg-amber-50/50 border-y border-amber-200/60">
+                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-semibold text-amber-800">
+                        ☕ Giờ giải lao 10 phút (08:45 – 08:55)
+                      </td>
+                    </tr>
+                    {renderPeriodRow(TIMETABLE_PERIODS[2])}
+                    {renderPeriodRow(TIMETABLE_PERIODS[3])}
+                    {/* Break after P4 (5 mins) */}
+                    <tr className="bg-amber-50/30 border-y border-amber-100">
+                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-medium text-amber-700">
+                        Giờ giải lao 5 phút (10:25 – 10:30) · Áp dụng Thứ Hai đến Thứ Sáu
+                      </td>
+                    </tr>
+                    {renderPeriodRow(TIMETABLE_PERIODS[4])}
+                  </>
+                )}
 
-                  return (
-                    <Fragment key={period.period}>
-                      <tr className="hover:bg-surface-muted/30 transition-colors">
-                        {/* Period Label Header Column */}
-                        <td className="py-3.5 px-3 bg-surface-muted/30 text-center border-r border-border">
-                          <span className="text-xs font-bold text-text-primary block">
-                            {period.label}
-                          </span>
-                          <span className="text-[11px] text-text-muted font-medium mt-0.5 block">
-                            {period.startTime} - {period.endTime}
-                          </span>
-                        </td>
+                {/* 3. AFTERNOON SESSION BANNER */}
+                <tr className={cn(
+                  "border-y-2 border-border transition-colors",
+                  classShift === 'afternoon'
+                    ? "bg-gradient-to-r from-indigo-50/90 via-purple-50/70 to-indigo-50/90"
+                    : "bg-surface-muted/50"
+                )}>
+                  <td colSpan={7} className="py-2.5 px-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "w-2.5 h-2.5 rounded-full",
+                          classShift === 'afternoon' ? "bg-indigo-600 animate-pulse" : "bg-gray-400"
+                        )} />
+                        <span className={cn(
+                          "text-xs font-black uppercase tracking-wider",
+                          classShift === 'afternoon' ? "text-indigo-950" : "text-text-muted"
+                        )}>
+                          Buổi Chiều (Tiết 6 – Tiết 10 · 13:00 – 17:15)
+                        </span>
+                        <span className={cn(
+                          "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                          classShift === 'afternoon'
+                            ? "bg-indigo-100 text-indigo-900 border border-indigo-200"
+                            : "bg-surface text-text-muted border border-border"
+                        )}>
+                          {classShift === 'afternoon' ? 'Ca học chính khóa của lớp' : `Khối ${classGrade} không học ca này`}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {classShift === 'morning' && (
+                          <button
+                            type="button"
+                            onClick={() => setShowOppositeShift(!showOppositeShift)}
+                            className="text-xs font-bold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-white/80 px-2.5 py-1 rounded-lg border border-border shadow-2xs"
+                          >
+                            {showOppositeShift ? (
+                              <>
+                                <EyeSlash size={14} />
+                                <span>Ẩn các tiết ca Chiều</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye size={14} />
+                                <span>Hiện các tiết ca Chiều</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                        <span className="text-[11px] font-medium text-indigo-800 bg-white/80 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                          12:45 – 13:00: Sinh hoạt đầu giờ (15 phút)
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
 
-                        {/* Day Columns */}
-                        {TIMETABLE_DAYS.map((day) => {
-                          const isSatEmpty = day.day === 7 && [4, 5, 9, 10].includes(period.period);
-                          const isSatSHL = day.day === 7 && (period.period === 3 || period.period === 8);
-                          const entry = timetableMap.get(`${day.day}-${period.period}`);
-                          const subj = entry ? subjectsMap.get(entry.subject_id) : null;
-                          const teacher = entry && entry.teacher_id ? teachersMap.get(entry.teacher_id) : null;
-                          const colorStyle = (subj && SUBJECT_COLOR_MAP[subj.code]) || DEFAULT_SUBJECT_COLOR;
-
-                          const isOngoing =
-                            periodInfo?.dayOfWeek === day.day &&
-                            periodInfo?.period === period.period;
-
-                          if (isSatEmpty) {
-                            return (
-                              <td
-                                key={day.day}
-                                className="py-2.5 px-3 border-l border-border bg-surface-muted/15 text-center align-middle"
-                              >
-                                <div className="h-full min-h-[72px] rounded-xl border border-dashed border-border/40 bg-surface-muted/25 flex flex-col items-center justify-center text-text-muted/40 select-none">
-                                  <span className="text-xs font-bold">—</span>
-                                  <span className="text-[10px] font-medium">Không có tiết</span>
-                                </div>
-                              </td>
-                            );
-                          }
-
-                          if (isSatSHL) {
-                            return (
-                              <td
-                                key={day.day}
-                                onClick={() => canEdit && handleOpenEdit(day.day, period.period)}
-                                className={cn(
-                                  'py-2.5 px-3 border-l border-border transition-all align-top',
-                                  canEdit ? 'cursor-pointer hover:bg-violet-50/20' : '',
-                                  isOngoing ? 'bg-violet-100/50 ring-2 ring-inset ring-violet-500' : ''
-                                )}
-                              >
-                                <div
-                                  className={cn(
-                                    'h-full min-h-[72px] p-2.5 rounded-xl border border-violet-300 bg-gradient-to-br from-violet-50 via-purple-50/70 to-indigo-50/50 shadow-2xs flex flex-col justify-between transition-all group relative'
-                                  )}
-                                >
-                                  <div className="flex items-start justify-between gap-1">
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                      <span className="w-2 h-2 rounded-full bg-violet-600 animate-pulse flex-shrink-0" />
-                                      <span className="text-xs font-black text-violet-950 leading-tight truncate">
-                                        Sinh hoạt lớp
-                                      </span>
-                                    </div>
-                                    <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-violet-600 text-white shadow-2xs flex-shrink-0">
-                                      SHL
-                                    </span>
-                                  </div>
-
-                                  <div className="mt-1 flex items-center justify-between text-[11px]">
-                                    <span className="truncate font-semibold text-violet-900 group-hover:text-violet-950">
-                                      {homeroomTeacher ? (
-                                        `GVCN: ${homeroomTeacher.name.replace('Thầy ', '').replace('Cô ', '')}`
-                                      ) : (
-                                        <span className="text-rose-600 font-bold">Chưa gán GVCN</span>
-                                      )}
-                                    </span>
-                                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-violet-200/80 text-violet-800 flex-shrink-0">
-                                      Cố định
-                                    </span>
-                                  </div>
-                                </div>
-                              </td>
-                            );
-                          }
-
-                          return (
-                            <td
-                              key={day.day}
-                              onClick={() => canEdit && handleOpenEdit(day.day, period.period)}
-                              className={cn(
-                                'py-2.5 px-3 border-l border-border transition-all align-top',
-                                canEdit ? 'cursor-pointer hover:bg-accent/5' : '',
-                                isOngoing ? 'bg-blue-50/40 ring-1 ring-inset ring-blue-400' : ''
-                              )}
-                            >
-                              {subj ? (
-                                <div
-                                  className={cn(
-                                    'h-full min-h-[72px] p-2.5 rounded-xl border flex flex-col justify-between transition-all group relative',
-                                    colorStyle.bg,
-                                    colorStyle.border
-                                  )}
-                                >
-                                  <div className="flex items-start justify-between gap-1">
-                                    <span className={cn('text-xs font-bold leading-tight line-clamp-1', colorStyle.text)}>
-                                      {subj.name}
-                                    </span>
-                                    <span className={cn('text-[9px] font-extrabold px-1.5 py-0.2 rounded border', colorStyle.badgeBg, colorStyle.border)}>
-                                      {subj.code}
-                                    </span>
-                                  </div>
-
-                                  <div className="mt-1 flex items-center justify-between text-[11px] text-text-secondary">
-                                    <span className="truncate text-text-muted group-hover:text-text-primary transition-colors">
-                                      {teacher ? teacher.name.replace('Thầy ', '').replace('Cô ', '') : '—'}
-                                    </span>
-                                    {canEdit && (
-                                      <PencilSimple
-                                        size={12}
-                                        className="opacity-0 group-hover:opacity-100 text-text-muted transition-opacity ml-1 flex-shrink-0"
-                                      />
-                                    )}
-                                  </div>
-                                </div>
-                              ) : (
-                                <div
-                                  className={cn(
-                                    'h-full min-h-[72px] rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-text-muted/60 hover:text-accent hover:border-accent/40 hover:bg-surface-muted/40 transition-all p-2',
-                                    canEdit ? 'cursor-pointer' : 'opacity-40'
-                                  )}
-                                >
-                                  {canEdit ? (
-                                    <Plus size={16} />
-                                  ) : (
-                                    <span className="text-[11px]">—</span>
-                                  )}
-                                </div>
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-
-                      {/* Break after P2 (10 mins) */}
-                      {isBreakAfterP2 && (
-                        <tr className="bg-amber-50/50 border-y border-amber-200/60">
-                          <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-semibold text-amber-800">
-                            ☕ Giờ giải lao 10 phút (08:45 – 08:55)
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* Break after P4 (5 mins, Mon-Fri) */}
-                      {isBreakAfterP4 && (
-                        <tr className="bg-amber-50/30 border-y border-amber-100">
-                          <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-medium text-amber-700">
-                            Giờ giải lao 5 phút (10:25 – 10:30) · Áp dụng Thứ Hai đến Thứ Sáu
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* Afternoon Header after P5 */}
-                      {isAfternoonHeader && (
-                        <tr className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-blue-50/90 border-y-2 border-border">
-                          <td colSpan={7} className="py-2.5 px-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
-                                <span className="text-xs font-black uppercase tracking-wider text-indigo-950">
-                                  Buổi Chiều (Tiết 6 – Tiết 10)
-                                </span>
-                              </div>
-                              <span className="text-[11px] font-medium text-indigo-800 bg-white/80 px-2.5 py-0.5 rounded-full border border-indigo-200">
-                                12:45 – 13:00: Sinh hoạt đầu giờ (15 phút)
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* Break after P7 (10 mins) */}
-                      {isBreakAfterP7 && (
-                        <tr className="bg-amber-50/50 border-y border-amber-200/60">
-                          <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-semibold text-amber-800">
-                            ☕ Giờ giải lao 10 phút (14:30 – 14:40)
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* Break after P9 (5 mins, Mon-Fri) */}
-                      {isBreakAfterP9 && (
-                        <tr className="bg-amber-50/30 border-y border-amber-100">
-                          <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-medium text-amber-700">
-                            Giờ giải lao 5 phút (16:10 – 16:15) · Áp dụng Thứ Hai đến Thứ Sáu
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  );
-                })}
+                {/* 4. AFTERNOON ROWS (P6-P10) - rendered if afternoon class or expanded */}
+                {(classShift === 'afternoon' || showOppositeShift) && (
+                  <>
+                    {renderPeriodRow(TIMETABLE_PERIODS[5])}
+                    {renderPeriodRow(TIMETABLE_PERIODS[6])}
+                    {/* Break after P7 (10 mins) */}
+                    <tr className="bg-amber-50/50 border-y border-amber-200/60">
+                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-semibold text-amber-800">
+                        ☕ Giờ giải lao 10 phút (14:30 – 14:40)
+                      </td>
+                    </tr>
+                    {renderPeriodRow(TIMETABLE_PERIODS[7])}
+                    {renderPeriodRow(TIMETABLE_PERIODS[8])}
+                    {/* Break after P9 (5 mins) */}
+                    <tr className="bg-amber-50/30 border-y border-amber-100">
+                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-medium text-amber-700">
+                        Giờ giải lao 5 phút (16:10 – 16:15) · Áp dụng Thứ Hai đến Thứ Sáu
+                      </td>
+                    </tr>
+                    {renderPeriodRow(TIMETABLE_PERIODS[9])}
+                  </>
+                )}
               </tbody>
             </table>
           </div>
@@ -842,13 +1176,13 @@ export default function TimetablePage() {
 
           <div className="text-right">
             <h2 className="text-[15pt] font-black tracking-tight uppercase text-black">
-              THỜI KHÓA BIỂU LỚP {currentClass.name}
+              THỜI KHÓA BIỂU LỚP {activeClass.name}
             </h2>
             <p className="text-[10pt] font-medium text-gray-800 mt-0.5">
               Năm học 2026 - 2027 · Áp dụng từ Học kỳ I
             </p>
             <p className="text-[9pt] text-gray-700">
-              Phòng học: {currentClass.room_name || 'Phòng học chính'} · Sĩ số: {currentClass.max_students} học sinh
+              Phòng học: {activeClass.room_name || 'Phòng học chính'} · Sĩ số: {activeClass.max_students} học sinh
             </p>
           </div>
         </div>
@@ -877,15 +1211,15 @@ export default function TimetablePage() {
                   </div>
                 </td>
                 {TIMETABLE_DAYS.map((day) => {
-                  const isSatEmpty = day.day === 7 && [4, 5, 9, 10].includes(period.period);
-                  const isSatSHL = day.day === 7 && (period.period === 3 || period.period === 8);
+                  const isAllowedSlot = isAllowedPeriodForClass(classGrade, day.day, period.period);
+                  const isSatSHL = day.day === 7 && period.period === homeroomSlot.period;
                   const entry = timetableMap.get(`${day.day}-${period.period}`);
                   const subj = entry ? subjectsMap.get(entry.subject_id) : null;
                   const teacher = entry && entry.teacher_id ? teachersMap.get(entry.teacher_id) : null;
 
-                  if (isSatEmpty) {
+                  if (!isAllowedSlot) {
                     return (
-                      <td key={day.day} className="border border-black py-2 px-2 bg-gray-100 text-gray-400 text-[8pt] italic">
+                      <td key={day.day} className="border border-black py-2 px-2 bg-gray-100 text-gray-400 text-[8pt] italic text-center">
                         —
                       </td>
                     );
@@ -969,16 +1303,16 @@ export default function TimetablePage() {
             </div>
           )}
 
-          {editingSlot?.day === 7 && (editingSlot.period === 3 || editingSlot.period === 8) ? (
+          {editingSlot?.day === 7 && editingSlot.period === homeroomSlot.period ? (
             <div className="p-4 rounded-xl bg-violet-50 border border-violet-200 text-violet-900 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-violet-600 animate-pulse" />
                 <span className="text-sm font-bold text-violet-950">
-                  Tiết Sinh hoạt lớp cố định (Thứ Bảy)
+                  Tiết Sinh hoạt lớp cố định (Thứ Bảy - Tiết {homeroomSlot.period})
                 </span>
               </div>
               <p className="text-xs text-violet-800 leading-relaxed">
-                Theo quy chế, Tiết {editingSlot.period} Thứ Bảy luôn cố định là <strong>Sinh hoạt lớp</strong> cùng <strong>Giáo viên chủ nhiệm</strong> ({homeroomTeacher?.name || 'Chưa gán GVCN'}). Tiết học này không thể đổi sang môn học khác hoặc gán cho giáo viên bộ môn.
+                Theo quy chế, Tiết {editingSlot.period} Thứ Bảy của Khối {classGrade} ({classShift === 'morning' ? 'Ca Sáng' : 'Ca Chiều'}) luôn cố định là <strong>Sinh hoạt lớp</strong> cùng <strong>Giáo viên chủ nhiệm</strong> ({homeroomTeacher?.name || 'Chưa gán GVCN'}). Tiết học này không thể đổi sang môn học khác hoặc gán cho giáo viên bộ môn.
               </p>
               <div className="pt-2 text-xs">
                 <p className="font-semibold text-violet-950">Giáo viên phụ trách:</p>
@@ -1034,7 +1368,7 @@ export default function TimetablePage() {
           )}
 
           <div className="flex items-center justify-between pt-4 border-t border-border mt-6">
-            {editSubjectId && !(editingSlot?.day === 7 && (editingSlot?.period === 3 || editingSlot?.period === 8)) ? (
+            {editSubjectId && !(editingSlot?.day === 7 && editingSlot?.period === homeroomSlot.period) ? (
               <Button
                 variant="ghost"
                 type="button"
@@ -1055,9 +1389,9 @@ export default function TimetablePage() {
                   setIsEditModalOpen(false);
                 }}
               >
-                {editingSlot?.day === 7 && (editingSlot.period === 3 || editingSlot.period === 8) ? 'Đóng' : 'Hủy'}
+                {editingSlot?.day === 7 && editingSlot.period === homeroomSlot.period ? 'Đóng' : 'Hủy'}
               </Button>
-              {!(editingSlot?.day === 7 && (editingSlot.period === 3 || editingSlot.period === 8)) && (
+              {!(editingSlot?.day === 7 && editingSlot.period === homeroomSlot.period) && (
                 <Button
                   variant="primary"
                   type="button"
@@ -1085,10 +1419,10 @@ export default function TimetablePage() {
       >
         <div className="space-y-4">
           <p className="text-xs text-text-secondary leading-relaxed">
-            Sao chép toàn bộ 56 tiết học từ một lớp khác sang lớp{' '}
-            <strong className="text-text-primary">{currentClass.name}</strong>. Giáo viên phụ trách sẽ
+            Sao chép toàn bộ 28 tiết học từ một lớp khác sang lớp{' '}
+            <strong className="text-text-primary">{activeClass.name}</strong>. Giáo viên phụ trách sẽ
             được tự động ánh xạ lại theo đúng danh sách GVBM của lớp{' '}
-            <strong className="text-text-primary">{currentClass.name}</strong>. Tiết Sinh hoạt lớp Thứ Bảy sẽ tự động gán cho Giáo viên chủ nhiệm của lớp.
+            <strong className="text-text-primary">{activeClass.name}</strong>. Tiết Sinh hoạt lớp Thứ Bảy sẽ tự động gán cho Giáo viên chủ nhiệm của lớp.
           </p>
 
           {copyError && (
@@ -1112,7 +1446,7 @@ export default function TimetablePage() {
             >
               <option value="">-- Chọn một lớp nguồn --</option>
               {allClasses
-                .filter((c) => c.id !== currentClassId)
+                .filter((c) => c.id !== activeClassId)
                 .map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} (Khối {c.grade})
@@ -1124,7 +1458,7 @@ export default function TimetablePage() {
           <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-800 text-xs flex items-start gap-2">
             <Info size={16} className="flex-shrink-0 mt-0.5 text-amber-700" />
             <span>
-              Lưu ý: Hành động này sẽ thay thế toàn bộ lịch học hiện tại của lớp {currentClass.name}.
+              Lưu ý: Hành động này sẽ thay thế toàn bộ lịch học hiện tại của lớp {activeClass.name}.
             </span>
           </div>
 

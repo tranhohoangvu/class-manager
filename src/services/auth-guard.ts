@@ -38,6 +38,16 @@ export const AuthGuard = {
   },
 
   /**
+   * Check if user can view timetable of a class.
+   * Business Rule:
+   * - ADMIN: Can view all classes in the school.
+   * - TEACHERS: Can ONLY view timetable of classes they teach (Homeroom or Subject teacher).
+   */
+  canViewTimetable(user: UserRow | null, classId: string | null | undefined): boolean {
+    return this.hasAccessToClass(user, classId);
+  },
+
+  /**
    * Check if user can add, edit, or delete students in a class.
    * Business Rule: Only Homeroom Teacher or Admin can manage students.
    */

@@ -12,6 +12,9 @@ import {
   TimetablePeriodConfig,
   DAY_ALLOWED_PERIODS,
   isAllowedPeriodForDay,
+  getGradeShift,
+  isAllowedPeriodForClass,
+  getClassHomeroomSlot,
 } from '@/lib/constants';
 import { generateTimetableForClass } from '@/lib/mock-data';
 
@@ -64,9 +67,12 @@ function timeToMinutes(timeStr: string): number {
 
 export const TimetableService = {
   /**
-   * Lấy toàn bộ thời khóa biểu của một lớp
+   * Lấy toàn bộ thời khóa biểu của một lớp (hỗ trợ kiểm tra phân quyền giáo viên)
    */
-  getTimetableForClass(classId: string): TimetableEntryRow[] {
+  getTimetableForClass(classId: string, currentUser?: UserRow | null): TimetableEntryRow[] {
+    if (currentUser && !AuthGuard.canViewTimetable(currentUser, classId)) {
+      return [];
+    }
     return LocalStore.getTimetable(classId);
   },
 
@@ -392,21 +398,53 @@ export const TimetableService = {
       return { valid: false, error: 'Ngày trong tuần không hợp lệ (chỉ từ Thứ Hai đến Thứ Bảy).' };
     }
 
-    // Kiểm tra tính hợp lệ của tiết theo từng ngày (Thứ 2-6: 1..10, Thứ 7: 1, 2, 3, 6, 7, 8)
-    if (!isAllowedPeriodForDay(entry.day_of_week, entry.period)) {
-      if (entry.day_of_week === 7) {
-        return {
-          valid: false,
-          error: `Tiết ${entry.period} không tồn tại vào Thứ Bảy. Thứ Bảy chỉ có 6 tiết (Sáng: Tiết 1-3, Chiều: Tiết 6-8).`,
-        };
+    const cls = LocalStore.getClassById(entry.class_id);
+    const grade = cls?.grade || 6;
+    const shift = getGradeShift(grade);
+    const homeroomSlot = getClassHomeroomSlot(grade);
+
+    // Kiểm tra tính hợp lệ của tiết theo khối và ca học:
+    // Khối 6, 9 -> Buổi Sáng (P1-P5 Thứ 2-6, P1-P3 Thứ 7)
+    // Khối 7, 8 -> Buổi Chiều (P6-P10 Thứ 2-6, P6-P8 Thứ 7)
+    if (!isAllowedPeriodForClass(grade, entry.day_of_week, entry.period)) {
+      if (shift === 'morning') {
+        if (entry.period >= 6) {
+          return {
+            valid: false,
+            error: `Lớp ${cls?.name || entry.class_id} thuộc Khối ${grade} học buổi Sáng (Tiết 1-5), không học buổi Chiều (Tiết ${entry.period}).`,
+          };
+        }
+        if (entry.day_of_week === 7 && entry.period > 3) {
+          return {
+            valid: false,
+            error: `Tiết ${entry.period} không tồn tại vào Thứ Bảy. Thứ Bảy ca Sáng chỉ có 3 tiết (Tiết 1-3).`,
+          };
+        }
+      } else {
+        if (entry.period <= 5) {
+          return {
+            valid: false,
+            error: `Lớp ${cls?.name || entry.class_id} thuộc Khối ${grade} học buổi Chiều (Tiết 6-10), không học buổi Sáng (Tiết ${entry.period}).`,
+          };
+        }
+        if (entry.day_of_week === 7 && (entry.period < 6 || entry.period > 8)) {
+          return {
+            valid: false,
+            error: `Tiết ${entry.period} không tồn tại vào Thứ Bảy. Thứ Bảy ca Chiều chỉ có 3 tiết (Tiết 6-8).`,
+          };
+        }
       }
-      return { valid: false, error: `Tiết học ${entry.period} không hợp lệ (chỉ từ Tiết 1 đến Tiết 10).` };
+      return {
+        valid: false,
+        error: `Tiết học ${entry.period} không hợp lệ cho lớp ${cls?.name || entry.class_id} vào ngày Thứ ${entry.day_of_week}.`,
+      };
     }
 
-    const cls = LocalStore.getClassById(entry.class_id);
+    // Business rule: Thứ Bảy Sinh hoạt lớp cùng GVCN của lớp
+    // Khối 6, 9: Tiết 3 | Khối 7, 8: Tiết 8
+    const isHomeroomSlot = entry.day_of_week === 7 && entry.period === homeroomSlot.period;
 
-    // Business rule: Thứ Bảy Tiết 3 và Tiết 8 cố định là Sinh hoạt lớp cùng GVCN của lớp
-    if (entry.day_of_week === 7 && (entry.period === 3 || entry.period === 8)) {
+    if (isHomeroomSlot) {
       if (entry.subject_id !== 'sub-shl') {
         return {
           valid: false,
@@ -422,10 +460,10 @@ export const TimetableService = {
     }
 
     // Tiết Sinh hoạt lớp không được xếp vào các ngày hoặc tiết khác
-    if (entry.subject_id === 'sub-shl' && !(entry.day_of_week === 7 && (entry.period === 3 || entry.period === 8))) {
+    if (entry.subject_id === 'sub-shl' && !isHomeroomSlot) {
       return {
         valid: false,
-        error: 'Tiết Sinh hoạt lớp chỉ được xếp vào Tiết 3 và Tiết 8 của Thứ Bảy.',
+        error: `Tiết Sinh hoạt lớp của Khối ${grade} (ca ${shift === 'morning' ? 'Sáng' : 'Chiều'}) chỉ được xếp vào Tiết ${homeroomSlot.period} của Thứ Bảy.`,
       };
     }
 
@@ -498,20 +536,40 @@ export const TimetableService = {
       return failure('Ngày trong tuần không hợp lệ (chỉ từ Thứ Hai đến Thứ Bảy).');
     }
 
-    if (!isAllowedPeriodForDay(dayOfWeek, period)) {
-      if (dayOfWeek === 7) {
-        return failure(`Tiết ${period} không tồn tại vào Thứ Bảy. Thứ Bảy chỉ có 6 tiết (Sáng: Tiết 1-3, Chiều: Tiết 6-8).`);
-      }
-      return failure(`Tiết học ${period} không hợp lệ (chỉ từ Tiết 1 đến Tiết 10).`);
+    if (period < 1 || period > 10) {
+      return failure('Tiết học không hợp lệ (Tiết 1 đến Tiết 10).');
     }
 
     const cls = LocalStore.getClassById(classId);
+    const grade = cls?.grade || 6;
+    const shift = getGradeShift(grade);
+    const homeroomSlot = getClassHomeroomSlot(grade);
 
-    // Business rule: Thứ Bảy Tiết 3 và Tiết 8 cố định là Sinh hoạt lớp cùng GVCN
+    if (!isAllowedPeriodForClass(grade, dayOfWeek, period)) {
+      if (shift === 'morning') {
+        if (period >= 6) {
+          return failure(`Lớp ${cls?.name || classId} thuộc Khối ${grade} học buổi Sáng (Tiết 1-5), không học buổi Chiều (Tiết ${period}).`);
+        }
+        if (dayOfWeek === 7) {
+          return failure(`Tiết ${period} không tồn tại vào Thứ Bảy. Thứ Bảy ca Sáng chỉ có 3 tiết (Tiết 1-3).`);
+        }
+      } else {
+        if (period <= 5) {
+          return failure(`Lớp ${cls?.name || classId} thuộc Khối ${grade} học buổi Chiều (Tiết 6-10), không học buổi Sáng (Tiết ${period}).`);
+        }
+        if (dayOfWeek === 7) {
+          return failure(`Tiết ${period} không tồn tại vào Thứ Bảy. Thứ Bảy ca Chiều chỉ có 3 tiết (Tiết 6-8).`);
+        }
+      }
+      return failure(`Tiết học ${period} không hợp lệ.`);
+    }
+
+    // Business rule: Thứ Bảy Sinh hoạt lớp cùng GVCN
     let effectiveSubjectId = subjectId;
     let effectiveTeacherId = teacherId;
 
-    if (dayOfWeek === 7 && (period === 3 || period === 8)) {
+    const isHomeroomSlot = dayOfWeek === 7 && period === homeroomSlot.period;
+    if (isHomeroomSlot) {
       if (subjectId !== 'sub-shl') {
         return failure(`Tiết ${period} Thứ Bảy bắt buộc là tiết Sinh hoạt lớp. Không được xếp môn học khác.`);
       }
@@ -531,7 +589,7 @@ export const TimetableService = {
     }
 
     // Tự động gán giáo viên theo phân công nếu chưa chỉ định
-    if (!effectiveTeacherId && !(dayOfWeek === 7 && (period === 3 || period === 8))) {
+    if (!effectiveTeacherId && !isHomeroomSlot) {
       const assignments = LocalStore.getSubjectAssignmentsForClass(classId);
       const match = assignments.find((a) => a.subject_id === effectiveSubjectId);
       if (match) {
@@ -687,7 +745,11 @@ export const TimetableService = {
       return failure('Chỉ Giáo viên chủ nhiệm hoặc Quản trị viên mới có quyền xóa tiết học.');
     }
 
-    if (dayOfWeek === 7 && (period === 3 || period === 8)) {
+    const cls = LocalStore.getClassById(classId);
+    const grade = cls?.grade || 6;
+    const homeroomSlot = getClassHomeroomSlot(grade);
+
+    if (dayOfWeek === 7 && period === homeroomSlot.period) {
       return failure('Không thể xóa tiết Sinh hoạt lớp cố định của Thứ Bảy.');
     }
 
@@ -768,17 +830,30 @@ export const TimetableService = {
 
     const targetAssignments = LocalStore.getSubjectAssignmentsForClass(targetClassId);
     const targetClass = LocalStore.getClassById(targetClassId);
+    const targetShift = targetClass ? getGradeShift(targetClass.grade) : 'morning';
+    const sourceShift = sourceClass ? getGradeShift(sourceClass.grade) : 'morning';
+    const targetHomeroomPeriod = targetShift === 'morning' ? 3 : 8;
+
     const teacherMap = new Map<string, string>();
     targetAssignments.forEach((a) => teacherMap.set(a.subject_id, a.teacher_id));
 
     // 1. Xác định toàn bộ entries đích dự kiến
     const candidateEntries = sourceEntries.map((item) => {
-      const isSHL = item.subject_id === 'sub-shl' || (item.day_of_week === 7 && (item.period === 3 || item.period === 8));
+      let targetPeriod = item.period;
+      if (sourceShift !== targetShift) {
+        if (targetShift === 'afternoon' && sourceShift === 'morning') {
+          targetPeriod = item.period + 5;
+        } else if (targetShift === 'morning' && sourceShift === 'afternoon') {
+          targetPeriod = item.period - 5;
+        }
+      }
+
+      const isSHL = item.subject_id === 'sub-shl' || (item.day_of_week === 7 && targetPeriod === targetHomeroomPeriod);
       const teacherId = isSHL ? (targetClass?.teacher_id || null) : (teacherMap.get(item.subject_id) || item.teacher_id);
       return {
         class_id: targetClassId,
         day_of_week: item.day_of_week,
-        period: item.period,
+        period: targetPeriod,
         subject_id: isSHL ? 'sub-shl' : item.subject_id,
         teacher_id: teacherId,
       };

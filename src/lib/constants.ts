@@ -147,6 +147,41 @@ export function isAllowedPeriodForDay(day: number, period: number): boolean {
   return allowed ? allowed.includes(period) : false;
 }
 
+// =============================================
+// Phân chia buổi học theo khối:
+// Khối 6, 9 -> Buổi Sáng (P1-P5 Thứ 2-6, P1-P3 Thứ 7)
+// Khối 7, 8 -> Buổi Chiều (P6-P10 Thứ 2-6, P6-P8 Thứ 7)
+// =============================================
+export const GRADE_SHIFTS: Record<number, 'morning' | 'afternoon'> = {
+  6: 'morning',
+  7: 'afternoon',
+  8: 'afternoon',
+  9: 'morning',
+};
+
+export function getGradeShift(grade: number): 'morning' | 'afternoon' {
+  return GRADE_SHIFTS[grade] || (grade === 7 || grade === 8 ? 'afternoon' : 'morning');
+}
+
+export function getClassAllowedPeriods(grade: number, day: number): number[] {
+  const shift = getGradeShift(grade);
+  if (shift === 'morning') {
+    return day === 7 ? [1, 2, 3] : [1, 2, 3, 4, 5];
+  } else {
+    return day === 7 ? [6, 7, 8] : [6, 7, 8, 9, 10];
+  }
+}
+
+export function isAllowedPeriodForClass(grade: number, day: number, period: number): boolean {
+  const allowed = getClassAllowedPeriods(grade, day);
+  return allowed.includes(period);
+}
+
+export function getClassHomeroomSlot(grade: number): { day: number; period: number } {
+  const shift = getGradeShift(grade);
+  return shift === 'morning' ? { day: 7, period: 3 } : { day: 7, period: 8 };
+}
+
 export interface TimetableDayConfig {
   day: number; // 2 = Thứ Hai, 7 = Thứ Bảy
   name: string;

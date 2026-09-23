@@ -34,8 +34,9 @@ import {
   generateDesksForClass,
   generateTimetableForClass,
 } from './mock-data';
+import { getGradeShift } from './constants';
 
-const CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v7';
+const CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v8';
 
 const STORAGE_KEYS = {
   DATA_VERSION: 'cm_data_version',
@@ -1015,18 +1016,33 @@ export const LocalStore = {
     const sourceEntries = this.getTimetable(sourceClassId);
     const targetAssignments = this.getSubjectAssignmentsForClass(targetClassId);
     const targetClass = this.getClassById(targetClassId);
+    const sourceClass = this.getClassById(sourceClassId);
+    const targetShift = targetClass ? getGradeShift(targetClass.grade) : 'morning';
+    const sourceShift = sourceClass ? getGradeShift(sourceClass.grade) : 'morning';
+
     const teacherMap = new Map<string, string>();
     targetAssignments.forEach((a) => teacherMap.set(a.subject_id, a.teacher_id));
 
+    const targetHomeroomPeriod = targetShift === 'morning' ? 3 : 8;
+
     const now = new Date().toISOString();
     const newEntries: TimetableEntryRow[] = sourceEntries.map((item) => {
-      const isSHL = item.subject_id === 'sub-shl' || (item.day_of_week === 7 && (item.period === 3 || item.period === 8));
+      let targetPeriod = item.period;
+      if (sourceShift !== targetShift) {
+        if (targetShift === 'afternoon' && sourceShift === 'morning') {
+          targetPeriod = item.period + 5;
+        } else if (targetShift === 'morning' && sourceShift === 'afternoon') {
+          targetPeriod = item.period - 5;
+        }
+      }
+
+      const isSHL = item.subject_id === 'sub-shl' || (item.day_of_week === 7 && targetPeriod === targetHomeroomPeriod);
       const teacherId = isSHL ? (targetClass?.teacher_id || null) : (teacherMap.get(item.subject_id) || item.teacher_id);
       return {
-        id: `tt-${targetClassId}-d${item.day_of_week}-p${item.period}`,
+        id: `tt-${targetClassId}-d${item.day_of_week}-p${targetPeriod}`,
         class_id: targetClassId,
         day_of_week: item.day_of_week,
-        period: item.period,
+        period: targetPeriod,
         subject_id: isSHL ? 'sub-shl' : item.subject_id,
         teacher_id: teacherId,
         created_at: now,

@@ -49,105 +49,92 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
   // Section 20 - Required Test Scenarios 1 to 23
   // =========================================================================
 
-  describe('Cấu trúc tuần học: 56 tiết/tuần (Scenarios 1 - 8)', () => {
-    it('1. Thứ Hai = 5 sáng + 5 chiều = 10 tiết', () => {
+  describe('Cấu trúc tuần học theo ca: 28 tiết/tuần (Scenarios 1 - 8)', () => {
+    it('1. Thứ Hai = 5 tiết sáng (Tiết 1 -> 5) cho lớp Khối 6', () => {
       const slots = LocalStore.getTimetable(classId).filter((t) => t.day_of_week === 2);
-      expect(slots).toHaveLength(10);
+      expect(slots).toHaveLength(5);
       const periods = slots.map((s) => s.period).sort((a, b) => a - b);
-      expect(periods).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      expect(slots.filter((s) => s.period <= 5)).toHaveLength(5);
-      expect(slots.filter((s) => s.period >= 6)).toHaveLength(5);
+      expect(periods).toEqual([1, 2, 3, 4, 5]);
     });
 
-    it('2. Thứ Ba = 5 sáng + 5 chiều = 10 tiết (ngày học bình thường)', () => {
+    it('2. Thứ Ba = 5 tiết sáng (Tiết 1 -> 5) cho lớp Khối 6', () => {
       const slots = LocalStore.getTimetable(classId).filter((t) => t.day_of_week === 3);
-      expect(slots).toHaveLength(10);
+      expect(slots).toHaveLength(5);
       const periods = slots.map((s) => s.period).sort((a, b) => a - b);
-      expect(periods).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      expect(slots.filter((s) => s.period <= 5)).toHaveLength(5);
-      expect(slots.filter((s) => s.period >= 6)).toHaveLength(5);
+      expect(periods).toEqual([1, 2, 3, 4, 5]);
     });
 
-    it('3. Thứ Tư = 5 sáng + 5 chiều = 10 tiết', () => {
+    it('3. Thứ Tư = 5 tiết sáng (Tiết 1 -> 5) cho lớp Khối 6', () => {
       const slots = LocalStore.getTimetable(classId).filter((t) => t.day_of_week === 4);
-      expect(slots).toHaveLength(10);
+      expect(slots).toHaveLength(5);
       const periods = slots.map((s) => s.period).sort((a, b) => a - b);
-      expect(periods).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      expect(slots.filter((s) => s.period <= 5)).toHaveLength(5);
-      expect(slots.filter((s) => s.period >= 6)).toHaveLength(5);
+      expect(periods).toEqual([1, 2, 3, 4, 5]);
     });
 
-    it('4. Thứ Năm = 5 sáng + 5 chiều = 10 tiết', () => {
+    it('4. Thứ Năm = 5 tiết sáng (Tiết 1 -> 5) cho lớp Khối 6', () => {
       const slots = LocalStore.getTimetable(classId).filter((t) => t.day_of_week === 5);
-      expect(slots).toHaveLength(10);
+      expect(slots).toHaveLength(5);
       const periods = slots.map((s) => s.period).sort((a, b) => a - b);
-      expect(periods).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      expect(slots.filter((s) => s.period <= 5)).toHaveLength(5);
-      expect(slots.filter((s) => s.period >= 6)).toHaveLength(5);
+      expect(periods).toEqual([1, 2, 3, 4, 5]);
     });
 
-    it('5. Thứ Sáu = 5 sáng + 5 chiều = 10 tiết', () => {
+    it('5. Thứ Sáu = 5 tiết sáng (Tiết 1 -> 5) cho lớp Khối 6', () => {
       const slots = LocalStore.getTimetable(classId).filter((t) => t.day_of_week === 6);
-      expect(slots).toHaveLength(10);
+      expect(slots).toHaveLength(5);
       const periods = slots.map((s) => s.period).sort((a, b) => a - b);
-      expect(periods).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      expect(slots.filter((s) => s.period <= 5)).toHaveLength(5);
-      expect(slots.filter((s) => s.period >= 6)).toHaveLength(5);
+      expect(periods).toEqual([1, 2, 3, 4, 5]);
     });
 
-    it('6. Thứ Bảy = 3 sáng + 3 chiều = 6 tiết', () => {
+    it('6. Thứ Bảy = 3 tiết sáng (Tiết 1 -> 3) cho lớp Khối 6', () => {
       const slots = LocalStore.getTimetable(classId).filter((t) => t.day_of_week === 7);
-      expect(slots).toHaveLength(6);
+      expect(slots).toHaveLength(3);
       const periods = slots.map((s) => s.period).sort((a, b) => a - b);
-      expect(periods).toEqual([1, 2, 3, 6, 7, 8]);
+      expect(periods).toEqual([1, 2, 3]);
     });
 
-    it('7. Buổi sáng Thứ Bảy chỉ gồm Tiết 1, Tiết 2, Tiết 3', () => {
-      const morningSaturday = LocalStore.getTimetable(classId)
-        .filter((t) => t.day_of_week === 7 && t.period <= 5)
-        .map((s) => s.period)
-        .sort((a, b) => a - b);
-      expect(morningSaturday).toEqual([1, 2, 3]);
-      expect(morningSaturday).not.toContain(4);
-      expect(morningSaturday).not.toContain(5);
+    it('7. Lớp Khối 6 ca Sáng chỉ gồm Tiết 1 đến Tiết 5, không có tiết ca Chiều', () => {
+      const afternoonSlots = LocalStore.getTimetable(classId).filter((t) => t.period >= 6);
+      expect(afternoonSlots).toHaveLength(0);
+      expect(LocalStore.getTimetable(classId)).toHaveLength(28);
     });
 
-    it('8. Buổi chiều Thứ Bảy chỉ gồm Tiết 6, Tiết 7, Tiết 8', () => {
-      const afternoonSaturday = LocalStore.getTimetable(classId)
-        .filter((t) => t.day_of_week === 7 && t.period >= 6)
-        .map((s) => s.period)
-        .sort((a, b) => a - b);
-      expect(afternoonSaturday).toEqual([6, 7, 8]);
-      expect(afternoonSaturday).not.toContain(9);
-      expect(afternoonSaturday).not.toContain(10);
+    it('8. Lớp Khối 7 ca Chiều chỉ gồm Tiết 6 đến Tiết 10, Thứ Bảy gồm Tiết 6 đến Tiết 8', () => {
+      const slots7 = LocalStore.getTimetable('c-7a1');
+      expect(slots7).toHaveLength(28);
+      expect(slots7.every((s) => s.period >= 6 && s.period <= 10)).toBe(true);
+
+      const satSlots7 = slots7.filter((s) => s.day_of_week === 7);
+      expect(satSlots7).toHaveLength(3);
+      expect(satSlots7.map((s) => s.period).sort((a, b) => a - b)).toEqual([6, 7, 8]);
     });
   });
 
   describe('Quy tắc Tiết Sinh hoạt lớp Thứ Bảy (Scenarios 9 - 13)', () => {
-    it('9. Tiết 3 Thứ Bảy buổi sáng là Sinh hoạt lớp (sub-shl)', () => {
+    it('9. Tiết 3 Thứ Bảy buổi sáng là Sinh hoạt lớp (sub-shl) cho Khối 6', () => {
       const entry = LocalStore.getTimetableEntry(classId, 7, 3);
       expect(entry).not.toBeNull();
       expect(entry?.subject_id).toBe('sub-shl');
     });
 
-    it('10. Tiết 8 Thứ Bảy buổi chiều là Sinh hoạt lớp (sub-shl)', () => {
-      const entry = LocalStore.getTimetableEntry(classId, 7, 8);
+    it('10. Tiết 8 Thứ Bảy buổi chiều là Sinh hoạt lớp (sub-shl) cho Khối 7', () => {
+      const entry = LocalStore.getTimetableEntry('c-7a1', 7, 8);
       expect(entry).not.toBeNull();
       expect(entry?.subject_id).toBe('sub-shl');
     });
 
-    it('11. Tiết 3 và Tiết 8 Thứ Bảy sử dụng đúng GVCN của lớp', () => {
-      const cls = LocalStore.getClassById(classId);
-      expect(cls?.teacher_id).toBe('u-tea-01');
-
+    it('11. Tiết SHL Thứ Bảy sử dụng đúng GVCN của lớp (Tiết 3 cho 6A1, Tiết 8 cho 7A1)', () => {
+      const cls6 = LocalStore.getClassById(classId);
+      expect(cls6?.teacher_id).toBe('u-tea-01');
       const p3 = LocalStore.getTimetableEntry(classId, 7, 3);
-      const p8 = LocalStore.getTimetableEntry(classId, 7, 8);
+      expect(p3?.teacher_id).toBe(cls6?.teacher_id);
 
-      expect(p3?.teacher_id).toBe(cls?.teacher_id);
-      expect(p8?.teacher_id).toBe(cls?.teacher_id);
+      const cls7 = LocalStore.getClassById('c-7a1');
+      expect(cls7?.teacher_id).toBeTruthy();
+      const p8 = LocalStore.getTimetableEntry('c-7a1', 7, 8);
+      expect(p8?.teacher_id).toBe(cls7?.teacher_id);
     });
 
-    it('12. Tiết 3 và Tiết 8 Thứ Bảy không dùng GV bộ môn ngẫu nhiên', () => {
+    it('12. Tiết SHL Thứ Bảy không dùng GV bộ môn ngẫu nhiên', () => {
       const otherTeacherId = 'u-tea-05';
       const resP3 = TimetableService.saveEntry(
         classId,
@@ -161,7 +148,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
       expect(resP3.error).toContain('phải do Giáo viên chủ nhiệm');
 
       const resP8 = TimetableService.saveEntry(
-        classId,
+        'c-7a1',
         7,
         8,
         'sub-shl',
@@ -172,7 +159,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
       expect(resP8.error).toContain('phải do Giáo viên chủ nhiệm');
     });
 
-    it('13. Tiết 3 và Tiết 8 Thứ Bảy không dùng môn học ngẫu nhiên', () => {
+    it('13. Tiết SHL Thứ Bảy không dùng môn học ngẫu nhiên', () => {
       const resP3 = TimetableService.saveEntry(
         classId,
         7,
@@ -184,12 +171,13 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
       expect(resP3.success).toBe(false);
       expect(resP3.error).toContain('bắt buộc là tiết Sinh hoạt lớp');
 
+      const cls7 = LocalStore.getClassById('c-7a1');
       const resP8 = TimetableService.saveEntry(
-        classId,
+        'c-7a1',
         7,
         8,
         'sub-eng', // Môn Tiếng Anh
-        'u-tea-01',
+        cls7?.teacher_id || 'u-tea-05',
         adminUser
       );
       expect(resP8.success).toBe(false);
@@ -198,7 +186,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
   });
 
   describe('Chặn các tiết không tồn tại vào Thứ Bảy (Scenarios 14 - 15)', () => {
-    it('14. Không thể tạo Tiết 4, Tiết 5 vào buổi sáng Thứ Bảy', () => {
+    it('14. Không thể tạo Tiết 4, Tiết 5 vào buổi sáng Thứ Bảy cho Khối 6', () => {
       const resP4 = TimetableService.saveEntry(
         classId,
         7,
@@ -208,7 +196,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
         adminUser
       );
       expect(resP4.success).toBe(false);
-      expect(resP4.error).toContain('Thứ Bảy chỉ có 6 tiết');
+      expect(resP4.error).toContain('Thứ Bảy ca Sáng chỉ có 3 tiết');
 
       const resP5 = TimetableService.saveEntry(
         classId,
@@ -219,31 +207,32 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
         adminUser
       );
       expect(resP5.success).toBe(false);
-      expect(resP5.error).toContain('Thứ Bảy chỉ có 6 tiết');
+      expect(resP5.error).toContain('Thứ Bảy ca Sáng chỉ có 3 tiết');
     });
 
-    it('15. Không thể tạo Tiết 9, Tiết 10 vào buổi chiều Thứ Bảy', () => {
+    it('15. Không thể tạo Tiết 9, Tiết 10 vào buổi chiều Thứ Bảy cho Khối 7', () => {
+      const cls7 = LocalStore.getClassById('c-7a1');
       const resP9 = TimetableService.saveEntry(
-        classId,
+        'c-7a1',
         7,
         9,
         'sub-mat',
-        'u-tea-01',
+        cls7?.teacher_id || 'u-tea-05',
         adminUser
       );
       expect(resP9.success).toBe(false);
-      expect(resP9.error).toContain('Thứ Bảy chỉ có 6 tiết');
+      expect(resP9.error).toContain('Thứ Bảy ca Chiều chỉ có 3 tiết');
 
       const resP10 = TimetableService.saveEntry(
-        classId,
+        'c-7a1',
         7,
         10,
         'sub-mat',
-        'u-tea-01',
+        cls7?.teacher_id || 'u-tea-05',
         adminUser
       );
       expect(resP10.success).toBe(false);
-      expect(resP10.error).toContain('Thứ Bảy chỉ có 6 tiết');
+      expect(resP10.error).toContain('Thứ Bảy ca Chiều chỉ có 3 tiết');
     });
   });
 
@@ -395,17 +384,18 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
       expect(selfConflict).toBeNull();
     });
 
-    it('22. Hàm copy/mẫu thời khóa biểu tuân thủ đầy đủ 56 tiết/tuần', () => {
-      // Áp dụng mẫu chuẩn 56 tiết
+    it('22. Hàm copy/mẫu thời khóa biểu tuân thủ đầy đủ 28 tiết/tuần', () => {
+      // Áp dụng mẫu chuẩn 28 tiết
       const res = TimetableService.applyStandardTemplate(classId, homeroomUser6A1);
       expect(res.success).toBe(true);
-      expect(res.data?.length).toBe(56);
+      expect(res.data?.length).toBe(28);
 
-      // Kiểm tra đầy đủ 56 tiết hợp lệ
+      // Kiểm tra đầy đủ 28 tiết hợp lệ
       res.data?.forEach((item) => {
         expect(item.subject_id).toBeTruthy();
         expect(item.teacher_id).toBeTruthy();
-        if (item.day_of_week === 7 && (item.period === 3 || item.period === 8)) {
+        expect(item.period).toBeLessThanOrEqual(5);
+        if (item.day_of_week === 7 && item.period === 3) {
           expect(item.subject_id).toBe('sub-shl');
           expect(item.teacher_id).toBe('u-tea-01'); // GVCN 6A1
         }
@@ -440,22 +430,22 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
       expect(resInvalidPeriod.success).toBe(false);
       expect(resInvalidPeriod.error).toContain('không hợp lệ');
 
-      // c. Thứ Bảy tiết 4
+      // c. Thứ Bảy ca Sáng tiết 4
       const resSatP4 = TimetableService.saveEntry(classId, 7, 4, 'sub-mat', 'u-tea-01', adminUser);
       expect(resSatP4.success).toBe(false);
-      expect(resSatP4.error).toContain('Thứ Bảy chỉ có 6 tiết');
+      expect(resSatP4.error).toContain('Thứ Bảy ca Sáng chỉ có 3 tiết');
 
-      // d. Thứ Bảy tiết 10
-      const resSatP10 = TimetableService.saveEntry(classId, 7, 10, 'sub-mat', 'u-tea-01', adminUser);
-      expect(resSatP10.success).toBe(false);
-      expect(resSatP10.error).toContain('Thứ Bảy chỉ có 6 tiết');
+      // d. Sai ca học: Khối 6 ca Sáng không được học tiết buổi chiều (Tiết 8)
+      const resShiftMismatch = TimetableService.saveEntry(classId, 2, 8, 'sub-mat', 'u-tea-01', adminUser);
+      expect(resShiftMismatch.success).toBe(false);
+      expect(resShiftMismatch.error).toContain('không học buổi Chiều');
 
-      // e. Không được xóa tiết Sinh hoạt lớp Thứ Bảy
+      // e. Không được xóa tiết Sinh hoạt lớp Thứ Bảy (Tiết 3 cho 6A1, Tiết 8 cho 7A1)
       const delP3 = TimetableService.deleteEntry(classId, 7, 3, adminUser);
       expect(delP3.success).toBe(false);
       expect(delP3.error).toContain('Không thể xóa tiết Sinh hoạt lớp');
 
-      const delP8 = TimetableService.deleteEntry(classId, 7, 8, adminUser);
+      const delP8 = TimetableService.deleteEntry('c-7a1', 7, 8, adminUser);
       expect(delP8.success).toBe(false);
       expect(delP8.error).toContain('Không thể xóa tiết Sinh hoạt lớp');
     });
@@ -758,15 +748,15 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
 
     // Case 11: Gọi service trực tiếp với dữ liệu gây xung đột -> Trả về { success: false, error: string }
     it('Case 11: Gọi service trực tiếp với dữ liệu gây xung đột -> Trả về { success: false, error: string }', () => {
-      const anSlot = LocalStore.getAllTimetables().find((t) => t.teacher_id === 'u-tea-01');
+      const anSlot = LocalStore.getTimetable('c-6a1').find((t) => t.teacher_id === 'u-tea-01' && t.day_of_week !== 7);
       expect(anSlot).toBeDefined();
 
-      // Xóa slot ở lớp 8A2 trước để kiểm tra chính xác xung đột giáo viên
-      LocalStore.deleteTimetableEntry('c-8a2', anSlot!.day_of_week, anSlot!.period);
+      // Xóa slot ở lớp 6A2 trước để kiểm tra chính xác xung đột giáo viên
+      LocalStore.deleteTimetableEntry('c-6a2', anSlot!.day_of_week, anSlot!.period);
 
       const directRes = TimetableService.createEntry(
         {
-          class_id: 'c-8a2',
+          class_id: 'c-6a2',
           day_of_week: anSlot!.day_of_week,
           period: anSlot!.period,
           subject_id: 'sub-mat',

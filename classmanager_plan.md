@@ -148,18 +148,23 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 ### 4.1. Bảng lưới Thời khóa biểu tương tác (`/timetable`) `[ĐÃ XONG ✅]`
 * **Cấu trúc chuẩn:** 6 ngày học (Thứ Hai $\rightarrow$ Thứ Bảy) × 5 tiết buổi sáng (Tiết 1 $\rightarrow$ Tiết 5).
 ### 4.1. Lưới Thời khóa biểu tương tác (`src/app/(dashboard)/timetable/page.tsx`) `[ĐÃ XONG ✅]`
-* **Cấu trúc chuẩn 2 buổi/ngày THCS (56 tiết/tuần):**
-  * Thứ Hai – Thứ Sáu (bao gồm cả Thứ Ba): 10 tiết/ngày (Sáng: Tiết 1–5, Chiều: Tiết 6–10).
-  * Thứ Bảy: 6 tiết/ngày (Sáng: Tiết 1–3, Chiều: Tiết 6–8). Không có Tiết 4, 5, 9, 10.
-  * Tiết Sinh hoạt lớp (SHL): Cố định Tiết 3 (Sáng) và Tiết 8 (Chiều) Thứ Bảy, luôn luôn do chính GVCN lớp phụ trách.
+* **Phân chia ca học chuẩn theo Khối (28 tiết/lớp/tuần · 448 tiết toàn trường):**
+  * **Khối 6 & Khối 9 → BUỔI SÁNG:** Thứ Hai – Thứ Sáu (Tiết 1–5), Thứ Bảy (Tiết 1–3). Cố định **Sinh hoạt lớp Thứ Bảy tại Tiết 3** do chính GVCN phụ trách.
+  * **Khối 7 & Khối 8 → BUỔI CHIỀU:** Thứ Hai – Thứ Sáu (Tiết 6–10), Thứ Bảy (Tiết 6–8). Cố định **Sinh hoạt lớp Thứ Bảy tại Tiết 8** do chính GVCN phụ trách.
+  * Không tạo Tiết 4/5 Thứ 7 sáng và Tiết 9/10 Thứ 7 chiều.
   * Khung giờ chuẩn: 45 phút/tiết, sinh hoạt đầu giờ 15 phút (07:00–07:15 & 12:45–13:00) và giờ giải lao không phải là tiết học.
+* **Giao diện Ẩn/Hiện linh hoạt (Collapsible UI — Không bỏ hẳn hàng):**
+  * Khối sáng hỗ trợ ẩn/hiện các hàng tiết chiều và ngược lại thông qua nút bấm thanh lọc và banner ca học. Các hàng không bị xóa bỏ hẳn mà giữ nguyên tính toàn vẹn của lưới học phần.
+* **Phân quyền xem Thời khóa biểu (AuthGuard):**
+  * **Giáo viên (`TEACHER`):** Chỉ xem được thời khóa biểu của các lớp mình phụ trách giảng dạy (bao gồm lớp chủ nhiệm và lớp được phân công bộ môn).
+  * **Quản trị viên (`ADMIN`):** Xem và quản lý toàn bộ 16 lớp trong trường.
 * **Nội dung mỗi ô tiết học:**
   * Tên môn học kèm mã môn và màu sắc nhận diện đặc trưng (Toán - Xanh dương, Ngữ văn - Xanh lá, Tiếng Anh - Tím, Vật lý - Cyan, Hóa học - Vàng hổ phách, Sinh học - Xanh cốm, Lịch sử - Đỏ hồng, Địa lý - Teal, Tin học - Indigo, Công nghệ - Stone, SHL - Indigo/Tím).
   * Tên giáo viên bộ môn phụ trách (tự động liên kết từ phân công chuyên môn `subject_assignments` của lớp).
 * **Thao tác nghiệp vụ:**
   * Bấm vào bất kỳ ô tiết học để gán/đổi môn học, giáo viên tự động tra cứu và điền sẵn.
-  * Hỗ trợ nút **[⚡ Xếp mẫu chuẩn]**: Áp dụng 56 tiết chuẩn phân bổ đều các môn THCS.
-  * Hỗ trợ nút **[📋 Sao chép TKB]**: Sao chép thời khóa biểu từ lớp khác sang lớp hiện tại, tự động ánh xạ lại GVCN lớp đích vào Tiết 3 & 8 Thứ Bảy.
+  * Hỗ trợ nút **[⚡ Xếp mẫu chuẩn]**: Áp dụng 28 tiết chuẩn phân bổ đều các môn THCS theo khối.
+  * Hỗ trợ nút **[📋 Sao chép TKB]**: Sao chép thời khóa biểu từ lớp khác sang lớp hiện tại, tự động ánh xạ lại GVCN lớp đích vào Tiết 3 (Sáng) hoặc Tiết 8 (Chiều) Thứ Bảy.
   * Phân quyền RBAC: Admin và GVCN có quyền sửa; GVBM hiển thị badge "Chế độ xem".
   * Hỗ trợ giao diện Responsive: Lưới ma trận chia 2 buổi trên Desktop và Tab chọn ngày linh hoạt trên Mobile.
 

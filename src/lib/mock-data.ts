@@ -16,6 +16,7 @@ import {
   SubjectAssignmentRow,
   TimetableEntryRow,
 } from '@/types';
+import { getGradeShift } from './constants';
 
 // 1. 10 SUBJECTS
 export const INITIAL_SUBJECTS: SubjectRow[] = [
@@ -44510,77 +44511,101 @@ export const INITIAL_ATTENDANCE_RECORDS: AttendanceRow[] = [
 ];
 
 // =============================================
-// 6. TIMETABLE ENTRIES (6 days x 5 periods = 30 periods per class)
+// 6. TIMETABLE ENTRIES (Phân chia theo ca học của Khối)
+// Khối 6 & 9: Buổi Sáng (28 tiết: P1-P5 Thứ 2-6, P1-P3 Thứ 7 với P3 là SHL)
+// Khối 7 & 8: Buổi Chiều (28 tiết: P6-P10 Thứ 2-6, P6-P8 Thứ 7 với P8 là SHL)
 // =============================================
-export const STANDARD_SCHEDULE_TEMPLATE: Array<{ day: number; period: number; subject_id: string }> = [
-  // Thứ Hai (day 2): 10 tiết
+
+export const MORNING_SCHEDULE_TEMPLATE: Array<{ day: number; period: number; subject_id: string }> = [
+  // Thứ Hai (day 2): 5 tiết sáng
   { day: 2, period: 1, subject_id: 'sub-mat' },
   { day: 2, period: 2, subject_id: 'sub-mat' },
   { day: 2, period: 3, subject_id: 'sub-lit' },
   { day: 2, period: 4, subject_id: 'sub-lit' },
   { day: 2, period: 5, subject_id: 'sub-eng' },
-  { day: 2, period: 6, subject_id: 'sub-phy' },
-  { day: 2, period: 7, subject_id: 'sub-phy' },
-  { day: 2, period: 8, subject_id: 'sub-his' },
-  { day: 2, period: 9, subject_id: 'sub-geo' },
-  { day: 2, period: 10, subject_id: 'sub-inf' },
-  // Thứ Ba (day 3): 10 tiết (bình thường)
+  // Thứ Ba (day 3): 5 tiết sáng
   { day: 3, period: 1, subject_id: 'sub-lit' },
   { day: 3, period: 2, subject_id: 'sub-mat' },
   { day: 3, period: 3, subject_id: 'sub-phy' },
   { day: 3, period: 4, subject_id: 'sub-che' },
   { day: 3, period: 5, subject_id: 'sub-his' },
-  { day: 3, period: 6, subject_id: 'sub-eng' },
-  { day: 3, period: 7, subject_id: 'sub-eng' },
-  { day: 3, period: 8, subject_id: 'sub-bio' },
-  { day: 3, period: 9, subject_id: 'sub-inf' },
-  { day: 3, period: 10, subject_id: 'sub-tec' },
-  // Thứ Tư (day 4): 10 tiết
+  // Thứ Tư (day 4): 5 tiết sáng
   { day: 4, period: 1, subject_id: 'sub-mat' },
   { day: 4, period: 2, subject_id: 'sub-eng' },
   { day: 4, period: 3, subject_id: 'sub-eng' },
   { day: 4, period: 4, subject_id: 'sub-bio' },
   { day: 4, period: 5, subject_id: 'sub-geo' },
-  { day: 4, period: 6, subject_id: 'sub-lit' },
-  { day: 4, period: 7, subject_id: 'sub-lit' },
-  { day: 4, period: 8, subject_id: 'sub-che' },
-  { day: 4, period: 9, subject_id: 'sub-phy' },
-  { day: 4, period: 10, subject_id: 'sub-tec' },
-  // Thứ Năm (day 5): 10 tiết
+  // Thứ Năm (day 5): 5 tiết sáng
   { day: 5, period: 1, subject_id: 'sub-lit' },
   { day: 5, period: 2, subject_id: 'sub-lit' },
   { day: 5, period: 3, subject_id: 'sub-inf' },
   { day: 5, period: 4, subject_id: 'sub-inf' },
   { day: 5, period: 5, subject_id: 'sub-tec' },
-  { day: 5, period: 6, subject_id: 'sub-mat' },
-  { day: 5, period: 7, subject_id: 'sub-mat' },
-  { day: 5, period: 8, subject_id: 'sub-eng' },
-  { day: 5, period: 9, subject_id: 'sub-his' },
-  { day: 5, period: 10, subject_id: 'sub-geo' },
-  // Thứ Sáu (day 6): 10 tiết
+  // Thứ Sáu (day 6): 5 tiết sáng
   { day: 6, period: 1, subject_id: 'sub-mat' },
   { day: 6, period: 2, subject_id: 'sub-mat' },
   { day: 6, period: 3, subject_id: 'sub-eng' },
   { day: 6, period: 4, subject_id: 'sub-phy' },
   { day: 6, period: 5, subject_id: 'sub-his' },
-  { day: 6, period: 6, subject_id: 'sub-lit' },
-  { day: 6, period: 7, subject_id: 'sub-lit' },
-  { day: 6, period: 8, subject_id: 'sub-bio' },
-  { day: 6, period: 9, subject_id: 'sub-che' },
-  { day: 6, period: 10, subject_id: 'sub-inf' },
-  // Thứ Bảy (day 7): 6 tiết (3 sáng: P1, P2, P3=SHL; 3 chiều: P6, P7, P8=SHL)
+  // Thứ Bảy (day 7): 3 tiết sáng (P3 là Sinh hoạt lớp cùng GVCN)
   { day: 7, period: 1, subject_id: 'sub-che' },
   { day: 7, period: 2, subject_id: 'sub-bio' },
-  { day: 7, period: 3, subject_id: 'sub-shl' }, // Sinh hoạt lớp sáng cùng GVCN
-  { day: 7, period: 6, subject_id: 'sub-geo' },
-  { day: 7, period: 7, subject_id: 'sub-tec' },
-  { day: 7, period: 8, subject_id: 'sub-shl' }, // Sinh hoạt lớp chiều cùng GVCN
+  { day: 7, period: 3, subject_id: 'sub-shl' },
 ];
 
-const NON_SHL_SLOTS = STANDARD_SCHEDULE_TEMPLATE.filter((s) => s.subject_id !== 'sub-shl');
-const SUBJECT_SEQUENCE = NON_SHL_SLOTS.map((s) => s.subject_id);
+export const AFTERNOON_SCHEDULE_TEMPLATE: Array<{ day: number; period: number; subject_id: string }> = [
+  // Thứ Hai (day 2): 5 tiết chiều
+  { day: 2, period: 6, subject_id: 'sub-mat' },
+  { day: 2, period: 7, subject_id: 'sub-mat' },
+  { day: 2, period: 8, subject_id: 'sub-lit' },
+  { day: 2, period: 9, subject_id: 'sub-lit' },
+  { day: 2, period: 10, subject_id: 'sub-eng' },
+  // Thứ Ba (day 3): 5 tiết chiều
+  { day: 3, period: 6, subject_id: 'sub-lit' },
+  { day: 3, period: 7, subject_id: 'sub-mat' },
+  { day: 3, period: 8, subject_id: 'sub-phy' },
+  { day: 3, period: 9, subject_id: 'sub-che' },
+  { day: 3, period: 10, subject_id: 'sub-his' },
+  // Thứ Tư (day 4): 5 tiết chiều
+  { day: 4, period: 6, subject_id: 'sub-mat' },
+  { day: 4, period: 7, subject_id: 'sub-eng' },
+  { day: 4, period: 8, subject_id: 'sub-eng' },
+  { day: 4, period: 9, subject_id: 'sub-bio' },
+  { day: 4, period: 10, subject_id: 'sub-geo' },
+  // Thứ Năm (day 5): 5 tiết chiều
+  { day: 5, period: 6, subject_id: 'sub-lit' },
+  { day: 5, period: 7, subject_id: 'sub-lit' },
+  { day: 5, period: 8, subject_id: 'sub-inf' },
+  { day: 5, period: 9, subject_id: 'sub-inf' },
+  { day: 5, period: 10, subject_id: 'sub-tec' },
+  // Thứ Sáu (day 6): 5 tiết chiều
+  { day: 6, period: 6, subject_id: 'sub-mat' },
+  { day: 6, period: 7, subject_id: 'sub-mat' },
+  { day: 6, period: 8, subject_id: 'sub-eng' },
+  { day: 6, period: 9, subject_id: 'sub-phy' },
+  { day: 6, period: 10, subject_id: 'sub-his' },
+  // Thứ Bảy (day 7): 3 tiết chiều (P8 là Sinh hoạt lớp cùng GVCN)
+  { day: 7, period: 6, subject_id: 'sub-che' },
+  { day: 7, period: 7, subject_id: 'sub-bio' },
+  { day: 7, period: 8, subject_id: 'sub-shl' },
+];
 
-function buildInitialTimetableMap(): Map<string, TimetableEntryRow[]> {
+// Mẫu chuẩn mặc định
+export const STANDARD_SCHEDULE_TEMPLATE = MORNING_SCHEDULE_TEMPLATE;
+
+export function getStandardTemplateForGrade(grade: number) {
+  const shift = getGradeShift(grade);
+  return shift === 'morning' ? MORNING_SCHEDULE_TEMPLATE : AFTERNOON_SCHEDULE_TEMPLATE;
+}
+
+function solveShiftForClasses(
+  classes: typeof INITIAL_CLASSES,
+  template: typeof MORNING_SCHEDULE_TEMPLATE,
+  homeroomPeriod: number
+): Map<string, TimetableEntryRow[]> {
+  const nonShlSlots = template.filter((s) => s.subject_id !== 'sub-shl');
+  const subjectSequence = nonShlSlots.map((s) => s.subject_id);
+
   const classTeacherMap = new Map<string, Map<string, string>>();
   for (const sa of INITIAL_SUBJECT_ASSIGNMENTS) {
     if (!classTeacherMap.has(sa.class_id)) {
@@ -44592,73 +44617,38 @@ function buildInitialTimetableMap(): Map<string, TimetableEntryRow[]> {
   const teacherBusy = new Map<string, Set<string>>();
   const classSchedules = new Map<string, TimetableEntryRow[]>();
 
-  // Khóa trước GVCN cho Tiết 3 và Tiết 8 Thứ Bảy (cố định Sinh hoạt lớp)
-  for (const c of INITIAL_CLASSES) {
+  // Khóa trước GVCN cho tiết Sinh hoạt lớp Thứ Bảy của ca này
+  for (const c of classes) {
     if (c.teacher_id) {
       if (!teacherBusy.has(c.teacher_id)) teacherBusy.set(c.teacher_id, new Set());
-      teacherBusy.get(c.teacher_id)!.add('7_3');
-      teacherBusy.get(c.teacher_id)!.add('7_8');
+      teacherBusy.get(c.teacher_id)!.add(`7_${homeroomPeriod}`);
     }
   }
 
-  for (const c of INITIAL_CLASSES) {
+  for (let cIdx = 0; cIdx < classes.length; cIdx++) {
+    const c = classes[cIdx];
     const teacherMap = classTeacherMap.get(c.id) || new Map();
 
-    const shlP3: TimetableEntryRow = {
-      id: `tt-${c.id}-d7-p3`,
+    const shlEntry: TimetableEntryRow = {
+      id: `tt-${c.id}-d7-p${homeroomPeriod}`,
       class_id: c.id,
       day_of_week: 7,
-      period: 3,
+      period: homeroomPeriod,
       subject_id: 'sub-shl',
       teacher_id: c.teacher_id || null,
       created_at: '2026-09-01T00:00:00.000Z',
       updated_at: '2026-09-01T00:00:00.000Z',
     };
-
-    const shlP8: TimetableEntryRow = {
-      id: `tt-${c.id}-d7-p8`,
-      class_id: c.id,
-      day_of_week: 7,
-      period: 8,
-      subject_id: 'sub-shl',
-      teacher_id: c.teacher_id || null,
-      created_at: '2026-09-01T00:00:00.000Z',
-      updated_at: '2026-09-01T00:00:00.000Z',
-    };
-
-    if (c.id === 'c-6a1') {
-      const schedule: TimetableEntryRow[] = [shlP3, shlP8];
-      for (const slot of NON_SHL_SLOTS) {
-        const teacherId = teacherMap.get(slot.subject_id) || null;
-        if (teacherId) {
-          const key = `${slot.day}_${slot.period}`;
-          if (!teacherBusy.has(teacherId)) teacherBusy.set(teacherId, new Set());
-          teacherBusy.get(teacherId)!.add(key);
-        }
-        schedule.push({
-          id: `tt-${c.id}-d${slot.day}-p${slot.period}`,
-          class_id: c.id,
-          day_of_week: slot.day,
-          period: slot.period,
-          subject_id: slot.subject_id,
-          teacher_id: teacherId,
-          created_at: '2026-09-01T00:00:00.000Z',
-          updated_at: '2026-09-01T00:00:00.000Z',
-        });
-      }
-      classSchedules.set(c.id, schedule);
-      continue;
-    }
 
     const assignedSlots: TimetableEntryRow[] = [];
-    const availableSlots = NON_SHL_SLOTS.map((s) => ({ day: s.day, period: s.period }));
+    const availableSlots = nonShlSlots.map((s) => ({ day: s.day, period: s.period }));
 
     function backtrack(idx: number): boolean {
-      if (idx === SUBJECT_SEQUENCE.length) return true;
-      const subj = SUBJECT_SEQUENCE[idx];
+      if (idx === subjectSequence.length) return true;
+      const subj = subjectSequence[idx];
       const teacherId = teacherMap.get(subj) || null;
 
-      const startOffset = idx % availableSlots.length;
+      const startOffset = (cIdx * 7 + idx) % availableSlots.length;
       for (let i = 0; i < availableSlots.length; i++) {
         const sIdx = (startOffset + i) % availableSlots.length;
         const slot = availableSlots[sIdx];
@@ -44697,10 +44687,27 @@ function buildInitialTimetableMap(): Map<string, TimetableEntryRow[]> {
     }
 
     backtrack(0);
-    classSchedules.set(c.id, [shlP3, shlP8, ...assignedSlots]);
+    classSchedules.set(c.id, [shlEntry, ...assignedSlots]);
   }
 
   return classSchedules;
+}
+
+function buildInitialTimetableMap(): Map<string, TimetableEntryRow[]> {
+  const morningClasses = INITIAL_CLASSES.filter((c) => getGradeShift(c.grade) === 'morning');
+  const afternoonClasses = INITIAL_CLASSES.filter((c) => getGradeShift(c.grade) === 'afternoon');
+
+  const morningSchedules = solveShiftForClasses(morningClasses, MORNING_SCHEDULE_TEMPLATE, 3);
+  const afternoonSchedules = solveShiftForClasses(afternoonClasses, AFTERNOON_SCHEDULE_TEMPLATE, 8);
+
+  const combined = new Map<string, TimetableEntryRow[]>();
+  for (const [cid, entries] of morningSchedules.entries()) {
+    combined.set(cid, entries);
+  }
+  for (const [cid, entries] of afternoonSchedules.entries()) {
+    combined.set(cid, entries);
+  }
+  return combined;
 }
 
 const GLOBAL_TIMETABLE_CACHE = buildInitialTimetableMap();
@@ -44711,11 +44718,15 @@ export function generateTimetableForClass(classId: string): TimetableEntryRow[] 
     return cached.map((e) => ({ ...e }));
   }
   const cls = INITIAL_CLASSES.find((c) => c.id === classId);
+  const grade = cls?.grade || 6;
+  const template = getStandardTemplateForGrade(grade);
+  const homeroomPeriod = getGradeShift(grade) === 'morning' ? 3 : 8;
+
   const classAssignments = INITIAL_SUBJECT_ASSIGNMENTS.filter((a) => a.class_id === classId);
   const teacherMap = new Map<string, string>();
   classAssignments.forEach((a) => teacherMap.set(a.subject_id, a.teacher_id));
 
-  return STANDARD_SCHEDULE_TEMPLATE.map((slot) => {
+  return template.map((slot) => {
     const isSHL = slot.subject_id === 'sub-shl';
     const teacherId = isSHL ? (cls?.teacher_id || null) : (teacherMap.get(slot.subject_id) || null);
     return {
@@ -44734,4 +44745,5 @@ export function generateTimetableForClass(classId: string): TimetableEntryRow[] 
 export const INITIAL_TIMETABLE: TimetableEntryRow[] = INITIAL_CLASSES.flatMap((c) =>
   generateTimetableForClass(c.id)
 );
+
 
