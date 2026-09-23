@@ -45,7 +45,7 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
   - `(dashboard)`: Dành cho hoạt động giảng dạy của Giáo viên (GVCN / GVBM).
   - `(admin)`: Dành cho Ban Giám hiệu / Quản trị viên trường học.
   - `(auth)`: Màn hình đăng nhập mock (1-Click demo accounts theo vai trò).
-- **Middleware (`src/middleware.ts`):** Kiểm tra token / session cookie (`token`, `cm_auth_session`). Phân quyền route groups giữa `(dashboard)` và `(admin)` được kiểm tra tại edge middleware và context guards.
+- **Middleware (`frontend/src/middleware.ts`):** Kiểm tra token / session cookie (`token`, `cm_auth_session`). Phân quyền route groups giữa `(dashboard)` và `(admin)` được kiểm tra tại edge middleware và context guards.
 
 ---
 
@@ -75,7 +75,7 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
   - *Rủi ro:* Bất kỳ component nào (hoặc thao tác qua DevTools console) đều có thể gọi `LocalStore.deleteStudent` hay `LocalStore.assignSeat` mà không hề bị chặn, dù user đăng nhập đang là GVBM hoặc thậm chí là tài khoản bị khóa.
 - **CRIT-02: Không có Service / Repository Abstraction Layer (Đã giải quyết)**
   - *Hiện trạng ban đầu:* Các UI components gọi trực tiếp storage.
-  - *Giải pháp:* Đã phân tầng dịch vụ `src/services/*` và xây dựng REST client `src/lib/api-client.ts` giao tiếp với Express API backend độc lập.
+  - *Giải pháp:* Đã phân tầng dịch vụ `frontend/src/services/*` và xây dựng REST client `frontend/src/lib/api-client.ts` giao tiếp với Express API backend độc lập.
 - **CRIT-03: Thiếu Data Validation & Invariant Enforcements ở tầng Data**
   - *Hiện trạng:* `LocalStore.addStudent` không kiểm tra trùng `student_code` trong cùng lớp, không kiểm tra giới hạn `max_students` (30 hoặc 45).
   - *Hiện trạng:* `LocalStore.assignSeat` không kiểm tra học sinh có thuộc lớp đó hay không.
@@ -85,7 +85,7 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
 - **HIGH-01: Nguy cơ xung đột sơ đồ chỗ ngồi (Seating Inconsistency)**
   - *Hiện trạng:* `LocalStore.assignSeat` và `swapSeats` thao tác trực tiếp mảng desk. Nếu một học sinh bị gán thủ công hoặc xóa khỏi lớp mà chưa gỡ seat, record `student_id` trong seat trở thành orphan reference.
 - **HIGH-02: Hard-coded string & Missing dynamic class binding**
-  - *Hiện trạng:* Trong `src/app/(dashboard)/students/[id]/page.tsx`, lớp học của học sinh đang bị hardcode là `"Lớp 9A1"` thay vì đọc từ `class.name` thực tế.
+  - *Hiện trạng:* Trong `frontend/src/app/(dashboard)/students/[id]/page.tsx`, lớp học của học sinh đang bị hardcode là `"Lớp 9A1"` thay vì đọc từ `class.name` thực tế.
 - **HIGH-03: Điểm danh thiếu kiểm tra phân công giáo viên**
   - *Hiện trạng:* `saveAttendanceBatch` cho phép lưu bất kỳ `subject_id` nào mà không kiểm tra giáo viên hiện tại có được phân công dạy môn đó ở lớp này không (nếu là GVBM).
 
@@ -108,7 +108,7 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
 ## D. NỢ KỸ THUẬT (TECHNICAL DEBT)
 
 1. **Tight Coupling giữa UI và LocalStore:**
-   - UI phụ thuộc trực tiếp vào cấu trúc lưu trữ LocalStorage. Cần tạo `src/services/` (ví dụ: `StudentService`, `ClassService`, `SeatingService`, `AttendanceService`, `TeacherService`, `AnnouncementService`) đóng vai trò là Application Boundary.
+   - UI phụ thuộc trực tiếp vào cấu trúc lưu trữ LocalStorage. Cần tạo `frontend/src/services/` (ví dụ: `StudentService`, `ClassService`, `SeatingService`, `AttendanceService`, `TeacherService`, `AnnouncementService`) đóng vai trò là Application Boundary.
 2. **Business logic rải rác trong UI:**
    - Logic tính toán tỷ lệ chuyên cần (`summary`), logic lọc ghế trống, logic tạo mã học sinh tự động đang nằm trực tiếp trong UI components thay vì nằm ở Domain Service.
 3. **Type definitions chưa phân biệt rõ giữa Domain Entity, Database Row và DTO/Form Inputs:**
@@ -145,7 +145,7 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
 
 Theo đúng trình tự 10 Phase đã được quy định:
 - **Phase 1 (Hoàn tất):** Audit toàn diện codebase và lập `docs/data-model.md`.
-- **Phase 2 (Data Access Layer):** Xây dựng các Service/Repository (`src/services/*`) làm trung gian giữa UI và LocalStore.
+- **Phase 2 (Data Access Layer):** Xây dựng các Service/Repository (`frontend/src/services/*`) làm trung gian giữa UI và LocalStore.
 - **Phase 3 (Harden RBAC):** Đưa toàn bộ kiểm tra quyền hạn (`canEditStudent`, `canManageSeating`, v.v.) vào Service layer.
 - **Phase 4 (Validation & Invariants):** Tích hợp Zod và các ràng buộc dữ liệu tại Service layer.
 - **Phase 5 (Feature Hardening):** Hoàn thiện Seating Click-to-Swap, sửa hardcoded strings, làm sạch Date/Timezone logic.
@@ -165,7 +165,7 @@ Theo đúng trình tự 10 Phase đã được quy định:
 - **Regex Validation:** Mở rộng regex mã học sinh cho phép dấu gạch nối (`6A1-01`, `HS-01`).
 
 ### 2. Added (Đã bổ sung)
-- **Tầng Dịch vụ (Data Access Layer - `src/services/`):**
+- **Tầng Dịch vụ (Data Access Layer - `frontend/src/services/`):**
   - `StudentService`: Xử lý CRUD học sinh kèm RBAC và validation.
   - `SeatingService`: Xử lý sơ đồ chỗ ngồi, swap, assign, randomize (Fisher-Yates) và clear.
   - `AttendanceService`: Xử lý điểm danh theo buổi/môn, tính toán ma trận chuyên cần lịch sử.
@@ -173,18 +173,18 @@ Theo đúng trình tự 10 Phase đã được quy định:
   - `NoteService`: Thêm và xóa ghi chú sư phạm cho học sinh.
   - `ClassService`: Cài đặt lớp, tạo lớp, lưu trữ lớp.
   - `TeacherService`: Phân công GVCN, phân công GVBM kèm ràng buộc tối đa 2 khối.
-- **State Views đồng bộ (`src/components/ui/state-views.tsx`):**
+- **State Views đồng bộ (`frontend/src/components/ui/state-views.tsx`):**
   - `EmptyStateView`: Trạng thái dữ liệu trống với CTA định hướng.
   - `ErrorStateView`: Hiển thị lỗi kèm nút thử lại.
   - `UnauthorizedView`: Cảnh báo khi người dùng không đủ quyền.
   - `LoadingStateView`: Spinner tải dữ liệu mượt mà.
-- **Xuất dữ liệu (`src/lib/export.ts`):**
+- **Xuất dữ liệu (`frontend/src/lib/export.ts`):**
   - Xuất Excel danh sách học sinh (đầy đủ STT, Mã HS, Họ tên, Giới tính, Ngày sinh, Lớp, Vị trí ghế, Trạng thái) chuẩn font tiếng Việt có dấu.
   - Xuất Excel ma trận điểm danh (Học sinh × Các ngày học, tổng số buổi vắng/muộn, tỷ lệ chuyên cần).
   - In ấn A4 ngang/dọc với CSS `@media print` cho sơ đồ lớp học và danh sách học sinh.
 
 ### 3. Refactored (Đã tái cấu trúc)
-- Tách toàn bộ UI ra khỏi việc gọi trực tiếp `LocalStore`. Mọi mutation từ giao diện đều phải đi qua `src/services/*`.
+- Tách toàn bộ UI ra khỏi việc gọi trực tiếp `LocalStore`. Mọi mutation từ giao diện đều phải đi qua `frontend/src/services/*`.
 - Trả về kiểu dữ liệu chuẩn mực `OperationResult<T>` (`success`, `data`, `error`) giúp UI hiển thị toast thông báo lỗi nghiệp vụ rõ ràng, không làm crash ứng dụng.
 
 ### 4. Security / RBAC
@@ -208,10 +208,10 @@ Theo đúng trình tự 10 Phase đã được quy định:
 
 ### 7. Testing
 - Cài đặt `vitest` và thiết lập test suite tự động:
-  - `tests/rbac.test.ts`: 6 tests pass (kiểm tra Admin, GVCN, GVBM, tài khoản disabled).
-  - `tests/attendance.test.ts`: 3 tests pass (kiểm tra định dạng ngày, status hợp lệ, thống kê chuyên cần).
-  - `tests/teacher-validation.test.ts`: 3 tests pass (kiểm tra quy tắc 2 khối, trùng mã học sinh, schema validation).
-  - `tests/seating.test.ts`: 4 tests pass (kiểm tra Fisher-Yates shuffle, 25 bàn = 50 chỗ, RBAC sơ đồ).
+  - `frontend/tests/rbac.test.ts`: 6 tests pass (kiểm tra Admin, GVCN, GVBM, tài khoản disabled).
+  - `frontend/tests/attendance.test.ts`: 3 tests pass (kiểm tra định dạng ngày, status hợp lệ, thống kê chuyên cần).
+  - `frontend/tests/teacher-validation.test.ts`: 3 tests pass (kiểm tra quy tắc 2 khối, trùng mã học sinh, schema validation).
+  - `frontend/tests/seating.test.ts`: 4 tests pass (kiểm tra Fisher-Yates shuffle, 25 bàn = 50 chỗ, RBAC sơ đồ).
   - **Tổng cộng: 16/16 tests passed (100%)**.
 
 ### 8. Remaining Issues

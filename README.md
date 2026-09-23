@@ -55,7 +55,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                     Next.js 16 Frontend                     │
 │  - App Router (18 routes)                                   │
-│  - Centralized API Client (src/lib/api-client.ts)           │
+│  - Centralized API Client (frontend/src/lib/api-client.ts)           │
 │  - Client Layout & Route Guards                             │
 └──────────────────────────────┬──────────────────────────────┘
                                │ HTTP / REST API
@@ -158,10 +158,11 @@ The Express API will be running on `http://localhost:4000`. Health check endpoin
 ### 3. Frontend Setup
 
 ```bash
-# In the project root
-npm install
+# From workspace root
+npm run dev:frontend
 
-# Start Next.js development server (port 3000)
+# Or directly inside frontend folder
+cd frontend
 npm run dev
 ```
 
@@ -170,6 +171,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Next.js aut
 ### 4. Running Automated Tests
 
 ```bash
+# Run Vitest test suite across frontend workspace
 npm test
 ```
 

@@ -7,13 +7,13 @@ This document explains the technical implementation decisions observable in the 
 ## 1. Application Service Layer Abstraction
 
 ### Observable Implementation
-All UI pages across `src/app/(dashboard)` and `src/app/(admin)` import and invoke methods from `src/services/*` rather than calling `LocalStore` or `localStorage` directly. Every service mutation returns an `OperationResult<T>`.
+All UI pages across `frontend/src/app/(dashboard)` and `frontend/src/app/(admin)` import and invoke methods from `frontend/src/services/*` rather than calling `LocalStore` or `localStorage` directly. Every service mutation returns an `OperationResult<T>`.
 
 ### Design Rationale
 > Inferred from implementation
 
 1. **Decoupling UI from Storage Technology:**
-   By placing all authorization checks, input validation (Zod), and domain invariants inside `src/services/*`, the UI components treat the service layer as an abstract contract. When the project transitioned to a remote Node.js + Express REST API backed by PostgreSQL, the service internals and client network calls transitioned seamlessly via `src/lib/api-client.ts` with zero UI component breaking changes.
+   By placing all authorization checks, input validation (Zod), and domain invariants inside `frontend/src/services/*`, the UI components treat the service layer as an abstract contract. When the project transitioned to a remote Node.js + Express REST API backed by PostgreSQL, the service internals and client network calls transitioned seamlessly via `frontend/src/lib/api-client.ts` with zero UI component breaking changes.
 2. **Defensive Invariant Protection:**
    Placing business logic (such as checking duplicate student codes or class capacity) in the service layer prevents accidental state corruption caused by UI component bugs or direct console tampering.
 
@@ -22,7 +22,7 @@ All UI pages across `src/app/(dashboard)` and `src/app/(admin)` import and invok
 ## 2. In-Memory Cached `LocalStore` with Master Data Versioning
 
 ### Observable Implementation
-In `src/lib/store.ts`, a global `memoryCache` holds parsed entity arrays. `ensureInitialized()` checks `localStorage.getItem('cm_data_version')`. If the stored version differs from `CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v8'`, it flushes legacy storage keys and re-seeds from `src/lib/mock-data.ts`.
+In `frontend/src/lib/store.ts`, a global `memoryCache` holds parsed entity arrays. `ensureInitialized()` checks `localStorage.getItem('cm_data_version')`. If the stored version differs from `CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v8'`, it flushes legacy storage keys and re-seeds from `frontend/src/lib/mock-data.ts`.
 
 ### Design Rationale
 > Inferred from implementation
@@ -37,7 +37,7 @@ In `src/lib/store.ts`, a global `memoryCache` holds parsed entity arrays. `ensur
 ## 3. Dynamic Context-Aware Role Resolution (`ClassContext`)
 
 ### Observable Implementation
-In `src/contexts/class-context.tsx`, the system does not rely solely on `user.role === 'TEACHER'`. Instead, it evaluates `AuthService.getTeacherClassInfo(user, currentClassId)`, determining whether the user is `HOMEROOM_TEACHER` or `SUBJECT_TEACHER` for the currently selected class.
+In `frontend/src/contexts/class-context.tsx`, the system does not rely solely on `user.role === 'TEACHER'`. Instead, it evaluates `AuthService.getTeacherClassInfo(user, currentClassId)`, determining whether the user is `HOMEROOM_TEACHER` or `SUBJECT_TEACHER` for the currently selected class.
 
 ### Design Rationale
 > Inferred from implementation
@@ -52,7 +52,7 @@ The contextual resolution engine automatically adjusts the UI and service permis
 ## 4. Uniform Seating Shuffle via Fisher-Yates Algorithm
 
 ### Observable Implementation
-In `src/lib/store.ts` and `src/lib/utils.ts`, `randomizeSeating` extracts all active students in the class, applies the Fisher-Yates in-place shuffle (`shuffleArray`), and distributes the students into the 40 seats of the 20 desks.
+In `frontend/src/lib/store.ts` and `frontend/src/lib/utils.ts`, `randomizeSeating` extracts all active students in the class, applies the Fisher-Yates in-place shuffle (`shuffleArray`), and distributes the students into the 40 seats of the 20 desks.
 
 ### Design Rationale
 > Inferred from implementation
@@ -64,7 +64,7 @@ Using the Fisher-Yates shuffle guarantees unbiased, mathematically uniform permu
 ## 5. Pure Tailwind CSS v4 & Semantic OKLCH Design Tokens
 
 ### Observable Implementation
-In `src/app/globals.css`, the project defines custom CSS properties using the OKLCH color space:
+In `frontend/src/app/globals.css`, the project defines custom CSS properties using the OKLCH color space:
 ```css
 --bg: oklch(0.98 0.003 240);
 --surface: oklch(1 0 0);

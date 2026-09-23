@@ -9,7 +9,7 @@ sequenceDiagram
     actor User
     participant UI as Login Page (/login)
     participant AuthCtx as AuthContext
-    participant ApiClient as API Client (src/lib/api-client.ts)
+    participant ApiClient as API Client (frontend/src/lib/api-client.ts)
     participant Express as Express /api/auth/login
     participant Bcrypt as bcrypt.compare
     participant Pg as PostgreSQL (users)
@@ -91,7 +91,7 @@ The `/login` route exposes 6 pre-configured user scenarios designed to test dist
 
 ---
 
-## 4. Route Protection Middleware (`src/middleware.ts`)
+## 4. Route Protection Middleware (`frontend/src/middleware.ts`)
 
 The Next.js edge middleware guards route navigation:
 1. Inspects the incoming request for session token cookie.

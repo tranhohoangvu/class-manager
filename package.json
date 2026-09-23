@@ -1,33 +1,18 @@
 {
-  "name": "class-manager",
-  "version": "0.1.0",
+  "name": "class-manager-workspace",
+  "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@phosphor-icons/react": "^2.1.10",
-    "clsx": "^2.1.1",
-    "date-fns": "^4.4.0",
-    "next": "16.3.5",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "sonner": "^2.0.8",
-    "tailwind-merge": "^3.7.0",
-    "xlsx": "^0.18.5",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vite": "^8.3.0",
-    "vitest": "^5.0.1"
+    "dev": "npm run dev --workspace=class-manager-frontend",
+    "dev:frontend": "npm run dev --workspace=class-manager-frontend",
+    "dev:backend": "npm run dev --workspace=class-manager-backend",
+    "build": "npm run build --workspace=class-manager-frontend && npm run build --workspace=class-manager-backend",
+    "build:frontend": "npm run build --workspace=class-manager-frontend",
+    "build:backend": "npm run build --workspace=class-manager-backend",
+    "test": "npm run test --workspace=class-manager-frontend"
   }
 }

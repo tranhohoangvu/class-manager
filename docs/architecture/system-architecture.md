@@ -15,7 +15,7 @@ graph TD
     subgraph ClientBrowser ["Client Browser (Desktop / Tablet / Mobile)"]
         UI["UI Layer: Next.js 16 App Router Pages & Components"]
         Contexts["Contexts: AuthContext & ClassContext"]
-        ApiClient["REST API Client: src/lib/api-client.ts"]
+        ApiClient["REST API Client: frontend/src/lib/api-client.ts"]
     end
 
     subgraph BackendAPI ["Express + Node.js + TypeScript Backend (Render Web Service)"]
@@ -47,7 +47,7 @@ graph TD
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        1. Presentation / UI Layer                      │
-│   - Next.js 16 App Router Pages (src/app/(dashboard)/*, (admin)/*)     │
+│   - Next.js 16 App Router (frontend/src/app/(dashboard)/*, (admin)/*)  │
 │   - Shared Shell Layouts (Sidebar, AdminSidebar, MobileNav)            │
 │   - Reusable UI Atoms (Button, Badge, Modal, Input, StateViews)        │
 └───────────────────────────────────┬────────────────────────────────────┘
@@ -55,9 +55,9 @@ graph TD
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                     2. Context & Client State Layer                    │
-│   - AuthContext (src/contexts/auth-context.tsx): Active session & user │
-│   - ClassContext (src/contexts/class-context.tsx): Active class state  │
-│   - Centralized API Client (src/lib/api-client.ts): REST API connector │
+│   - AuthContext (frontend/src/contexts/auth-context.tsx): Session/User │
+│   - ClassContext (frontend/src/contexts/class-context.tsx): Active cls │
+│   - Centralized API Client (frontend/src/lib/api-client.ts): REST conn │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ REST API (/api/*) with credentials
                                     ▼

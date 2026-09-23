@@ -8,18 +8,18 @@ This document outlines technical architecture decisions, historical documentatio
 
 During the codebase audit, certain discrepancies between early documentation and the current codebase were identified:
 
-| Subject | Early Document (`docs/data-model.md` / `docs/codebase-audit.md`) | Current Codebase (`src/lib/constants.ts`, `001_initial_schema.sql`, `store.ts`) | Status & Resolution |
+| Subject | Early Document (`docs/data-model.md` / `docs/codebase-audit.md`) | Current Codebase (`frontend/src/lib/constants.ts`, `001_initial_schema.sql`, `store.ts`) | Status & Resolution |
 | :--- | :--- | :--- | :--- |
 | **Desk Count per Class** | Documented as `25 desks` (50 seats, 5×5 grid). | Standardized to **`20 desks`** (40 seats, 4 columns × 5 rows). | **Current Code is Authoritative.** Updated in schema migration `001` and `constants.ts`. |
 | **Class Maximum Students** | Documented as default `30`, max `45`. | Standardized to **default `30` (active dataset), maximum allowed ceiling `40`**. | **Current Code is Authoritative.** Capped at 40 seats in `CLASS_CONSTANTS.MAX_STUDENTS` and PostgreSQL check `max_students <= 40`. |
-| **Timetable Shift Model** | Documented as generic 5-period morning model. | Implemented as **2-shift model (Khối 6 & 9 Sáng, Khối 7 & 8 Chiều)** with mandatory Saturday Homeroom slot. | **Current Code is Authoritative.** Full shift rules tested in `tests/timetable.test.ts`. |
+| **Timetable Shift Model** | Documented as generic 5-period morning model. | Implemented as **2-shift model (Khối 6 & 9 Sáng, Khối 7 & 8 Chiều)** with mandatory Saturday Homeroom slot. | **Current Code is Authoritative.** Full shift rules tested in `frontend/tests/timetable.test.ts`. |
 
 ---
 
 ## 2. Technical Decisions & Architectural Upgrades
  
 ### 2.1. Dual-Persistence & REST API Integration
-* **Implementation:** The client application provides both offline-ready fallback (`LocalStore`) and a full REST API client (`src/lib/api-client.ts`) connecting to the standalone Express backend.
+* **Implementation:** The client application provides both offline-ready fallback (`LocalStore`) and a full REST API client (`frontend/src/lib/api-client.ts`) connecting to the standalone Express backend.
 * **Impact:** In development/standalone mode, the app functions offline; when connected to the backend, mutations persist to native PostgreSQL on Render with multi-device synchronization.
 
 ### 2.2. Production Authentication & Security Hardening
@@ -52,7 +52,7 @@ The backend has been migrated from Supabase to a self-managed Node.js + Express 
 3. **Frontend Integration:**
    - Centralized `api-client.ts` with transparent authentication cookie handling.
    - Next.js rewrites in `next.config.ts` proxying `/api/:path*` and `/health` to `http://localhost:4000` (or `BACKEND_URL`).
-   - Edge middleware in `src/middleware.ts` verifying session cookies without any third-party SDK dependencies.
+   - Edge middleware in `frontend/src/middleware.ts` verifying session cookies without any third-party SDK dependencies.
 
 4. **Render Deployment:**
    - Database: Render PostgreSQL instance with standard `DATABASE_URL`.

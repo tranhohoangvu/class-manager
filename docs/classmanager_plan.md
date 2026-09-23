@@ -72,12 +72,12 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 > **Trạng thái:** Đã triển khai hoàn tất, kiểm thử và đẩy lên nhánh `main` (Commit `5b13f59`).
 
-### 2.1. Chuẩn hóa trang Cài đặt lớp (`src/app/(dashboard)/settings/page.tsx`) `[ĐÃ XONG ✅]`
+### 2.1. Chuẩn hóa trang Cài đặt lớp (`frontend/src/app/(dashboard)/settings/page.tsx`) `[ĐÃ XONG ✅]`
 * **Các việc đã xử lý:**
   1. Thay đổi state khởi tạo mặc định:
      * `maxStudents = '40'` (thay vì `'45'`).
      * `deskCount = '20'` (thay vì `'25'`).
-  2. Cập nhật `classSettingsSchema` trong `src/lib/validations/forms.ts`:
+  2. Cập nhật `classSettingsSchema` trong `frontend/src/lib/validations/forms.ts`:
      * Nhận thêm trường `max_students: z.coerce.number().min(1).max(40)`.
   3. Cập nhật `ClassService.updateClassSettings` và `LocalStore.updateClass`:
      * Chặn không cho hạ `max_students` thấp hơn số lượng học sinh đang học thực tế trong lớp.
@@ -100,7 +100,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
     * `timetable_entries` (id, class_id, day_of_week, period, subject_id, teacher_id)
   * Thiết lập các chính sách bảo mật hàng (Row Level Security - RLS) cho từng bảng với helper functions `is_admin()` và `has_class_access()`.
   * Đồng bộ `supabase/seed.sql` tạo 20 bàn (5 hàng × 4 cột) và 40 ghế ngồi chuẩn xác.
-  * Bổ sung bộ test tự động `tests/class-settings.test.ts` (100% passed).
+  * Bổ sung bộ test tự động `frontend/tests/class-settings.test.ts` (100% passed).
 
 ---
 
@@ -141,13 +141,13 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ## 4. CẢI TIẾN 4 — THỜI KHÓA BIỂU LỚP HỌC (CLASS TIMETABLE MODULE) `[ĐÃ HOÀN THÀNH ✅]`
 
-> **Trạng thái:** Đã triển khai hoàn tất 100%, vượt qua toàn bộ 40 test cases Vitest (`tests/timetable.test.ts`), không lỗi TypeScript (`tsc --noEmit`).
+> **Trạng thái:** Đã triển khai hoàn tất 100%, vượt qua toàn bộ 40 test cases Vitest (`frontend/tests/timetable.test.ts`), không lỗi TypeScript (`tsc --noEmit`).
 
 Đây là **mảnh ghép liên kết thực tế** giữa thời gian học, môn học, giáo viên phụ trách và luồng điểm danh hằng ngày.
 
 ### 4.1. Bảng lưới Thời khóa biểu tương tác (`/timetable`) `[ĐÃ XONG ✅]`
 * **Cấu trúc chuẩn:** 6 ngày học (Thứ Hai $\rightarrow$ Thứ Bảy) × 5 tiết buổi sáng (Tiết 1 $\rightarrow$ Tiết 5).
-### 4.1. Lưới Thời khóa biểu tương tác (`src/app/(dashboard)/timetable/page.tsx`) `[ĐÃ XONG ✅]`
+### 4.1. Lưới Thời khóa biểu tương tác (`frontend/src/app/(dashboard)/timetable/page.tsx`) `[ĐÃ XONG ✅]`
 * **Phân chia ca học chuẩn theo Khối (28 tiết/lớp/tuần · 448 tiết toàn trường):**
   * **Khối 6 & Khối 9 → BUỔI SÁNG:** Thứ Hai – Thứ Sáu (Tiết 1–5), Thứ Bảy (Tiết 1–3). Cố định **Sinh hoạt lớp Thứ Bảy tại Tiết 3** do chính GVCN phụ trách.
   * **Khối 7 & Khối 8 → BUỔI CHIỀU:** Thứ Hai – Thứ Sáu (Tiết 6–10), Thứ Bảy (Tiết 6–8). Cố định **Sinh hoạt lớp Thứ Bảy tại Tiết 8** do chính GVCN phụ trách.
@@ -196,7 +196,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
   * **Không tự xung đột với chính mình khi cập nhật:** Sử dụng `excludeEntryId` khi sửa môn/tiết hiện tại.
   * **Transaction Atomic khi Sao chép TKB / Áp dụng Mẫu chuẩn:** Nếu phát hiện bất kỳ tiết nào gây xung đột lịch giáo viên ở lớp khác, hệ thống từ chối toàn bộ thao tác, rollback và trả về danh sách chi tiết các tiết bị trùng (Thứ, Tiết, Tên giáo viên, Lớp đang dạy).
   * **Giao diện trực quan:** Hiển thị banner cảnh báo đỏ nổi bật kèm icon `WarningCircle` ngay trong modal sửa ô và modal sao chép.
-  * **12/12 Test cases chuẩn nghiệp vụ:** Đạt 100% Passed trong `tests/timetable.test.ts`.
+  * **12/12 Test cases chuẩn nghiệp vụ:** Đạt 100% Passed trong `frontend/tests/timetable.test.ts`.
 
 ### 4.6. Chuẩn hóa Phân quyền Điểm danh (Attendance Authorization Refinement) `[ĐÃ XONG ✅]`
 * **Quy tắc điểm danh:** GVCN và GVBM có cùng quyền: **chỉ được điểm danh những môn/tiết mà chính giáo viên đó được phân công giảng dạy**. Không cho phép điểm danh thay giáo viên khác.
@@ -209,7 +209,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ## 5. CẢI TIẾN 5 — ADMIN PORTAL & BÁO CÁO TOÀN TRƯỜNG `[100% HOÀN THÀNH ✅]`
 
-> **Trạng thái:** Đã hoàn thành 100%, vượt qua toàn bộ 6 test cases Vitest (`tests/admin-report.test.ts`), Next.js production build thành công 18/18 routes.
+> **Trạng thái:** Đã hoàn thành 100%, vượt qua toàn bộ 6 test cases Vitest (`frontend/tests/admin-report.test.ts`), Next.js production build thành công 18/18 routes.
 
 ### 5.1. Bảng điều khiển Quản trị viên (Admin Executive Dashboard) `[ĐÃ XONG ✅]`
 * **Bổ sung chỉ số toàn trường:**
@@ -251,7 +251,7 @@ gantt
 ```
 
 ### 📋 GIAI ĐOẠN 1: Chuẩn hóa Dữ liệu & Tính năng Thiết yếu `[100% HOÀN THÀNH ✅]`
-- [x] **Task 1.1:** Cập nhật `src/app/(dashboard)/settings/page.tsx`, `src/services/class.service.ts` và schema form để lưu và cập nhật chuẩn `max_students = 40` và `desk_count = 20` *(Commit `5b13f59`)*.
+- [x] **Task 1.1:** Cập nhật `frontend/src/app/(dashboard)/settings/page.tsx`, `frontend/src/services/class.service.ts` và schema form để lưu và cập nhật chuẩn `max_students = 40` và `desk_count = 20` *(Commit `5b13f59`)*.
 - [x] **Task 1.2:** Cập nhật file `supabase/migrations/001_initial_schema.sql` bổ sung các bảng quan hệ mới (`subjects`, `class_memberships`, `subject_assignments`, `timetable_entries`) và ràng buộc 20 bàn *(Commit `5b13f59`)*.
 - [x] **Task 1.3:** Tối ưu CSS Print `@media print` cho trang Sơ đồ lớp (`/seating`) để in A4 ngang chuẩn không viền thừa *(Commit `64c880a`)*.
 - [x] **Task 1.4:** Lưu `viewPerspective` vào `localStorage` *(Commit `64c880a`)*.
@@ -269,7 +269,7 @@ gantt
 - [x] **Task 3.2:** Bổ sung widget "Lịch học hôm nay" trên Dashboard lớp học.
 - [x] **Task 3.3:** Xây dựng tính năng Import danh sách học sinh từ file Excel `.xlsx` có modal xem trước và validate dữ liệu.
 - [x] **Task 3.4:** Bổ sung widget thống kê chuyên cần toàn trường trên Admin Dashboard & nút xuất báo cáo Excel 4 sheets.
-- [x] **Task 3.5:** Viết thêm các test cases Vitest kiểm thử giới hạn 40 học sinh, import học sinh, thời khóa biểu và báo cáo trường (`tests/admin-report.test.ts`).
+- [x] **Task 3.5:** Viết thêm các test cases Vitest kiểm thử giới hạn 40 học sinh, import học sinh, thời khóa biểu và báo cáo trường (`frontend/tests/admin-report.test.ts`).
 
 ---
 

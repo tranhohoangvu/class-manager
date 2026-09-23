@@ -2,7 +2,7 @@
 
 > **System:** Class Manager (Trường THCS Nguyễn Tất Thành — Niên khóa 2026 - 2027)  
 > **Architecture:** Next.js 16 App Router · Node.js + Express + TypeScript API · Native PostgreSQL · Per-Class RBAC · Render Ready  
-> **Source of Truth:** Active implementation in codebase (`src/`, `backend/`, `tests/`)
+> **Source of Truth:** Active implementation in codebase (`frontend/src/`, `backend/`, `frontend/tests/`)
 
 ---
 
@@ -65,7 +65,7 @@ docs/
 
 ### 1. Architecture
 * [System Architecture](architecture/system-architecture.md): High-level system structure, multi-tier layout, synchronous client method invocations, and operation result contracts.
-* [Module Architecture](architecture/module-architecture.md): Breakdown of `src/app`, `src/components`, `src/services`, `src/contexts`, and `src/lib`.
+* [Module Architecture](architecture/module-architecture.md): Breakdown of `frontend/src/app`, `frontend/src/components`, `frontend/src/services`, `frontend/src/contexts`, and `frontend/src/lib`.
 * [Deployment Architecture](architecture/deployment-architecture.md): Next.js 16 build pipeline, route inventory, Turbopack, and edge middleware.
 
 ### 2. Requirements & Business Rules

@@ -7,7 +7,7 @@ Authorization in Class Manager is enforced at multiple layers:
 ```text
 ┌───────────────────────────────────────────────────────────┐
 │                    Layer 1: UI Guards                     │
-│   - Client Layout Guards (src/app/(admin)/layout.tsx)     │
+│   - Client Layout Guards (frontend/src/app/(admin)/layout.tsx)     │
 │   - Conditional Component Rendering (isHomeroom ? ... )   │
 └─────────────────────────────┬─────────────────────────────┘
                               │ HTTP Requests
