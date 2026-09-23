@@ -16,6 +16,25 @@
 
 ---
 
+## 📑 Table of Contents
+
+1. [Overview & School Scale](#-overview)
+2. [Key Features](#-key-features)
+   - [Dynamic Per-Class RBAC Matrix](#1-dynamic-per-class-rbac-matrix)
+   - [Interactive Seating Chart (4×5 Grid / 20 Desks)](#2-interactive-seating-chart-45-classroom-grid--20-desks--40-seats)
+   - [Subject-Aware Attendance Engine](#3-subject-aware-attendance-engine--quick-actions)
+   - [Interactive Timetable & Conflict Prevention](#4-interactive-timetable--conflict-prevention-engine-timetable)
+   - [Student Operations & Bulk Excel Import](#5-student-operations--bulk-excel-import)
+   - [Premium Visual Design System](#6-premium-visual-design-system)
+3. [Architecture & Data Layer](#️-architecture--data-access-layer)
+4. [Technology Stack](#️-technology-stack)
+5. [Quick Start & Running Locally](#-quick-start)
+6. [Demo Personas (1-Click Login)](#-demo-personas-1-click-login)
+7. [Comprehensive Documentation](#-documentation)
+8. [License](#-license)
+
+---
+
 ## 📖 Overview
 
 **Class Manager** models the exact operational and pedagogical structure of **Trường THCS Nguyễn Tất Thành** (Năm học: 2026 - 2027). The system features an enterprise-grade **Application Service Layer** that completely abstracts UI components from storage, enforces **Domain-Level Role-Based Access Control (RBAC)** across all mutations, and protects critical data invariants.
@@ -27,36 +46,6 @@
 - **480 Students**: Exactly 30 students per class with realistic demographic and contact data
 - **10 Core Subjects**: Mathematics, Literature, English, Physics, Chemistry, Biology, History, Geography, Informatics, Technology
 - **20 Desks / 40 Seats per Class**: 20 double desks arranged in a standardized 4×5 classroom layout (4 vertical columns × 5 rows)
-
----
-
-## 🏗️ Architecture & Data Access Layer
-
-The codebase has been refactored from a simple prototype to a clean, multi-tiered architecture:
-
-```text
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Presentation / UI Layer                         │
-│   Next.js 16 Pages · UI Components · StateViews (Loading/Empty/Error)  │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ (Calls typed Service Methods)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                    Application Services & RBAC Guard                   │
-│   StudentService · SeatingService · AttendanceService · ClassService   │
-│   AnnouncementService · NoteService · TeacherService · AuthGuard       │
-│   - Enforces Role Permissions (Admin vs. GVCN vs. GVBM)                │
-│   - Enforces Domain Invariants (Max 2 grades, Max 30 students, 1:1)    │
-│   - Zod Schema Validation on every input                               │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ (Returns OperationResult<T>)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Local Persistence Layer                         │
-│   LocalStore with automatic versioning (cm_data_version)               │
-│   Ready for seamless Supabase PostgreSQL migration (docs/data-model.md)│
-└────────────────────────────────────────────────────────────────────────┘
-```
 
 ---
 
@@ -124,11 +113,41 @@ The visual language is engineered specifically for modern Vietnamese educational
 
 ---
 
+## 🏗️ Architecture & Data Access Layer
+
+The codebase features a clean, multi-tiered architecture with strict isolation between presentation and storage:
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Presentation / UI Layer                         │
+│   Next.js 16 Pages · UI Components · StateViews (Loading/Empty/Error)  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ (Calls typed Service Methods)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                    Application Services & RBAC Guard                   │
+│   StudentService · SeatingService · AttendanceService · ClassService   │
+│   AnnouncementService · NoteService · TeacherService · AuthGuard       │
+│   - Enforces Role Permissions (Admin vs. GVCN vs. GVBM)                │
+│   - Enforces Domain Invariants (Max 2 grades, Max 40 students, 1:1)    │
+│   - Zod Schema Validation on every input                               │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ (Returns OperationResult<T>)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Local Persistence Layer                         │
+│   LocalStore with automatic versioning (cm_data_version)               │
+│   Ready for seamless Supabase PostgreSQL migration (docs/data-model.md)│
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 🛠️ Technology Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (Turbopack, App Router)
 - **Language**: [TypeScript 5](https://www.typescriptlang.org/) (Strict type safety, 0 compiler errors)
-- **Styling**: [TailwindCSS v4](https://tailwindcss.com/) with semantic design tokens
+- **Styling**: [TailwindCSS v4](https://tailwindcss.com/) with semantic OKLCH design tokens
 - **Testing**: [Vitest](https://vitest.dev/) automated unit & integration test suite (91 tests passing, 8/8 test files)
 - **Excel Processing**: [xlsx](https://www.npmjs.com/package/xlsx) (Import & Export engine)
 - **Validation**: [Zod](https://zod.dev/)
@@ -177,12 +196,12 @@ The `/login` page provides quick-access profiles for all test cases:
 
 | Role Scenario | Account | Email | Password | Context |
 | :--- | :--- | :--- | :--- | :--- |
-| **System Administrator** | Admin Hệ thống | `admin@classmanager.local` | `admin` | Full school governance |
+| **System Administrator** | Admin Hệ thống | `admin@classmanager.local` | `admin` | Full school governance & timetable control |
 | **Dual Role (GVCN + GVBM)** | Thầy Nguyễn Văn An | `an.nguyen@classmanager.local` | `teacher1` | **GVCN in 6A1** & **GVBM (Toán) in 6A2, 7A1, 7A2** |
-| **Subject Teacher Only** | Thầy Hoàng Văn Cường | `cuong.hoang@classmanager.local` | `teacher23` | Pure GVBM (Công nghệ) |
+| **Subject Teacher Only** | Thầy Hoàng Văn Cường | `cuong.hoang@classmanager.local` | `teacher23` | Pure GVBM (Công nghệ), read-only rosters |
 | **Homeroom Teacher Only** | Cô Nguyễn Thị Hương | `huong.nguyen@classmanager.local` | `teacher16` | Pure GVCN of class 6A4 |
-| **Unassigned Teacher** | Cô Đỗ Thu Hà | `teacher4@classmanager.local` | `teacher4` | Tests empty state views |
-| **Disabled Staff** | Thầy Vũ Đình Trọng | `teacher5@classmanager.local` | `teacher5` | Tests access rejection |
+| **Unassigned Staff** | Thầy Đỗ Văn Tân | `unassigned@classmanager.local` | `unassigned` | Tests unassigned onboarding empty state |
+| **Disabled Staff** | Thầy Vũ Đình Trọng | `disabled@classmanager.local` | `disabled` | Tests account access rejection |
 
 ---
 
