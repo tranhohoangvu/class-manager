@@ -188,9 +188,18 @@ The `/login` page provides quick-access profiles for all test cases:
 
 ## 📚 Documentation
 
-- [UI/UX Audit & Completion Report](docs/ui-ux-audit.md)
-- [Codebase Audit & Resolution Report](docs/codebase-audit.md)
-- [Target Data Model & Supabase Contracts](docs/data-model.md)
+The complete, reverse-engineered technical specification and design system for Class Manager is available in the [`/docs`](docs/README.md) directory:
+
+- **[Master Technical Documentation Index](docs/README.md)**
+- [System Architecture](docs/architecture/system-architecture.md) & [Module Architecture](docs/architecture/module-architecture.md)
+- [Functional Overview](docs/requirements/functional-overview.md) & [Business Rules Catalog](docs/requirements/business-rules.md)
+- [Database Design](docs/data/database-design.md) & [ER Diagram](docs/data/er-diagram.md)
+- [Application Service Layer (API) Reference](docs/api/api-reference.md)
+- [Authentication & RBAC Security Model](docs/security/authorization.md)
+- [Workflows & Walkthroughs](docs/workflows/)
+- [Mermaid Diagrams (Use Cases, Class, Sequence, Activity, State, C4 Context)](docs/diagrams/class-diagrams.md)
+- [Feature-to-Code Traceability Matrix](docs/traceability/feature-to-code.md)
+- [Historical UI/UX & Codebase Audits](docs/ui-ux-audit.md)
 
 ---
 
