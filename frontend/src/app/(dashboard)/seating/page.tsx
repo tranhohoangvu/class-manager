@@ -304,7 +304,7 @@ export default function SeatingPage() {
 
   if (!isLoaded) {
     return (
-      <div className="p-8 space-y-6 max-w-7xl mx-auto">
+      <div className="p-8 space-y-6 w-full mx-auto">
         <div className="h-8 w-64 bg-surface-muted rounded-xs animate-pulse" />
         <div className="h-[600px] bg-surface-muted rounded-sm animate-pulse" />
       </div>
@@ -312,7 +312,7 @@ export default function SeatingPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-6 w-full mx-auto">
       {/* ========================================================================= */}
       {/* FORMAL PRINT HEADER (Displayed ONLY when printing) */}
       {/* ========================================================================= */}

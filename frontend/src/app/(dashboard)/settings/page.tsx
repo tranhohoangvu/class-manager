@@ -121,7 +121,7 @@ export default function SettingsPage() {
     currentMaxStudents > 0 ? Math.round((currentEnrolledCount / currentMaxStudents) * 100) : 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-4xl mx-auto">
+    <div className="p-6 md:p-8 space-y-8 w-full mx-auto">
       {/* Top Header */}
       <div className="pb-6 border-b border-border">
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary">

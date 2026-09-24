@@ -176,7 +176,7 @@ export default function StudentDetailPage() {
   ];
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-6xl mx-auto">
+    <div className="p-6 md:p-8 space-y-8 w-full mx-auto">
       {/* Back button */}
       <div>
         <Link

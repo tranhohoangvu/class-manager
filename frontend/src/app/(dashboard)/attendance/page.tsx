@@ -304,7 +304,7 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
   const currentSubjectObj = allSubjects.find((s) => s.id === selectedSubjectId);
 
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-10 space-y-8 w-full mx-auto">
       {/* Top Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
         <div>

@@ -191,7 +191,7 @@ export default function DashboardPage() {
   const periodProgressPercent = totalPeriodsToday > 0 ? Math.min(100, Math.round((completedPeriodCount / totalPeriodsToday) * 100)) : 0;
 
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-10 space-y-8 w-full mx-auto">
       {/* Top Editorial Greeting & Context */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
         <div>

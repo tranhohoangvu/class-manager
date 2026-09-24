@@ -219,7 +219,7 @@ export default function AdminAttendanceManagementPage() {
 
   if (!isLoaded || !attendanceOverview) {
     return (
-      <div className="p-8 space-y-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 md:p-8 space-y-6 w-full mx-auto">
         <div className="h-8 w-64 bg-surface-muted rounded animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
@@ -231,7 +231,7 @@ export default function AdminAttendanceManagementPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 w-full mx-auto">
       {/* =============================================
           1. HEADER & ACTIONS
           ============================================= */}
@@ -241,7 +241,7 @@ export default function AdminAttendanceManagementPage() {
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
               QUẢN LÝ CHUYÊN CẦN TOÀN TRƯỜNG
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-xs bg-teal-subtle text-teal border border-teal/30 font-bold text-xs">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-xs bg-teal-subtle text-teal border border-teal/30 font-bold text-xs whitespace-nowrap flex-shrink-0">
               <CalendarCheck size={14} weight="bold" />
               16 Lớp THCS
             </span>
@@ -254,7 +254,7 @@ export default function AdminAttendanceManagementPage() {
         {/* Action Bar */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Date Picker */}
-          <div className="flex items-center gap-2 bg-surface border border-border px-3 py-1.5 rounded-sm text-xs shadow-2xs">
+          <div className="flex items-center gap-2 bg-surface border border-border px-3 py-1.5 rounded-xs text-xs shadow-2xs whitespace-nowrap flex-shrink-0 h-8">
             <Calendar size={15} className="text-text-muted flex-shrink-0" />
             <input
               type="date"
@@ -269,7 +269,7 @@ export default function AdminAttendanceManagementPage() {
             variant="danger"
             size="sm"
             onClick={() => handleOpenResetModal('all')}
-            className="cursor-pointer bg-red-600 hover:bg-red-700 text-white font-bold border border-red-700 shadow-xs gap-1.5"
+            className="cursor-pointer bg-red-600 hover:bg-red-700 text-white font-bold border border-red-700 shadow-xs gap-1.5 whitespace-nowrap flex-shrink-0 h-8 px-3"
             title="Khôi phục trạng thái 100% Có mặt cho toàn trường hoặc lớp học khi có sai sót"
           >
             <ArrowsClockwise size={15} weight="bold" />
@@ -282,10 +282,10 @@ export default function AdminAttendanceManagementPage() {
             size="sm"
             onClick={handleExportReport}
             disabled={isExporting}
-            className="cursor-pointer bg-surface hover:bg-surface-muted text-text-primary border-border font-semibold shadow-2xs gap-1.5"
+            className="cursor-pointer bg-surface hover:bg-surface-muted text-text-primary border-border font-semibold shadow-2xs gap-1.5 whitespace-nowrap flex-shrink-0 h-8 px-3"
           >
             <FileXls size={16} weight="duotone" className="text-emerald-700" />
-            <span className="hidden sm:inline">{isExporting ? 'Đang xuất...' : 'Xuất Excel'}</span>
+            <span>{isExporting ? 'Đang xuất...' : 'Xuất Excel'}</span>
           </Button>
 
           {/* Refresh Button */}
@@ -296,7 +296,7 @@ export default function AdminAttendanceManagementPage() {
               loadData();
               toast.success('Dữ liệu chuyên cần đã được làm mới!');
             }}
-            className="cursor-pointer bg-surface hover:bg-surface-muted text-text-secondary border-border font-semibold shadow-2xs"
+            className="cursor-pointer bg-surface hover:bg-surface-muted text-text-secondary border-border font-semibold shadow-2xs flex-shrink-0 h-8 w-8 p-0 flex items-center justify-center"
             title="Làm mới dữ liệu"
           >
             <ArrowsClockwise size={15} />
@@ -307,14 +307,14 @@ export default function AdminAttendanceManagementPage() {
       {/* =============================================
           2. SCHOOL ATTENDANCE OVERVIEW KPI TILES (4 CARDS)
           ============================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         {/* KPI 1: Tỷ lệ Chuyên cần */}
         <div className="bg-surface rounded-sm border border-border p-4 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-text-muted font-medium">
-              <span>Tỷ lệ Chuyên cần Toàn trường</span>
+            <div className="flex items-center justify-between text-xs text-text-muted font-medium gap-2">
+              <span className="truncate">Tỷ lệ Chuyên cần Toàn trường</span>
               <span className={cn(
-                'font-bold px-1.5 py-0.5 rounded-sm text-[11px] border',
+                'font-bold px-1.5 py-0.5 rounded-sm text-[11px] border whitespace-nowrap flex-shrink-0',
                 attendanceOverview.attendanceRate >= 95
                   ? 'bg-teal-subtle text-teal border-teal/20'
                   : 'bg-warning-bg text-warning-700 border-warning/30'
@@ -326,7 +326,7 @@ export default function AdminAttendanceManagementPage() {
               <span className="text-3xl font-extrabold text-text-primary font-mono tabular-nums">
                 {attendanceOverview.attendanceRate}%
               </span>
-              <span className="text-xs text-text-muted">ngày {attendanceOverview.dateFormatted}</span>
+              <span className="text-xs text-text-muted whitespace-nowrap">ngày {attendanceOverview.dateFormatted}</span>
             </div>
             <div className="mt-3 w-full bg-surface-muted h-2 rounded-full overflow-hidden border border-border/50">
               <div
@@ -344,9 +344,9 @@ export default function AdminAttendanceManagementPage() {
         {/* KPI 2: Học sinh Có mặt */}
         <div className="bg-surface rounded-sm border border-border p-4 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-text-muted font-medium">
+            <div className="flex items-center justify-between text-xs text-text-muted font-medium gap-2">
               <span>Học sinh Có mặt</span>
-              <span className="font-bold text-success bg-success-bg px-1.5 py-0.5 rounded-sm text-[11px] border border-success/30">
+              <span className="font-bold text-success bg-success-bg px-1.5 py-0.5 rounded-sm text-[11px] border border-success/30 whitespace-nowrap flex-shrink-0">
                 Đầy đủ
               </span>
             </div>
@@ -354,7 +354,7 @@ export default function AdminAttendanceManagementPage() {
               <span className="text-3xl font-extrabold text-text-primary font-mono tabular-nums text-success">
                 {attendanceOverview.presentCount}
               </span>
-              <span className="text-xs text-text-muted">/ {attendanceOverview.totalStudents} học sinh</span>
+              <span className="text-xs text-text-muted whitespace-nowrap">/ {attendanceOverview.totalStudents} học sinh</span>
             </div>
             <p className="text-[11px] text-text-secondary mt-2">
               Mặc định toàn bộ học sinh có mặt khi sang ngày mới theo cơ chế quản lý theo ngoại lệ.
@@ -368,10 +368,10 @@ export default function AdminAttendanceManagementPage() {
         {/* KPI 3: Học sinh Vắng */}
         <div className="bg-surface rounded-sm border border-border p-4 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-text-muted font-medium">
+            <div className="flex items-center justify-between text-xs text-text-muted font-medium gap-2">
               <span>Học sinh Vắng hôm nay</span>
               <span className={cn(
-                'font-bold px-1.5 py-0.5 rounded-sm text-[11px] border',
+                'font-bold px-1.5 py-0.5 rounded-sm text-[11px] border whitespace-nowrap flex-shrink-0',
                 attendanceOverview.absentCount > 0
                   ? 'bg-danger-bg text-danger border-danger/30'
                   : 'bg-surface-muted text-text-muted border-border'
@@ -386,11 +386,11 @@ export default function AdminAttendanceManagementPage() {
               )}>
                 {attendanceOverview.absentCount}
               </span>
-              <span className="text-xs text-text-muted">học sinh vắng</span>
+              <span className="text-xs text-text-muted whitespace-nowrap">học sinh vắng</span>
             </div>
             <div className="flex items-center gap-3 mt-2 text-[11px]">
-              <span className="text-danger font-medium">Không phép: <strong className="font-mono">{attendanceOverview.absentCount - attendanceOverview.excusedCount > 0 ? attendanceOverview.absentCount - attendanceOverview.excusedCount : 0}</strong></span>
-              <span className="text-text-muted font-medium">Có phép: <strong className="font-mono">{attendanceOverview.excusedCount}</strong></span>
+              <span className="text-danger font-medium whitespace-nowrap">Không phép: <strong className="font-mono">{attendanceOverview.absentCount - attendanceOverview.excusedCount > 0 ? attendanceOverview.absentCount - attendanceOverview.excusedCount : 0}</strong></span>
+              <span className="text-text-muted font-medium whitespace-nowrap">Có phép: <strong className="font-mono">{attendanceOverview.excusedCount}</strong></span>
             </div>
           </div>
           <div className="mt-3 text-[11px] text-text-muted pt-2 border-t border-border">
@@ -401,10 +401,10 @@ export default function AdminAttendanceManagementPage() {
         {/* KPI 4: Học sinh Đi muộn */}
         <div className="bg-surface rounded-sm border border-border p-4 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-text-muted font-medium">
+            <div className="flex items-center justify-between text-xs text-text-muted font-medium gap-2">
               <span>Học sinh Đi muộn</span>
               <span className={cn(
-                'font-bold px-1.5 py-0.5 rounded-sm text-[11px] border',
+                'font-bold px-1.5 py-0.5 rounded-sm text-[11px] border whitespace-nowrap flex-shrink-0',
                 attendanceOverview.lateCount > 0
                   ? 'bg-amber-100 text-amber-900 border-amber-300'
                   : 'bg-surface-muted text-text-muted border-border'
@@ -419,7 +419,7 @@ export default function AdminAttendanceManagementPage() {
               )}>
                 {attendanceOverview.lateCount}
               </span>
-              <span className="text-xs text-text-muted">học sinh muộn</span>
+              <span className="text-xs text-text-muted whitespace-nowrap">học sinh muộn</span>
             </div>
             <p className="text-[11px] text-text-secondary mt-2">
               Học sinh đến sau giờ truy bài hoặc vào tiết muộn được ghi nhận để nhắc nhở nề nếp.
@@ -435,7 +435,7 @@ export default function AdminAttendanceManagementPage() {
           3. BREAKDOWN BY 4 GRADES (KHỐI 6, 7, 8, 9)
           ============================================= */}
       <div className="rounded-sm border border-border-strong bg-surface p-4 text-xs space-y-3 shadow-xs">
-        <div className="flex items-center justify-between pb-2 border-b border-border">
+        <div className="flex items-center justify-between pb-2 border-b border-border flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <span className="w-7 h-7 rounded-xs bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center font-bold flex-shrink-0">
               <UserMinus size={15} weight="fill" className="text-amber-700" />
@@ -444,7 +444,7 @@ export default function AdminAttendanceManagementPage() {
               NỀ NẾP CHUYÊN CẦN PHÂN RÃ THEO 4 KHỐI LỚP (NGÀY {attendanceOverview.dateFormatted})
             </span>
           </div>
-          <span className="text-[11px] text-text-muted">4 lớp / khối · 120 học sinh / khối</span>
+          <span className="text-[11px] text-text-muted whitespace-nowrap">4 lớp / khối · 120 học sinh / khối</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -493,11 +493,11 @@ export default function AdminAttendanceManagementPage() {
                 key={cfg.grade}
                 className={cn('rounded-xs border p-3 space-y-2.5 transition-all shadow-2xs', cfg.container)}
               >
-                <div className="flex items-center justify-between pb-1.5 border-b border-border/60">
-                  <span className={cn('font-extrabold text-xs px-2 py-0.5 rounded-xs uppercase tracking-wider font-mono border', cfg.badge)}>
+                <div className="flex items-center justify-between pb-1.5 border-b border-border/60 gap-2">
+                  <span className={cn('font-extrabold text-xs px-2 py-0.5 rounded-xs uppercase tracking-wider font-mono border whitespace-nowrap flex-shrink-0', cfg.badge)}>
                     {cfg.label}
                   </span>
-                  <span className="text-[10px] text-text-muted font-medium">
+                  <span className="text-[10px] text-text-muted font-medium whitespace-nowrap">
                     {cfg.shift}
                   </span>
                 </div>
@@ -510,7 +510,7 @@ export default function AdminAttendanceManagementPage() {
                     <div className="text-[10px] text-text-muted">Chuyên cần</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-bold text-text-primary font-mono">
+                    <div className="text-xs font-bold text-text-primary font-mono whitespace-nowrap">
                       {stat?.presentCount || 120} / {stat?.totalStudents || 120}
                     </div>
                     <div className="text-[10px] text-text-muted">Có mặt</div>
@@ -518,10 +518,10 @@ export default function AdminAttendanceManagementPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-1.5 text-[11px] pt-1 border-t border-border/50">
-                  <div className={cn('px-2 py-1 rounded-xs border font-medium text-center', absentTotal > 0 ? 'bg-danger-bg text-danger border-danger/30 font-bold' : 'bg-surface/80 border-border text-text-muted')}>
+                  <div className={cn('px-2 py-1 rounded-xs border font-medium text-center whitespace-nowrap', absentTotal > 0 ? 'bg-danger-bg text-danger border-danger/30 font-bold' : 'bg-surface/80 border-border text-text-muted')}>
                     Vắng: {absentTotal}
                   </div>
-                  <div className={cn('px-2 py-1 rounded-xs border font-medium text-center', lateTotal > 0 ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold' : 'bg-surface/80 border-border text-text-muted')}>
+                  <div className={cn('px-2 py-1 rounded-xs border font-medium text-center whitespace-nowrap', lateTotal > 0 ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold' : 'bg-surface/80 border-border text-text-muted')}>
                     Muộn: {lateTotal}
                   </div>
                 </div>
@@ -530,12 +530,12 @@ export default function AdminAttendanceManagementPage() {
                   {classItems.map((cls) => (
                     <div
                       key={cls.classId}
-                      className="flex items-center justify-between px-2 py-1 rounded-xs bg-surface/90 border border-border/70 text-[11px]"
+                      className="flex items-center justify-between px-2.5 py-1.5 rounded-xs bg-surface/90 border border-border/70 text-[11px]"
                     >
-                      <span className="font-bold text-text-primary">{cls.className}</span>
-                      <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-text-primary whitespace-nowrap">{cls.className}</span>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
                         <span className={cn(
-                          'px-1.5 py-0.2 rounded-xs font-mono font-bold text-[10px] border',
+                          'px-1.5 py-0.2 rounded-xs font-mono font-bold text-[10px] border whitespace-nowrap',
                           cls.absentCount > 0
                             ? 'bg-danger text-white border-danger'
                             : 'bg-surface-muted text-text-muted border-border'
@@ -545,7 +545,7 @@ export default function AdminAttendanceManagementPage() {
                         <button
                           type="button"
                           onClick={() => handleViewClassDetail(cls)}
-                          className="text-teal hover:underline text-[10px] font-bold cursor-pointer"
+                          className="text-teal hover:underline text-[10px] font-bold cursor-pointer whitespace-nowrap flex-shrink-0"
                         >
                           Chi tiết
                         </button>
@@ -564,20 +564,20 @@ export default function AdminAttendanceManagementPage() {
           ============================================= */}
       <div className="bg-surface rounded-sm border border-border p-4 md:p-5 shadow-xs space-y-4">
         {/* Table Title & Filter Controls */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-border">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 pb-3 border-b border-border">
           <div>
             <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
               <Chalkboard size={18} className="text-teal" />
               <span>Bảng Quản lý Điểm danh Chi tiết 16 Lớp THCS</span>
             </h2>
             <p className="text-xs text-text-muted mt-0.5">
-              Theo dõi và điều hành chuyên cần theo từng lớp học. Nhấn "Đặt lại" để khôi phục lớp về 100% có mặt.
+              Theo dõi và điều hành chuyên cần theo từng lớp học. Nhấn &quot;Đặt lại&quot; để khôi phục lớp về 100% có mặt.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Grade Tabs */}
-            <div className="flex items-center border border-border rounded-xs overflow-hidden bg-surface-muted/50 p-0.5 text-xs font-bold">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Grade Tabs: Strict single-line, whitespace-nowrap, neat padding */}
+            <div className="inline-flex items-center border border-border rounded-xs bg-surface-muted/50 p-0.5 text-xs font-bold flex-shrink-0">
               {[
                 { key: 'all', label: 'Tất cả khối' },
                 { key: '6', label: 'Khối 6' },
@@ -590,7 +590,7 @@ export default function AdminAttendanceManagementPage() {
                   type="button"
                   onClick={() => setGradeFilter(tab.key as any)}
                   className={cn(
-                    'px-2.5 py-1 rounded-xs transition-colors cursor-pointer text-xs',
+                    'px-3 py-1.5 rounded-xs transition-colors cursor-pointer text-xs whitespace-nowrap flex-shrink-0 font-medium',
                     gradeFilter === tab.key
                       ? 'bg-surface text-text-primary shadow-2xs font-extrabold border border-border'
                       : 'text-text-muted hover:text-text-primary'
@@ -605,7 +605,7 @@ export default function AdminAttendanceManagementPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="bg-surface border border-border rounded-xs px-2.5 py-1 text-xs text-text-primary font-semibold cursor-pointer focus:outline-none focus:border-teal"
+              className="h-8 bg-surface border border-border rounded-xs px-3 text-xs text-text-primary font-medium cursor-pointer focus:outline-none focus:border-teal whitespace-nowrap flex-shrink-0"
             >
               <option value="all">Tất cả tình trạng (16 lớp)</option>
               <option value="has_absence">Lớp có học sinh vắng/muộn</option>
@@ -613,35 +613,35 @@ export default function AdminAttendanceManagementPage() {
             </select>
 
             {/* Search Input */}
-            <div className="relative min-w-[200px]">
-              <MagnifyingGlass size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
+            <div className="relative min-w-[220px] h-8 flex-shrink-0">
+              <MagnifyingGlass size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               <input
                 type="text"
                 placeholder="Tìm lớp, GVCN, phòng..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-surface border border-border rounded-xs pl-8 pr-3 py-1 text-xs text-text-primary focus:outline-none focus:border-teal"
+                className="w-full h-full bg-surface border border-border rounded-xs pl-8 pr-3 text-xs text-text-primary focus:outline-none focus:border-teal"
               />
             </div>
           </div>
         </div>
 
         {/* The Table */}
-        <div className="overflow-x-auto border border-border rounded-xs">
+        <div className="w-full border border-border rounded-xs overflow-hidden">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-surface-muted/60 border-b border-border text-text-secondary font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-2.5 px-3 w-12 text-center">STT</th>
-                <th className="py-2.5 px-3">Lớp học</th>
-                <th className="py-2.5 px-3">Ca học & Phòng</th>
-                <th className="py-2.5 px-3">Giáo viên chủ nhiệm</th>
-                <th className="py-2.5 px-3 text-center">Sĩ số</th>
-                <th className="py-2.5 px-3 text-center">Có mặt</th>
-                <th className="py-2.5 px-3 text-center">Vắng</th>
-                <th className="py-2.5 px-3 text-center">Muộn</th>
-                <th className="py-2.5 px-3 text-center">Tỷ lệ</th>
-                <th className="py-2.5 px-3 text-center">Trạng thái</th>
-                <th className="py-2.5 px-3 text-right">Thao tác Quản trị</th>
+              <tr className="bg-surface-muted/60 border-b border-border text-text-secondary font-bold uppercase tracking-wider text-[11px] whitespace-nowrap">
+                <th className="py-2.5 px-3 w-12 text-center whitespace-nowrap">STT</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Lớp học</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Ca học & Phòng</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Giáo viên chủ nhiệm</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Sĩ số</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Có mặt</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Vắng</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Muộn</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Tỷ lệ</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Trạng thái</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap">Thao tác Quản trị</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
@@ -652,38 +652,38 @@ export default function AdminAttendanceManagementPage() {
                     key={cls.classId}
                     className="hover:bg-surface-muted/40 transition-colors"
                   >
-                    <td className="py-2.5 px-3 text-center text-text-muted font-mono">{idx + 1}</td>
-                    <td className="py-2.5 px-3 font-bold text-text-primary">
-                      <div className="flex items-center gap-1.5">
-                        <span>{cls.className}</span>
-                        <span className="text-[10px] px-1 py-0.2 rounded-xs bg-surface-muted text-text-muted font-mono border border-border">
+                    <td className="py-2.5 px-3 text-center text-text-muted font-mono whitespace-nowrap">{idx + 1}</td>
+                    <td className="py-2.5 px-3 font-bold text-text-primary whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 whitespace-nowrap">
+                        <span className="font-bold text-xs">{cls.className}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-surface-muted text-text-muted font-mono border border-border whitespace-nowrap">
                           Khối {cls.grade}
                         </span>
                       </div>
                     </td>
-                    <td className="py-2.5 px-3 text-text-secondary">
-                      <div className="flex items-center gap-1 text-[11px]">
+                    <td className="py-2.5 px-3 text-text-secondary whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-[11px] whitespace-nowrap">
                         <span className={cn(
-                          'px-1.5 py-0.2 rounded-xs font-bold font-mono text-[10px] border',
+                          'px-1.5 py-0.5 rounded-xs font-bold font-mono text-[10px] border whitespace-nowrap',
                           shift === 'morning' ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-teal-100 text-teal-900 border-teal-300'
                         )}>
                           {shift === 'morning' ? 'Sáng' : 'Chiều'}
                         </span>
-                        <span className="text-text-muted">· {cls.roomName}</span>
+                        <span className="text-text-muted font-medium">· {cls.roomName}</span>
                       </div>
                     </td>
-                    <td className="py-2.5 px-3 text-text-primary font-medium">
+                    <td className="py-2.5 px-3 text-text-primary font-medium whitespace-nowrap">
                       {cls.teacherName}
                     </td>
-                    <td className="py-2.5 px-3 text-center font-mono font-semibold text-text-primary">
+                    <td className="py-2.5 px-3 text-center font-mono font-semibold text-text-primary whitespace-nowrap">
                       {cls.totalStudents}
                     </td>
-                    <td className="py-2.5 px-3 text-center font-mono font-bold text-success">
+                    <td className="py-2.5 px-3 text-center font-mono font-bold text-success whitespace-nowrap">
                       {cls.presentCount}
                     </td>
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span className={cn(
-                        'px-1.5 py-0.5 rounded-xs font-mono font-bold text-xs border',
+                        'px-2 py-0.5 rounded-xs font-mono font-bold text-xs border whitespace-nowrap inline-block',
                         cls.absentCount > 0
                           ? 'bg-danger text-white border-danger'
                           : 'bg-surface-muted text-text-muted border-border'
@@ -691,9 +691,9 @@ export default function AdminAttendanceManagementPage() {
                         {cls.absentCount}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span className={cn(
-                        'px-1.5 py-0.5 rounded-xs font-mono font-bold text-xs border',
+                        'px-2 py-0.5 rounded-xs font-mono font-bold text-xs border whitespace-nowrap inline-block',
                         cls.lateCount > 0
                           ? 'bg-amber-100 text-amber-900 border-amber-300'
                           : 'bg-surface-muted text-text-muted border-border'
@@ -701,9 +701,9 @@ export default function AdminAttendanceManagementPage() {
                         {cls.lateCount}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span className={cn(
-                        'font-mono font-bold text-xs px-2 py-0.5 rounded-xs border',
+                        'font-mono font-bold text-xs px-2 py-0.5 rounded-xs border whitespace-nowrap inline-block',
                         cls.attendanceRate >= 95
                           ? 'bg-teal-subtle text-teal border-teal/30'
                           : cls.attendanceRate >= 85
@@ -713,27 +713,27 @@ export default function AdminAttendanceManagementPage() {
                         {cls.attendanceRate}%
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       {cls.absentCount === 0 && cls.lateCount === 0 ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-success">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-success whitespace-nowrap">
                           <CheckCircle size={13} weight="fill" />
                           <span>Đủ 100%</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-danger">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-danger whitespace-nowrap">
                           <WarningCircle size={13} weight="fill" />
                           <span>Có vắng/muộn</span>
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                         {/* Detail button */}
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleViewClassDetail(cls)}
-                          className="h-7 px-2 text-xs font-semibold cursor-pointer text-text-secondary hover:text-text-primary gap-1"
+                          className="h-7 px-2.5 text-xs font-semibold cursor-pointer text-text-secondary hover:text-text-primary gap-1 whitespace-nowrap flex-shrink-0"
                           title="Xem danh sách chi tiết học sinh vắng/muộn"
                         >
                           <Eye size={13} />
@@ -745,7 +745,7 @@ export default function AdminAttendanceManagementPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleOpenResetModal(cls.classId)}
-                          className="h-7 px-2 text-xs font-bold cursor-pointer text-red-700 hover:text-white bg-red-50 hover:bg-red-600 border border-red-300 hover:border-red-600 gap-1 transition-colors"
+                          className="h-7 px-2.5 text-xs font-bold cursor-pointer text-red-700 hover:text-white bg-red-50 hover:bg-red-600 border border-red-300 hover:border-red-600 gap-1 transition-colors whitespace-nowrap flex-shrink-0"
                           title={`Đặt lại toàn bộ học sinh lớp ${cls.className} về Có mặt`}
                         >
                           <ArrowsClockwise size={13} weight="bold" />
@@ -753,11 +753,11 @@ export default function AdminAttendanceManagementPage() {
                         </Button>
 
                         {/* Go to teacher attendance view */}
-                        <Link href={`/attendance?classId=${cls.classId}`}>
+                        <Link href={`/attendance?classId=${cls.classId}`} className="flex-shrink-0">
                           <Button
                             variant="primary"
                             size="sm"
-                            className="h-7 px-2 text-xs font-bold cursor-pointer gap-1"
+                            className="h-7 px-2.5 text-xs font-bold cursor-pointer gap-1 whitespace-nowrap flex-shrink-0"
                             title="Mở sổ điểm danh môn học"
                           >
                             <span>Sổ lớp</span>
@@ -785,7 +785,7 @@ export default function AdminAttendanceManagementPage() {
           5. SCHOOL-WIDE EXCEPTIONS LIST (VẮNG / MUỘN HÔM NAY)
           ============================================= */}
       <div className="bg-surface rounded-sm border border-border p-4 md:p-5 shadow-xs space-y-3">
-        <div className="flex items-center justify-between pb-2.5 border-b border-border">
+        <div className="flex items-center justify-between pb-2.5 border-b border-border flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <span className="w-7 h-7 rounded-xs bg-danger-bg text-danger border border-danger/30 flex items-center justify-center font-bold flex-shrink-0">
               <UserMinus size={15} weight="fill" />
@@ -799,23 +799,23 @@ export default function AdminAttendanceManagementPage() {
               </span>
             </div>
           </div>
-          <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-xs bg-surface-muted text-text-primary border border-border">
+          <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-xs bg-surface-muted text-text-primary border border-border whitespace-nowrap flex-shrink-0">
             {schoolWideExceptions.length} trường hợp
           </span>
         </div>
 
         {schoolWideExceptions.length > 0 ? (
-          <div className="overflow-x-auto border border-border rounded-xs">
+          <div className="w-full border border-border rounded-xs overflow-hidden">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-surface-muted/50 border-b border-border text-text-secondary font-bold text-[11px]">
-                  <th className="py-2 px-3 w-12 text-center">STT</th>
-                  <th className="py-2 px-3">Mã học sinh</th>
-                  <th className="py-2 px-3">Họ và tên</th>
-                  <th className="py-2 px-3">Lớp học</th>
-                  <th className="py-2 px-3">Giới tính</th>
-                  <th className="py-2 px-3">Trạng thái</th>
-                  <th className="py-2 px-3">Ghi chú / Lý do</th>
+                <tr className="bg-surface-muted/50 border-b border-border text-text-secondary font-bold text-[11px] whitespace-nowrap">
+                  <th className="py-2.5 px-3 w-12 text-center whitespace-nowrap">STT</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap">Mã học sinh</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap">Họ và tên</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap">Lớp học</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap">Giới tính</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap">Trạng thái</th>
+                  <th className="py-2.5 px-3">Ghi chú / Lý do</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -826,38 +826,38 @@ export default function AdminAttendanceManagementPage() {
 
                   return (
                     <tr key={`${item.record.student_id}-${idx}`} className="hover:bg-surface-muted/30">
-                      <td className="py-2 px-3 text-center text-text-muted font-mono">{idx + 1}</td>
-                      <td className="py-2 px-3 font-mono font-semibold text-text-muted">{item.student?.student_code || '---'}</td>
-                      <td className="py-2 px-3 font-bold text-text-primary">{item.student?.full_name || 'Học sinh'}</td>
-                      <td className="py-2 px-3">
-                        <span className="font-bold text-xs text-text-primary">
+                      <td className="py-2.5 px-3 text-center text-text-muted font-mono whitespace-nowrap">{idx + 1}</td>
+                      <td className="py-2.5 px-3 font-mono font-semibold text-text-muted whitespace-nowrap">{item.student?.student_code || '---'}</td>
+                      <td className="py-2.5 px-3 font-bold text-text-primary whitespace-nowrap">{item.student?.full_name || 'Học sinh'}</td>
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        <span className="font-bold text-xs text-text-primary whitespace-nowrap">
                           {item.classObj?.name || '---'}
                         </span>
-                        <span className="text-[10px] text-text-muted ml-1 font-mono">
+                        <span className="text-[10px] text-text-muted ml-1.5 font-mono whitespace-nowrap">
                           (Khối {item.classObj?.grade})
                         </span>
                       </td>
-                      <td className="py-2 px-3 text-text-secondary">
+                      <td className="py-2.5 px-3 text-text-secondary whitespace-nowrap">
                         {item.student?.gender === 'female' ? 'Nữ' : 'Nam'}
                       </td>
-                      <td className="py-2 px-3">
+                      <td className="py-2.5 px-3 whitespace-nowrap">
                         {isExcused ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs font-bold text-[11px] bg-purple-100 text-purple-900 border border-purple-300">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs font-bold text-[11px] bg-purple-100 text-purple-900 border border-purple-300 whitespace-nowrap">
                             📋 Vắng có phép
                           </span>
                         ) : isAbsent ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs font-bold text-[11px] bg-danger text-white border border-danger">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs font-bold text-[11px] bg-danger text-white border border-danger whitespace-nowrap">
                             ✕ Vắng không phép
                           </span>
                         ) : isLate ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs font-bold text-[11px] bg-amber-100 text-amber-900 border border-amber-300">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs font-bold text-[11px] bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap">
                             ⏱ Đi muộn
                           </span>
                         ) : (
-                          <span className="text-text-muted">---</span>
+                          <span className="text-text-muted whitespace-nowrap">---</span>
                         )}
                       </td>
-                      <td className="py-2 px-3 text-text-secondary italic">
+                      <td className="py-2.5 px-3 text-text-secondary italic">
                         {item.record.note || 'Không có ghi chú'}
                       </td>
                     </tr>

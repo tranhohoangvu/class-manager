@@ -545,7 +545,7 @@ export default function TimetablePage() {
       {/* =============================================
           1. SCREEN VIEW (Interactive Desktop + Mobile)
           ============================================= */}
-      <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto no-print">
+      <div className="p-6 md:p-8 space-y-6 w-full mx-auto no-print">
         {/* Header & Page Title */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-strong">
           <div>
