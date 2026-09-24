@@ -475,7 +475,7 @@ export const TimetableService = {
       subjectId: conflict.subject_id,
       subjectName,
       room: room.trim(),
-      message: `Xung đột phòng học: Phòng ${room.trim()} đã được xếp cho lớp ${conflictClassName} (môn ${subjectName}) vào ${dayName}, ${periodLabel}.`,
+      message: `Xung đột phòng học: Phòng ${room.trim()} đã được xếp cho ${conflictClassName} (môn ${subjectName}) vào ${dayName}, ${periodLabel}.`,
     };
   },
 
@@ -620,7 +620,7 @@ export const TimetableService = {
       }
       return {
         valid: false,
-        error: `Tiết học ${entry.period} không hợp lệ cho lớp ${cls?.name || entry.class_id} vào ngày Thứ ${entry.day_of_week}.`,
+        error: `Tiết học ${entry.period} không hợp lệ cho ${cls?.name || entry.class_id} vào ngày Thứ ${entry.day_of_week}.`,
       };
     }
 
@@ -1114,7 +1114,7 @@ export const TimetableService = {
     if (conflicts.length > 0) {
       const summaryList = conflicts
         .slice(0, 5)
-        .map((c) => `• ${c.dayName} — ${c.periodLabel}: GV ${c.teacherName || 'phụ trách'} đang dạy lớp ${c.className}`)
+        .map((c) => `• ${c.dayName} — ${c.periodLabel}: GV ${c.teacherName || 'phụ trách'} đang dạy ${c.className}`)
         .join('\n');
       const moreText = conflicts.length > 5 ? `\n... và ${conflicts.length - 5} tiết khác.` : '';
 
@@ -1206,7 +1206,7 @@ export const TimetableService = {
     if (conflicts.length > 0) {
       const summaryList = conflicts
         .slice(0, 5)
-        .map((c) => `• ${c.dayName} — ${c.periodLabel}: GV ${c.teacherName || 'phụ trách'} đang dạy lớp ${c.className}`)
+        .map((c) => `• ${c.dayName} — ${c.periodLabel}: GV ${c.teacherName || 'phụ trách'} đang dạy ${c.className}`)
         .join('\n');
       const moreText = conflicts.length > 5 ? `\n... và ${conflicts.length - 5} tiết khác.` : '';
 

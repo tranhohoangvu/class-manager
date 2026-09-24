@@ -292,3 +292,24 @@ export const DEFAULT_SUBJECT_COLOR: SubjectColorStyle = {
   badgeBg: 'bg-slate-100 text-slate-700',
   dot: 'bg-slate-400',
 };
+
+/**
+ * Trích xuất Tên (từ cuối cùng) từ Họ và Tên người Việt Nam
+ */
+export function getVietnameseLastName(fullName: string): string {
+  if (!fullName) return '';
+  const parts = fullName.trim().split(/\s+/);
+  return parts[parts.length - 1] || '';
+}
+
+/**
+ * So sánh tên tiếng Việt theo chuẩn từ điển (ưu tiên Tên chính, sau đó Họ đệm)
+ */
+export function compareVietnameseNames(nameA: string, nameB: string): number {
+  const lastA = getVietnameseLastName(nameA);
+  const lastB = getVietnameseLastName(nameB);
+  const cmp = lastA.localeCompare(lastB, 'vi', { sensitivity: 'base' });
+  if (cmp !== 0) return cmp;
+  return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
+}
+

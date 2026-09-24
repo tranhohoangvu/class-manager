@@ -31,6 +31,7 @@ import { exportStudentsToExcel, downloadStudentImportTemplate } from '@/lib/expo
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
+import { compareVietnameseNames } from '@/lib/constants';
 
 export default function StudentsPage() {
   const { user } = useAuth();
@@ -40,6 +41,7 @@ export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [genderFilter, setGenderFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'code_asc' | 'name_asc' | 'name_desc' | 'dob_asc' | 'gender'>('code_asc');
 
   // Modal states
   const [isAddEditOpen, setIsAddEditOpen] = useState(false);
@@ -98,9 +100,9 @@ export default function StudentsPage() {
     return map;
   }, [desks]);
 
-  // Filter students
+  // Filter & sort students
   const filteredStudents = useMemo(() => {
-    return students.filter((s) => {
+    const list = students.filter((s) => {
       const matchSearch =
         s.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.student_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -111,7 +113,19 @@ export default function StudentsPage() {
 
       return matchSearch && matchGender && matchStatus;
     });
-  }, [students, searchQuery, genderFilter, statusFilter]);
+
+    return list.sort((a, b) => {
+      if (sortBy === 'name_asc') return compareVietnameseNames(a.full_name, b.full_name);
+      if (sortBy === 'name_desc') return compareVietnameseNames(b.full_name, a.full_name);
+      if (sortBy === 'code_asc') return a.student_code.localeCompare(b.student_code, 'vi', { numeric: true });
+      if (sortBy === 'dob_asc') return (a.date_of_birth || '').localeCompare(b.date_of_birth || '');
+      if (sortBy === 'gender') {
+        if (a.gender !== b.gender) return (a.gender || '').localeCompare(b.gender || '');
+        return compareVietnameseNames(a.full_name, b.full_name);
+      }
+      return 0;
+    });
+  }, [students, searchQuery, genderFilter, statusFilter, sortBy]);
 
   const handleOpenAdd = () => {
     const nextCode = `HS${(students.length + 1).toString().padStart(2, '0')}`;
@@ -437,6 +451,19 @@ export default function StudentsPage() {
             <option value="active">Đang học</option>
             <option value="inactive">Đã chuyển/nghỉ</option>
           </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="h-[42px] px-3 text-sm bg-surface rounded-xs border border-border-strong text-text-primary focus:outline-none focus:border-accent shadow-xs cursor-pointer font-medium"
+            title="Sắp xếp danh sách học sinh"
+          >
+            <option value="code_asc">STT / Mã học sinh</option>
+            <option value="name_asc">Tên Alphabet (A → Z)</option>
+            <option value="name_desc">Tên Alphabet (Z → A)</option>
+            <option value="dob_asc">Theo ngày sinh</option>
+            <option value="gender">Theo giới tính</option>
+          </select>
         </div>
       </div>
 
@@ -591,7 +618,7 @@ export default function StudentsPage() {
         isOpen={isAddEditOpen}
         onClose={() => setIsAddEditOpen(false)}
         title={editingStudent ? 'Sửa thông tin học sinh' : 'Thêm học sinh mới'}
-        description={`Điền đầy đủ thông tin hồ sơ học sinh lớp ${currentClass?.name || 'lớp học'}`}
+        description={`Điền đầy đủ thông tin hồ sơ học sinh ${currentClass?.name || 'lớp học'}`}
       >
         <form onSubmit={handleSaveStudent} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -845,7 +872,7 @@ export default function StudentsPage() {
         onClose={() => setStudentToDelete(null)}
         onConfirm={handleConfirmDelete}
         title="Xoá học sinh"
-        description={`Bạn có chắc chắn muốn xoá học sinh "${studentToDelete?.full_name}" khỏi danh sách lớp ${currentClass?.name || 'lớp'}? Vị trí ghế ngồi và dữ liệu liên quan sẽ bị xoá.`}
+        description={`Bạn có chắc chắn muốn xoá học sinh "${studentToDelete?.full_name}" khỏi danh sách ${currentClass?.name || 'lớp'}? Vị trí ghế ngồi và dữ liệu liên quan sẽ bị xoá.`}
         confirmText="Xoá học sinh"
         variant="danger"
       />

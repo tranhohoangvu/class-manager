@@ -26,7 +26,7 @@ import { StudentRow, AttendanceStatus, SubjectRow, TimetableEntryRow } from '@/t
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/ui/badge';
 import { formatDateVietnamese, getTodayISO, cn } from '@/lib/utils';
-import { TIMETABLE_PERIODS, TIMETABLE_DAYS, SUBJECT_COLOR_MAP, DEFAULT_SUBJECT_COLOR } from '@/lib/constants';
+import { TIMETABLE_PERIODS, TIMETABLE_DAYS, SUBJECT_COLOR_MAP, DEFAULT_SUBJECT_COLOR, compareVietnameseNames } from '@/lib/constants';
 import { EmptyStateView } from '@/components/ui/state-views';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
@@ -50,6 +50,7 @@ export default function AttendancePage() {
   const [attendanceData, setAttendanceData] = useState<Record<string, StudentAttendanceState>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'not_present' | 'present' | 'absent' | 'late' | 'excused'>('all');
+  const [sortBy, setSortBy] = useState<'code_asc' | 'name_asc' | 'name_desc' | 'status'>('code_asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentSession, setCurrentSession] = useState<CurrentSessionInfo | null>(null);
   const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo | null>(null);
@@ -228,9 +229,9 @@ export default function AttendancePage() {
   const notPresentCount = total - presentCount;
   const presentRate = total > 0 ? Math.round((presentCount / total) * 100) : 0;
 
-  // Filtered student list for quick review
+  // Filtered & sorted student list for quick review
   const filteredList = useMemo(() => {
-    return list.filter((item) => {
+    const result = list.filter((item) => {
       let matchStatus = true;
       if (statusFilter === 'not_present') {
         matchStatus = item.status !== 'present';
@@ -245,7 +246,20 @@ export default function AttendancePage() {
 
       return matchStatus && matchSearch;
     });
-  }, [list, statusFilter, searchQuery]);
+
+    return result.sort((a, b) => {
+      if (sortBy === 'name_asc') return compareVietnameseNames(a.full_name, b.full_name);
+      if (sortBy === 'name_desc') return compareVietnameseNames(b.full_name, a.full_name);
+      if (sortBy === 'code_asc') return a.student_code.localeCompare(b.student_code, 'vi', { numeric: true });
+      if (sortBy === 'status') {
+        const order: Record<string, number> = { absent: 1, late: 2, excused: 3, present: 4 };
+        const diff = (order[a.status] || 5) - (order[b.status] || 5);
+        if (diff !== 0) return diff;
+        return compareVietnameseNames(a.full_name, b.full_name);
+      }
+      return 0;
+    });
+  }, [list, statusFilter, searchQuery, sortBy]);
 
   const handleCopyReport = () => {
     const absents = list.filter((i) => i.status === 'absent');
@@ -419,10 +433,10 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
               </span>
               <span className="text-text-secondary text-xs mt-0.5 block font-medium">
                 {isHomeroom
-                  ? `Bạn là GVCN lớp ${currentClass?.name}. Bạn có toàn quyền theo dõi chuyên cần toàn lớp nhưng không có quyền ghi nhận hay sửa điểm danh thay giáo viên bộ môn phụ trách.`
+                  ? `Bạn là GVCN ${currentClass?.name}. Bạn có toàn quyền theo dõi chuyên cần toàn lớp nhưng không có quyền ghi nhận hay sửa điểm danh thay giáo viên bộ môn phụ trách.`
                   : user?.role === 'ADMIN'
                   ? 'Vui lòng chọn một môn học cụ thể để điểm danh.'
-                  : `Bạn không được phân công giảng dạy môn ${currentSubjectObj?.name || 'này'} tại lớp ${currentClass?.name}.`}
+                  : `Bạn không được phân công giảng dạy môn ${currentSubjectObj?.name || 'này'} tại ${currentClass?.name}.`}
               </span>
             </div>
           </div>
@@ -727,6 +741,18 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
               className="w-full pl-9 pr-3 h-[38px] text-xs bg-surface rounded-sm border border-border focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent shadow-xs placeholder:text-text-muted"
             />
           </div>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="h-[38px] px-3 text-xs bg-surface rounded-sm border border-border text-text-primary focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent shadow-xs cursor-pointer font-medium whitespace-nowrap"
+            title="Sắp xếp danh sách điểm danh"
+          >
+            <option value="code_asc">Mã HS / STT</option>
+            <option value="name_asc">Tên Alphabet (A → Z)</option>
+            <option value="name_desc">Tên Alphabet (Z → A)</option>
+            <option value="status">Trạng thái (Vắng/Muộn)</option>
+          </select>
 
           <Button
             variant="outline"

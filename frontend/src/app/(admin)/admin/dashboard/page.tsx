@@ -541,10 +541,50 @@ export default function AdminDashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { grade: 6, label: 'Khối 6', shift: 'Ca Sáng' },
-              { grade: 7, label: 'Khối 7', shift: 'Ca Chiều' },
-              { grade: 8, label: 'Khối 8', shift: 'Ca Chiều' },
-              { grade: 9, label: 'Khối 9', shift: 'Ca Sáng' },
+              {
+                grade: 6,
+                label: 'Khối 6',
+                shift: 'Ca Sáng',
+                container: 'border-amber-300/80 bg-amber-50/30 dark:bg-amber-950/20 dark:border-amber-800/60',
+                headerBorder: 'border-amber-200/80',
+                badge: 'bg-amber-100 text-amber-900 border-amber-300',
+                shiftTag: 'bg-amber-100/70 text-amber-800 border-amber-200',
+                okTag: 'bg-amber-100 text-amber-800 border-amber-300',
+                cardBase: 'bg-surface/90 border-amber-200/80 hover:border-amber-400',
+              },
+              {
+                grade: 7,
+                label: 'Khối 7',
+                shift: 'Ca Chiều',
+                container: 'border-teal-300/80 bg-teal-50/30 dark:bg-teal-950/20 dark:border-teal-800/60',
+                headerBorder: 'border-teal-200/80',
+                badge: 'bg-teal-100 text-teal-900 border-teal-300',
+                shiftTag: 'bg-teal-100/70 text-teal-800 border-teal-200',
+                okTag: 'bg-teal-100 text-teal-800 border-teal-300',
+                cardBase: 'bg-surface/90 border-teal-200/80 hover:border-teal-400',
+              },
+              {
+                grade: 8,
+                label: 'Khối 8',
+                shift: 'Ca Chiều',
+                container: 'border-blue-300/80 bg-blue-50/30 dark:bg-blue-950/20 dark:border-blue-800/60',
+                headerBorder: 'border-blue-200/80',
+                badge: 'bg-blue-100 text-blue-900 border-blue-300',
+                shiftTag: 'bg-blue-100/70 text-blue-800 border-blue-200',
+                okTag: 'bg-blue-100 text-blue-800 border-blue-300',
+                cardBase: 'bg-surface/90 border-blue-200/80 hover:border-blue-400',
+              },
+              {
+                grade: 9,
+                label: 'Khối 9',
+                shift: 'Ca Sáng',
+                container: 'border-purple-300/80 bg-purple-50/30 dark:bg-purple-950/20 dark:border-purple-800/60',
+                headerBorder: 'border-purple-200/80',
+                badge: 'bg-purple-100 text-purple-900 border-purple-300',
+                shiftTag: 'bg-purple-100/70 text-purple-800 border-purple-200',
+                okTag: 'bg-purple-100 text-purple-800 border-purple-300',
+                cardBase: 'bg-surface/90 border-purple-200/80 hover:border-purple-400',
+              },
             ].map((g) => {
               const items = classAttendanceList.filter((c) => c.grade === g.grade);
               const gradeAbsent = items.reduce((acc, c) => acc + c.absentCount, 0);
@@ -552,14 +592,17 @@ export default function AdminDashboardPage() {
               return (
                 <div
                   key={g.grade}
-                  className="rounded-xs border border-border bg-surface-muted/30 p-3 space-y-2 flex flex-col justify-between"
+                  className={cn(
+                    'rounded-xs border p-3 space-y-2 flex flex-col justify-between transition-all',
+                    g.container
+                  )}
                 >
-                  <div className="flex items-center justify-between pb-1.5 border-b border-border/70">
+                  <div className={cn('flex items-center justify-between pb-1.5 border-b', g.headerBorder)}>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-extrabold text-xs text-text-primary uppercase tracking-wider font-mono">
+                      <span className={cn('font-extrabold text-xs px-2 py-0.5 rounded-xs uppercase tracking-wider font-mono border', g.badge)}>
                         {g.label}
                       </span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded-xs font-mono font-bold bg-surface border border-border text-text-muted">
+                      <span className={cn('text-[10px] px-1.5 py-0.2 rounded-xs font-mono font-bold border', g.shiftTag)}>
                         {g.shift}
                       </span>
                     </div>
@@ -568,7 +611,7 @@ export default function AdminDashboardPage() {
                         Vắng {gradeAbsent}
                       </span>
                     ) : (
-                      <span className="text-[10px] font-bold text-teal bg-teal-subtle px-1.5 py-0.2 rounded-xs border border-teal/20 font-mono">
+                      <span className={cn('text-[10px] font-bold px-1.5 py-0.2 rounded-xs border font-mono', g.okTag)}>
                         Đủ 100%
                       </span>
                     )}
@@ -583,7 +626,7 @@ export default function AdminDashboardPage() {
                           'p-2 rounded-xs border text-text-primary text-xs flex items-center justify-between transition-all shadow-2xs hover:border-border-strong',
                           item.absentCount > 0
                             ? 'bg-danger-bg/40 border-danger/40 hover:bg-danger-bg/70'
-                            : 'bg-surface border-border hover:bg-surface-muted/70'
+                            : g.cardBase
                         )}
                       >
                         <div className="min-w-0 pr-1">

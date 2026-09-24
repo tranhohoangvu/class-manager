@@ -43,7 +43,8 @@ export const StudentService = {
       (s) => s.student_code.trim().toUpperCase() === cleanCode
     );
     if (isCodeTaken) {
-      return failure(`Mã học sinh "${cleanCode}" đã tồn tại trong lớp ${targetClass.name}.`);
+      const cleanClassName = targetClass.name.replace(/^lớp\s+/i, '');
+      return failure(`Mã học sinh "${cleanCode}" đã tồn tại trong lớp ${cleanClassName}.`);
     }
 
     // 5. Max student invariant
@@ -104,7 +105,8 @@ export const StudentService = {
         return failure(`Mã học sinh "${cleanCode}" bị trùng lặp trong file tải lên.`);
       }
       if (existingCodes.has(cleanCode)) {
-        return failure(`Mã học sinh "${cleanCode}" đã tồn tại trong lớp ${targetClass.name}.`);
+        const cleanClassName = targetClass.name.replace(/^lớp\s+/i, '');
+        return failure(`Mã học sinh "${cleanCode}" đã tồn tại trong lớp ${cleanClassName}.`);
       }
       fileCodes.add(cleanCode);
     }

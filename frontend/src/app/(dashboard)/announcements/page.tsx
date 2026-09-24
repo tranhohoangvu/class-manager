@@ -134,7 +134,7 @@ export default function AnnouncementsPage() {
           <EmptyStateView
             icon={<Megaphone size={36} className="opacity-60" />}
             title="Chưa có thông báo nào"
-            description={`Lớp ${currentClass?.name || ''} chưa có tin thông báo nào được đăng.`}
+            description={`${currentClass?.name || 'Lớp học'} chưa có tin thông báo nào được đăng.`}
             actionText={isHomeroom ? "Tạo thông báo mới" : undefined}
             onAction={isHomeroom ? () => setIsAddOpen(true) : undefined}
           />

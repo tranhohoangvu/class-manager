@@ -72,7 +72,7 @@ export const AttendanceService = {
 
     for (const entry of entries) {
       if (!validStudentIds.has(entry.student_id)) {
-        return failure(`Học sinh ID "${entry.student_id}" không thuộc lớp ${classId}.`);
+        return failure(`Học sinh ID "${entry.student_id}" không thuộc ${classId}.`);
       }
       if (!VALID_STATUSES.includes(entry.status)) {
         return failure(`Trạng thái điểm danh "${entry.status}" không hợp lệ.`);

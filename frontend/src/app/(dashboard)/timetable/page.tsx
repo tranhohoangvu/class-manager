@@ -23,6 +23,7 @@ import {
   CaretDown,
   CaretUp,
   Lock,
+  Buildings,
 } from '@phosphor-icons/react';
 import { useCurrentClass } from '@/contexts/class-context';
 import { useAuth } from '@/contexts/auth-context';
@@ -83,6 +84,9 @@ export default function TimetablePage() {
 
   // Mobile selected day tab (2..7)
   const [mobileSelectedDay, setMobileSelectedDay] = useState<number>(2);
+
+  // Highlight subject state
+  const [highlightedSubjectId, setHighlightedSubjectId] = useState<string | null>(null);
 
   // Allowed classes for current user:
   // - ADMIN: Can view all classes in the school.
@@ -197,7 +201,7 @@ export default function TimetablePage() {
       return;
     }
     if (!isAllowedPeriodForClass(classGrade, day, period)) {
-      toast.info(`Lớp ${activeClass?.name} học ca ${classShift === 'morning' ? 'Sáng' : 'Chiều'}, không học Tiết ${period}.`);
+      toast.info(`${activeClass?.name} học ca ${classShift === 'morning' ? 'Sáng' : 'Chiều'}, không học Tiết ${period}.`);
       return;
     }
     const entry = timetableMap.get(`${day}-${period}`);
@@ -370,15 +374,13 @@ export default function TimetablePage() {
 
   const renderPeriodRow = (period: (typeof TIMETABLE_PERIODS)[0]) => {
     return (
-      <tr key={period.period} className="hover:bg-surface-muted/40 transition-colors">
+      <tr key={period.period} className="hover:bg-accent-subtle/10 transition-colors">
         {/* Period Label Header Column */}
-        <td className="py-3 px-3 bg-surface-muted text-center border-r border-border font-mono">
-          <span className="text-xs font-bold text-text-primary block">
-            {period.label}
-          </span>
-          <span className="text-[11px] text-text-muted font-medium mt-0.5 block">
+        <td className="px-4 py-3 border-r border-border bg-surface-muted/30 align-top">
+          <div className="font-extrabold text-xs text-text-primary font-mono">{period.label}</div>
+          <div className="text-[10px] text-text-muted font-mono mt-0.5">
             {period.startTime} - {period.endTime}
-          </span>
+          </div>
         </td>
 
         {/* Day Columns */}
@@ -399,9 +401,9 @@ export default function TimetablePage() {
             return (
               <td
                 key={day.day}
-                className="py-2.5 px-3 border-l border-border bg-surface-muted/20 text-center align-middle"
+                className="p-2 border-l border-border bg-surface-muted/30 text-center align-middle"
               >
-                <div className="h-full min-h-[72px] rounded-xs border border-dashed border-border-strong bg-surface-muted/40 flex flex-col items-center justify-center text-text-muted/50 select-none">
+                <div className="h-full min-h-[76px] rounded-xs border border-dashed border-border-strong/60 bg-surface-muted/30 flex flex-col items-center justify-center text-text-muted/50 select-none">
                   <span className="text-xs font-bold font-mono">—</span>
                   <span className="text-[10px] font-mono font-medium">
                     {isSatEmpty
@@ -416,97 +418,133 @@ export default function TimetablePage() {
           }
 
           if (isSatSHL) {
+            const isHighlighted = highlightedSubjectId === 'sub-shl';
+            const isDimmed = highlightedSubjectId && highlightedSubjectId !== 'sub-shl';
+
             return (
               <td
                 key={day.day}
                 onClick={() => canEdit && handleOpenEdit(day.day, period.period)}
                 className={cn(
-                  'py-2.5 px-3 border-l border-border transition-all align-top',
-                  canEdit ? 'cursor-pointer hover:bg-accent/10' : '',
-                  isOngoing ? 'bg-accent/20 ring-2 ring-inset ring-accent' : ''
+                  'p-2 border-l border-border align-top h-24 min-w-[130px] transition-all group relative',
+                  canEdit ? 'cursor-pointer hover:bg-accent/5' : '',
+                  isOngoing ? 'bg-accent/15 ring-2 ring-inset ring-accent' : ''
                 )}
               >
                 <div
                   className={cn(
-                    'h-full min-h-[72px] p-2.5 rounded-xs border-2 border-violet-800 bg-gradient-to-br from-violet-700 via-violet-800 to-indigo-900 text-white shadow-xs flex flex-col justify-between transition-all group relative'
+                    'h-full flex flex-col justify-between p-2.5 rounded-xs border border-violet-300 bg-violet-50/90 text-violet-950 shadow-2xs transition-all',
+                    isHighlighted ? 'ring-2 ring-indigo-600 scale-[1.03] shadow-md z-10 font-bold' : '',
+                    isDimmed ? 'opacity-30 filter grayscale-[40%]' : ''
                   )}
                 >
-                  <div className="flex items-start justify-between gap-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
-                      <span className="text-xs font-bold text-white leading-tight truncate">
-                        Sinh hoạt lớp
+                  <div>
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-xs font-mono border border-violet-300 bg-violet-100 text-violet-800 truncate flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-violet-600 animate-pulse flex-shrink-0" />
+                        <span className="truncate">Sinh hoạt lớp</span>
+                      </span>
+                      <span className="text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-xs bg-amber-200 text-amber-950 border border-amber-400 shadow-2xs flex-shrink-0">
+                        SHL
                       </span>
                     </div>
-                    <span className="text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-xs bg-amber-300 text-amber-950 border border-amber-400 shadow-xs flex-shrink-0">
-                      SHL
-                    </span>
+
+                    <div className="text-[11px] font-semibold text-text-primary mt-1.5 truncate flex items-center gap-1.5">
+                      <ChalkboardTeacher size={13} className="text-text-muted flex-shrink-0" />
+                      <span className="truncate">
+                        {homeroomTeacher ? homeroomTeacher.name : 'Chưa gán GVCN'}
+                      </span>
+                    </div>
+
+                    <div className="text-[10px] text-text-muted mt-1 truncate flex items-center gap-1.5 font-mono">
+                      <Buildings size={12} className="text-teal flex-shrink-0" />
+                      <span className="truncate">
+                        {entry?.room || activeClass.room_name || 'Phòng học chính'}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="mt-1 flex items-center justify-between text-[11px] text-white/90">
-                    <span className="truncate font-semibold">
-                      {homeroomTeacher ? (
-                        `GVCN: ${homeroomTeacher.name.replace('Thầy ', '').replace('Cô ', '')}`
-                      ) : (
-                        <span className="text-amber-300 font-bold">Chưa gán GVCN</span>
-                      )}
-                    </span>
-                    <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 rounded-xs bg-white/20 text-white flex-shrink-0">
-                      Cố định
-                    </span>
+                  <div className="flex items-center justify-between pt-1 text-[10px] text-text-muted font-mono">
+                    <span className="text-violet-700 font-bold">Cố định</span>
+                    {canEdit && (
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <PencilSimple size={12} className="text-text-muted hover:text-text-primary" />
+                      </span>
+                    )}
                   </div>
                 </div>
               </td>
             );
           }
 
+          const isHighlighted = highlightedSubjectId && subj?.id === highlightedSubjectId;
+          const isDimmed = highlightedSubjectId && subj && subj.id !== highlightedSubjectId;
+
           return (
             <td
               key={day.day}
               onClick={() => canEdit && handleOpenEdit(day.day, period.period)}
               className={cn(
-                'py-2.5 px-3 border-l border-border transition-all align-top',
-                canEdit ? 'cursor-pointer hover:bg-accent/10' : '',
+                'p-2 border-l border-border align-top h-24 min-w-[130px] transition-all group relative',
+                canEdit ? 'cursor-pointer hover:bg-accent/5' : '',
                 isOngoing ? 'bg-accent/15 ring-2 ring-inset ring-accent' : ''
               )}
             >
               {subj ? (
                 <div
                   className={cn(
-                    'h-full min-h-[72px] p-2.5 rounded-xs border border-border-strong border-l-[3.5px] flex flex-col justify-between transition-all group relative shadow-xs',
+                    'h-full flex flex-col justify-between p-2.5 rounded-xs transition-all shadow-2xs border',
                     colorStyle.bg,
-                    colorStyle.border
+                    colorStyle.border,
+                    'hover:border-border-strong hover:shadow-xs',
+                    isHighlighted ? 'ring-2 ring-indigo-600 scale-[1.03] shadow-md z-10 font-bold brightness-105' : '',
+                    isDimmed ? 'opacity-30 filter grayscale-[40%]' : ''
                   )}
                 >
-                  <div className="flex items-start justify-between gap-1">
-                    <span className={cn('text-xs font-bold leading-tight line-clamp-1', colorStyle.text)}>
-                      {subj.name}
-                    </span>
-                    <span className={cn('text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-xs border shadow-2xs', colorStyle.badgeBg, colorStyle.border)}>
-                      {subj.code}
-                    </span>
-                  </div>
-
-                  <div className="mt-1 flex items-center justify-between text-[11px] text-text-secondary">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colorStyle.dot)} />
-                      <span className="truncate font-medium text-text-secondary group-hover:text-text-primary transition-colors">
-                        {teacher ? teacher.name.replace('Thầy ', '').replace('Cô ', '') : '—'}
+                  <div>
+                    <div className="flex items-center justify-between gap-1 flex-wrap">
+                      <span
+                        className={cn(
+                          'text-[11px] font-extrabold px-2 py-0.5 rounded-xs font-mono border truncate flex items-center gap-1',
+                          colorStyle.badgeBg,
+                          colorStyle.border
+                        )}
+                      >
+                        <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colorStyle.dot)} />
+                        <span className="truncate">{subj.name}</span>
+                      </span>
+                      <span className={cn('text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-xs border shadow-2xs', colorStyle.badgeBg, colorStyle.border)}>
+                        {subj.code}
                       </span>
                     </div>
 
-                    {canEdit && (
-                      <PencilSimple
-                        size={12}
-                        className="opacity-0 group-hover:opacity-100 text-text-muted transition-opacity ml-1 flex-shrink-0"
-                      />
-                    )}
+                    <div className="text-[11px] font-semibold text-text-primary mt-1.5 truncate flex items-center gap-1.5">
+                      <ChalkboardTeacher size={13} className="text-text-muted flex-shrink-0" />
+                      <span className="truncate">
+                        {teacher ? teacher.name : '—'}
+                      </span>
+                    </div>
+
+                    <div className="text-[10px] text-text-muted mt-1 truncate flex items-center gap-1.5 font-mono">
+                      <Buildings size={12} className="text-teal flex-shrink-0" />
+                      <span className="truncate">
+                        {entry?.room || activeClass.room_name || 'Phòng học chính'}
+                      </span>
+                    </div>
                   </div>
+
+                  {canEdit && (
+                    <div className="flex justify-end pt-1">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <PencilSimple size={12} className="text-text-muted hover:text-text-primary" />
+                      </span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div
                   className={cn(
-                    'h-full min-h-[72px] rounded-xs border border-dashed border-border-strong flex flex-col items-center justify-center text-text-muted/60 hover:text-accent hover:border-accent hover:bg-accent/10 transition-all p-2',
+                    'h-full min-h-[76px] rounded-xs border border-dashed border-border-strong flex flex-col items-center justify-center text-text-muted/60 hover:text-teal hover:border-teal hover:bg-teal-subtle/30 transition-all p-2',
                     canEdit ? 'cursor-pointer' : 'opacity-40'
                   )}
                 >
@@ -850,6 +888,15 @@ export default function TimetablePage() {
               );
             }
 
+            const isHighlighted = isSaturdaySHL
+              ? highlightedSubjectId === 'sub-shl'
+              : highlightedSubjectId && subj?.id === highlightedSubjectId;
+            const isDimmed = highlightedSubjectId
+              ? isSaturdaySHL
+                ? highlightedSubjectId !== 'sub-shl'
+                : subj && subj.id !== highlightedSubjectId
+              : false;
+
             return (
               <div
                 key={period.period}
@@ -861,6 +908,8 @@ export default function TimetablePage() {
                     : isCurrentPeriod
                     ? 'ring-2 ring-border-strong border-border-strong bg-accent/15'
                     : 'bg-surface',
+                  isHighlighted ? 'ring-2 ring-indigo-600 scale-[1.02] shadow-md z-10 brightness-105' : '',
+                  isDimmed ? 'opacity-30 filter grayscale-[40%]' : '',
                   canEdit && 'cursor-pointer hover:bg-surface-muted active:scale-[0.99]'
                 )}
               >
@@ -1129,25 +1178,49 @@ export default function TimetablePage() {
 
         {/* Legend / Palette of Subjects */}
         <div className="bg-surface border border-border-strong rounded-xs p-4 space-y-2.5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider">
-              Bảng quy chuẩn Môn học & Sinh hoạt lớp THCS
-            </span>
-            <span className="text-[11px] font-mono text-text-muted font-medium">
-              Tổng số tiết: {timetable.length} / 56 tiết tuần (Thứ 2 - 6: 10 tiết · Thứ 7: 6 tiết)
-            </span>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <span className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider block">
+                Bảng quy chuẩn Môn học & Sinh hoạt lớp THCS
+              </span>
+              <span className="text-[11px] text-text-muted">
+                Bấm vào một môn học bên dưới để làm nổi bật tất cả các tiết của môn đó trên thời khóa biểu
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              {highlightedSubjectId && (
+                <button
+                  type="button"
+                  onClick={() => setHighlightedSubjectId(null)}
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline cursor-pointer"
+                >
+                  ✕ Bỏ chọn nổi bật môn
+                </button>
+              )}
+              <span className="text-[11px] font-mono text-text-muted font-medium">
+                Tổng số tiết: {timetable.length} / 56 tiết tuần (Thứ 2 - 6: 10 tiết · Thứ 7: 6 tiết)
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
             {subjects.map((s) => {
               const count = timetable.filter((t) => t.subject_id === s.id).length;
               const color = SUBJECT_COLOR_MAP[s.code] || DEFAULT_SUBJECT_COLOR;
+              const isSelected = highlightedSubjectId === s.id;
+
               return (
-                <div
+                <button
                   key={s.id}
+                  type="button"
+                  onClick={() => setHighlightedSubjectId((prev) => (prev === s.id ? null : s.id))}
+                  title={isSelected ? 'Bấm để hủy nổi bật môn học' : `Bấm để làm nổi bật các tiết ${s.name} trên TKB`}
                   className={cn(
-                    'p-2.5 rounded-xs border border-border-strong shadow-xs flex items-center justify-between gap-2',
-                    color.bg
+                    'p-2.5 rounded-xs border text-left shadow-xs flex items-center justify-between gap-2 transition-all cursor-pointer select-none',
+                    color.bg,
+                    isSelected
+                      ? 'ring-2 ring-indigo-600 border-indigo-600 scale-[1.03] shadow-md z-10 font-bold'
+                      : 'border-border-strong hover:border-text-secondary hover:shadow-2xs'
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -1156,10 +1229,17 @@ export default function TimetablePage() {
                       {s.name}
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-xs bg-surface text-text-secondary border border-border-strong shadow-xs flex-shrink-0">
-                    {count} tiết
-                  </span>
-                </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {isSelected && (
+                      <span className="text-[9px] font-bold font-mono px-1 py-0.2 rounded-xs bg-indigo-600 text-white shadow-2xs">
+                        Đang chọn
+                      </span>
+                    )}
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-xs bg-surface text-text-secondary border border-border-strong shadow-xs flex-shrink-0">
+                      {count} tiết
+                    </span>
+                  </div>
+                </button>
               );
             })}
           </div>

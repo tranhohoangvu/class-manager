@@ -21,6 +21,7 @@ import { EmptyStateView } from '@/components/ui/state-views';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useCurrentClass } from '@/contexts/class-context';
+import { compareVietnameseNames } from '@/lib/constants';
 
 export default function AttendanceHistoryPage() {
   const { currentClassId, currentClass } = useCurrentClass();
@@ -30,6 +31,7 @@ export default function AttendanceHistoryPage() {
   const [timeRange, setTimeRange] = useState<'all' | 'this_week' | 'this_month' | 'custom'>('all');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'code_asc' | 'name_asc' | 'name_desc' | 'rate_asc' | 'rate_desc' | 'absent_desc'>('code_asc');
 
   useEffect(() => {
     if (!currentClassId) return;
@@ -120,6 +122,19 @@ export default function AttendanceHistoryPage() {
     });
   }, [students, dates, attendanceMap]);
 
+  // Sorted student statistics based on selected sort criteria
+  const sortedStudentStats = useMemo(() => {
+    return [...studentStats].sort((a, b) => {
+      if (sortBy === 'name_asc') return compareVietnameseNames(a.student.full_name, b.student.full_name);
+      if (sortBy === 'name_desc') return compareVietnameseNames(b.student.full_name, a.student.full_name);
+      if (sortBy === 'code_asc') return a.student.student_code.localeCompare(b.student.student_code, 'vi', { numeric: true });
+      if (sortBy === 'rate_asc') return a.rate - b.rate;
+      if (sortBy === 'rate_desc') return b.rate - a.rate;
+      if (sortBy === 'absent_desc') return b.absent - a.absent;
+      return 0;
+    });
+  }, [studentStats, sortBy]);
+
   // Summary KPI for the selected time range
   const periodMetrics = useMemo(() => {
     const totalSessions = dates.length;
@@ -174,7 +189,7 @@ export default function AttendanceHistoryPage() {
       case 'present':
         return (
           <span
-            className="w-5 h-5 rounded-xs bg-success text-white text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs"
+            className="w-5 h-5 rounded-xs bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold font-mono inline-flex items-center justify-center text-[10px] shadow-2xs"
             title="Có mặt"
           >
             ✓
@@ -183,7 +198,7 @@ export default function AttendanceHistoryPage() {
       case 'absent':
         return (
           <span
-            className="w-5 h-5 rounded-xs bg-danger text-white text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs"
+            className="w-5 h-5 rounded-xs bg-rose-50 text-rose-700 border border-rose-300 font-bold font-mono inline-flex items-center justify-center text-[10px] shadow-2xs"
             title="Vắng mặt"
           >
             V
@@ -192,7 +207,7 @@ export default function AttendanceHistoryPage() {
       case 'late':
         return (
           <span
-            className="w-5 h-5 rounded-xs bg-warning text-accent-text text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs"
+            className="w-5 h-5 rounded-xs bg-amber-50 text-amber-800 border border-amber-300 text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-2xs"
             title="Đi muộn"
           >
             M
@@ -201,7 +216,7 @@ export default function AttendanceHistoryPage() {
       case 'excused':
         return (
           <span
-            className="w-5 h-5 rounded-xs bg-indigo-100 border border-indigo-400 text-indigo-950 text-[10px] font-black font-mono inline-flex items-center justify-center shadow-xs"
+            className="w-5 h-5 rounded-xs bg-indigo-50 border border-indigo-300 text-indigo-700 text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-2xs"
             title="Có phép"
           >
             P
@@ -252,15 +267,14 @@ export default function AttendanceHistoryPage() {
       <div className="bg-surface rounded-sm border border-border-strong p-4 shadow-xs no-print flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-bold text-text-muted uppercase tracking-wider font-mono mr-1">Khoảng thời gian:</span>
-          
+
           <button
             type="button"
             onClick={() => setTimeRange('all')}
-            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
-              timeRange === 'all'
+            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${timeRange === 'all'
                 ? 'bg-accent text-accent-text border border-border-strong shadow-xs'
                 : 'bg-surface-muted hover:bg-surface text-text-secondary border border-border'
-            }`}
+              }`}
           >
             Tất cả ({allDates.length} buổi)
           </button>
@@ -268,11 +282,10 @@ export default function AttendanceHistoryPage() {
           <button
             type="button"
             onClick={() => setTimeRange('this_week')}
-            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
-              timeRange === 'this_week'
+            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${timeRange === 'this_week'
                 ? 'bg-accent text-accent-text border border-border-strong shadow-xs'
                 : 'bg-surface-muted hover:bg-surface text-text-secondary border border-border'
-            }`}
+              }`}
           >
             Tuần này
           </button>
@@ -280,11 +293,10 @@ export default function AttendanceHistoryPage() {
           <button
             type="button"
             onClick={() => setTimeRange('this_month')}
-            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
-              timeRange === 'this_month'
+            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${timeRange === 'this_month'
                 ? 'bg-accent text-accent-text border border-border-strong shadow-xs'
                 : 'bg-surface-muted hover:bg-surface text-text-secondary border border-border'
-            }`}
+              }`}
           >
             Tháng này
           </button>
@@ -292,34 +304,52 @@ export default function AttendanceHistoryPage() {
           <button
             type="button"
             onClick={() => setTimeRange('custom')}
-            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
-              timeRange === 'custom'
+            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${timeRange === 'custom'
                 ? 'bg-accent text-accent-text border border-border-strong shadow-xs'
                 : 'bg-surface-muted hover:bg-surface text-text-secondary border border-border'
-            }`}
+              }`}
           >
             Tùy chọn khoảng ngày
           </button>
         </div>
 
-        {timeRange === 'custom' && (
-          <div className="flex items-center gap-2 text-xs flex-wrap font-mono">
-            <span className="text-text-muted">Từ:</span>
-            <input
-              type="date"
-              value={customStartDate}
-              onChange={(e) => setCustomStartDate(e.target.value)}
-              className="px-2.5 py-1 rounded-xs border border-border-strong bg-surface text-text-primary text-xs focus:outline-none focus:border-accent shadow-xs"
-            />
-            <span className="text-text-muted">Đến:</span>
-            <input
-              type="date"
-              value={customEndDate}
-              onChange={(e) => setCustomEndDate(e.target.value)}
-              className="px-2.5 py-1 rounded-xs border border-border-strong bg-surface text-text-primary text-xs focus:outline-none focus:border-accent shadow-xs"
-            />
+        <div className="flex items-center gap-3 flex-wrap">
+          {timeRange === 'custom' && (
+            <div className="flex items-center gap-2 text-xs flex-wrap font-mono">
+              <span className="text-text-muted">Từ:</span>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="px-2.5 py-1 rounded-xs border border-border-strong bg-surface text-text-primary text-xs focus:outline-none focus:border-accent shadow-xs"
+              />
+              <span className="text-text-muted">Đến:</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="px-2.5 py-1 rounded-xs border border-border-strong bg-surface text-text-primary text-xs focus:outline-none focus:border-accent shadow-xs"
+              />
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-text-secondary whitespace-nowrap">Sắp xếp:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="h-8 px-2.5 text-xs bg-surface rounded-xs border border-border-strong text-text-primary focus:outline-none focus:border-accent shadow-xs cursor-pointer font-medium"
+              title="Sắp xếp danh sách bảng điểm danh"
+            >
+              <option value="code_asc">STT / Mã học sinh</option>
+              <option value="name_asc">Tên Alphabet (A → Z)</option>
+              <option value="name_desc">Tên Alphabet (Z → A)</option>
+              <option value="rate_asc">Tỷ lệ chuyên cần (Thấp → Cao)</option>
+              <option value="rate_desc">Tỷ lệ chuyên cần (Cao → Thấp)</option>
+              <option value="absent_desc">Số lượt vắng nhiều nhất</option>
+            </select>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Period KPI Summary Metrics */}
@@ -379,20 +409,20 @@ export default function AttendanceHistoryPage() {
         <div className="flex items-center gap-4 flex-wrap font-medium">
           <span className="text-text-primary font-bold text-xs uppercase tracking-wider font-mono">Chú giải:</span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-xs bg-success text-white text-[10px] font-bold font-mono inline-flex items-center justify-center">✓</span>
-            <span>Có mặt</span>
+            <span className="w-5 h-5 rounded-xs bg-emerald-50 text-emerald-700 border border-emerald-300 text-[10px] font-bold font-mono inline-flex items-center justify-center">✓</span>
+            <span className="text-text-secondary">Có mặt</span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-xs bg-danger text-white text-[10px] font-bold font-mono inline-flex items-center justify-center">V</span>
-            <span>Vắng</span>
+            <span className="w-5 h-5 rounded-xs bg-rose-50 text-rose-700 border border-rose-300 text-[10px] font-bold font-mono inline-flex items-center justify-center">V</span>
+            <span className="text-text-secondary">Vắng</span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-xs bg-warning text-accent-text text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs">M</span>
-            <span className="font-semibold text-text-primary">Đi muộn</span>
+            <span className="w-5 h-5 rounded-xs bg-amber-50 text-amber-800 border border-amber-300 text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-2xs">M</span>
+            <span className="text-text-secondary">Đi muộn</span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-xs bg-indigo-100 border border-indigo-400 text-indigo-950 text-[10px] font-black font-mono inline-flex items-center justify-center shadow-xs">P</span>
-            <span className="font-semibold text-text-primary">Có phép</span>
+            <span className="w-5 h-5 rounded-xs bg-indigo-50 border border-indigo-300 text-indigo-700 text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-2xs">P</span>
+            <span className="text-text-secondary">Có phép</span>
           </span>
         </div>
         <div className="text-xs text-text-secondary font-mono">
@@ -405,7 +435,7 @@ export default function AttendanceHistoryPage() {
         <EmptyStateView
           icon={<CalendarBlank size={36} className="opacity-60" />}
           title="Chưa có dữ liệu điểm danh"
-          description={`Lớp ${currentClass?.name || 'này'} chưa có buổi học nào được ghi nhận điểm danh.`}
+          description={`${currentClass?.name || 'Lớp học'} chưa có buổi học nào được ghi nhận điểm danh.`}
           actionText="Điểm danh buổi đầu tiên"
           actionHref="/attendance"
         />
@@ -435,24 +465,24 @@ export default function AttendanceHistoryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {studentStats.map((item) => {
+                {sortedStudentStats.map((item) => {
                   const initial = item.student.full_name.trim().split(' ').slice(-1)[0][0];
 
                   return (
                     <tr key={item.student.id} className="hover:bg-surface-muted/50 transition-colors h-[54px]">
                       <td className="px-5 py-3 sticky left-0 bg-surface z-10 border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-xs bg-accent/30 text-accent-text font-black text-xs flex items-center justify-center flex-shrink-0 border border-border-strong font-mono shadow-2xs">
+                          <div className="w-7 h-7 rounded-xs bg-surface-muted text-text-secondary font-semibold text-xs flex items-center justify-center flex-shrink-0 border border-border font-mono shadow-2xs">
                             {initial}
                           </div>
                           <div className="min-w-0">
                             <Link
                               href={`/students/${item.student.id}`}
-                              className="font-bold text-text-primary hover:text-teal truncate block text-sm transition-colors"
+                              className="font-medium text-text-primary hover:text-teal truncate block text-sm transition-colors"
                             >
                               {item.student.full_name}
                             </Link>
-                            <span className="text-xs text-text-secondary font-mono font-bold block">
+                            <span className="text-[11px] text-text-muted font-mono block">
                               {item.student.student_code}
                             </span>
                           </div>
@@ -466,13 +496,13 @@ export default function AttendanceHistoryPage() {
                           </td>
                         );
                       })}
-                      <td className="px-4 py-3 text-center text-sm font-bold font-mono text-success">
+                      <td className="px-4 py-3 text-center text-sm font-semibold font-mono text-emerald-700">
                         {item.present}
                       </td>
-                      <td className="px-4 py-3 text-center text-sm font-bold font-mono text-danger">
+                      <td className="px-4 py-3 text-center text-sm font-semibold font-mono text-rose-700">
                         {item.absent}
                       </td>
-                      <td className="px-4 py-3 text-center text-sm font-bold font-mono text-text-primary">
+                      <td className="px-4 py-3 text-center text-sm font-semibold font-mono text-text-primary">
                         {item.rate}%
                       </td>
                     </tr>

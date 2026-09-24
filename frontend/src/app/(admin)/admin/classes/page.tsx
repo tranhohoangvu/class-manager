@@ -32,6 +32,7 @@ export default function AdminClassesPage() {
   const [search, setSearch] = useState('');
   const [gradeFilter, setGradeFilter] = useState<'all' | '6' | '7' | '8' | '9'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'archived'>('active');
+  const [sortBy, setSortBy] = useState<'grade_asc' | 'grade_desc' | 'name_asc' | 'name_desc' | 'students_desc' | 'students_asc' | 'room'>('grade_asc');
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Modals
@@ -92,9 +93,9 @@ export default function AdminClassesPage() {
     }
     const teacher = teachers.find((t) => t.id === tId);
     if (teacher) {
-      toast.success(`Đã đổi GVCN lớp ${selectedClassDetail.name} thành ${teacher.name}`);
+      toast.success(`Đã đổi GVCN ${selectedClassDetail.name} thành ${teacher.name}`);
     } else {
-      toast.info(`Đã gỡ GVCN của lớp ${selectedClassDetail.name}`);
+      toast.info(`Đã gỡ GVCN của ${selectedClassDetail.name}`);
     }
     setSelectedClassDetail({
       ...selectedClassDetail,
@@ -104,7 +105,7 @@ export default function AdminClassesPage() {
   };
 
   const filteredClasses = useMemo(() => {
-    return classes.filter((c) => {
+    const list = classes.filter((c) => {
       const matchSearch =
         search.trim() === '' ||
         c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -114,7 +115,34 @@ export default function AdminClassesPage() {
       const matchStatus = statusFilter === 'all' || c.status === statusFilter;
       return matchSearch && matchGrade && matchStatus;
     });
-  }, [classes, search, gradeFilter, statusFilter]);
+
+    return list.sort((a, b) => {
+      if (sortBy === 'grade_asc') {
+        if (a.grade !== b.grade) return a.grade - b.grade;
+        return a.name.localeCompare(b.name, 'vi', { numeric: true });
+      }
+      if (sortBy === 'grade_desc') {
+        if (a.grade !== b.grade) return b.grade - a.grade;
+        return a.name.localeCompare(b.name, 'vi', { numeric: true });
+      }
+      if (sortBy === 'name_asc') return a.name.localeCompare(b.name, 'vi', { numeric: true });
+      if (sortBy === 'name_desc') return b.name.localeCompare(a.name, 'vi', { numeric: true });
+      if (sortBy === 'students_desc') {
+        const countA = students.filter((s) => s.class_id === a.id && s.status === 'active').length;
+        const countB = students.filter((s) => s.class_id === b.id && s.status === 'active').length;
+        return countB - countA;
+      }
+      if (sortBy === 'students_asc') {
+        const countA = students.filter((s) => s.class_id === a.id && s.status === 'active').length;
+        const countB = students.filter((s) => s.class_id === b.id && s.status === 'active').length;
+        return countA - countB;
+      }
+      if (sortBy === 'room') {
+        return (a.room_name || '').localeCompare(b.room_name || '', 'vi');
+      }
+      return 0;
+    });
+  }, [classes, search, gradeFilter, statusFilter, sortBy, students]);
 
   const openAddModal = () => {
     setFormData({
@@ -173,7 +201,7 @@ export default function AdminClassesPage() {
       toast.error(res.error || 'Lưu trữ lớp học thất bại');
       return;
     }
-    toast.success(`Đã chuyển lớp ${targetArchiveClass.name} vào kho lưu trữ`);
+    toast.success(`Đã chuyển ${targetArchiveClass.name} vào kho lưu trữ`);
     setTargetArchiveClass(null);
     loadData();
   };
@@ -279,7 +307,7 @@ export default function AdminClassesPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-text-secondary">Trạng thái:</span>
+            <span className="text-xs font-bold text-text-secondary whitespace-nowrap">Trạng thái:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -288,6 +316,23 @@ export default function AdminClassesPage() {
               <option value="active">Đang hoạt động</option>
               <option value="archived">Đã lưu trữ</option>
               <option value="all">Tất cả</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-text-secondary whitespace-nowrap">Sắp xếp:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="h-9 bg-surface border border-border-strong px-3 rounded-sm text-xs font-bold focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer text-text-primary shadow-[1px_1px_0px_rgba(13,1,41,0.1)]"
+            >
+              <option value="grade_asc">Khối 6 → 9 (Chuẩn)</option>
+              <option value="grade_desc">Khối 9 → 6</option>
+              <option value="name_asc">Tên lớp (A → Z)</option>
+              <option value="name_desc">Tên lớp (Z → A)</option>
+              <option value="students_desc">Sĩ số (Đông → Ít)</option>
+              <option value="students_asc">Sĩ số (Ít → Đông)</option>
+              <option value="room">Theo phòng học</option>
             </select>
           </div>
         </div>
@@ -558,7 +603,7 @@ export default function AdminClassesPage() {
         isOpen={!!selectedClassDetail}
         onClose={() => setSelectedClassDetail(null)}
         title={`Chi tiết & Phân công Giáo viên - ${selectedClassDetail?.name || ''}`}
-        description={`Quản lý Giáo viên Chủ nhiệm (GVCN) và 10 Giáo viên Bộ môn (GVBM) cho lớp ${selectedClassDetail?.name || ''}`}
+        description={`Quản lý Giáo viên Chủ nhiệm (GVCN) và 10 Giáo viên Bộ môn (GVBM) cho ${selectedClassDetail?.name || ''}`}
       >
         {selectedClassDetail && (
           <div className="space-y-5">

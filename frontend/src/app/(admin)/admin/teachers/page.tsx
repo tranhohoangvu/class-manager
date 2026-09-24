@@ -21,6 +21,7 @@ import {
 import { LocalStore } from '@/lib/store';
 import { TeacherService, ClassService } from '@/services';
 import { UserRow, ClassRow, TeacherFormData, SubjectRow, SubjectAssignmentRow } from '@/types';
+import { compareVietnameseNames } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
@@ -64,6 +65,7 @@ export default function AdminTeachersPage() {
   const [subjectAssignments, setSubjectAssignments] = useState<SubjectAssignmentRow[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'disabled'>('all');
+  const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc' | 'subject' | 'homeroom' | 'status'>('name_asc');
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Modal states
@@ -96,7 +98,7 @@ export default function AdminTeachersPage() {
   }, []);
 
   const filteredTeachers = useMemo(() => {
-    return teachers.filter((t) => {
+    const list = teachers.filter((t) => {
       const matchSearch =
         search.trim() === '' ||
         t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -105,7 +107,30 @@ export default function AdminTeachersPage() {
       const matchStatus = statusFilter === 'all' || t.status === statusFilter;
       return matchSearch && matchStatus;
     });
-  }, [teachers, search, statusFilter]);
+
+    return list.sort((a, b) => {
+      if (sortBy === 'name_asc') return compareVietnameseNames(a.name, b.name);
+      if (sortBy === 'name_desc') return compareVietnameseNames(b.name, a.name);
+      if (sortBy === 'subject') {
+        const subA = subjects.find((s) => s.id === a.subject_id)?.name || '';
+        const subB = subjects.find((s) => s.id === b.subject_id)?.name || '';
+        return subA.localeCompare(subB, 'vi');
+      }
+      if (sortBy === 'homeroom') {
+        const hrA = classes.find((c) => c.teacher_id === a.id)?.name || '';
+        const hrB = classes.find((c) => c.teacher_id === b.id)?.name || '';
+        if (hrA && !hrB) return -1;
+        if (!hrA && hrB) return 1;
+        return hrA.localeCompare(hrB, 'vi');
+      }
+      if (sortBy === 'status') {
+        if (a.status === 'active' && b.status !== 'active') return -1;
+        if (a.status !== 'active' && b.status === 'active') return 1;
+        return compareVietnameseNames(a.name, b.name);
+      }
+      return 0;
+    });
+  }, [teachers, search, statusFilter, sortBy, subjects, classes]);
 
   const openAddModal = () => {
     setFormData({
@@ -291,17 +316,34 @@ export default function AdminTeachersPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-text-secondary">Trạng thái:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="h-9 bg-surface border border-border-strong px-3 rounded-sm text-xs font-bold focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer text-text-primary shadow-[1px_1px_0px_rgba(13,1,41,0.1)]"
-          >
-            <option value="all">Tất cả ({teachers.length})</option>
-            <option value="active">Đang hoạt động ({activeTeachersCount})</option>
-            <option value="disabled">Đã khóa ({teachers.length - activeTeachersCount})</option>
-          </select>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-text-secondary whitespace-nowrap">Trạng thái:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="h-9 bg-surface border border-border-strong px-3 rounded-sm text-xs font-bold focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer text-text-primary shadow-[1px_1px_0px_rgba(13,1,41,0.1)]"
+            >
+              <option value="all">Tất cả ({teachers.length})</option>
+              <option value="active">Đang hoạt động ({activeTeachersCount})</option>
+              <option value="disabled">Đã khóa ({teachers.length - activeTeachersCount})</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-text-secondary whitespace-nowrap">Sắp xếp:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="h-9 bg-surface border border-border-strong px-3 rounded-sm text-xs font-bold focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer text-text-primary shadow-[1px_1px_0px_rgba(13,1,41,0.1)]"
+            >
+              <option value="name_asc">Tên (A → Z)</option>
+              <option value="name_desc">Tên (Z → A)</option>
+              <option value="subject">Theo môn học</option>
+              <option value="homeroom">Có phân công GVCN</option>
+              <option value="status">Trạng thái hoạt động</option>
+            </select>
+          </div>
         </div>
       </div>
 

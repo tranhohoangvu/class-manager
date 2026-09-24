@@ -474,7 +474,7 @@ export default function AdminTimetablePage() {
     }
     const res = TimetableService.applyStandardTemplate(selectedClassId, user);
     if (res.success) {
-      toast.success(`Đã áp dụng mẫu chuẩn 28 tiết cho lớp ${currentClass?.name}.`);
+      toast.success(`Đã áp dụng mẫu chuẩn 28 tiết cho ${currentClass?.name}.`);
       setIsTemplateModalOpen(false);
       loadData();
     } else {
@@ -489,7 +489,7 @@ export default function AdminTimetablePage() {
     }
     const res = TimetableService.copyFromClass(copySourceClassId, selectedClassId, user);
     if (res.success) {
-      toast.success(`Đã sao chép thời khóa biểu sang lớp ${currentClass?.name}.`);
+      toast.success(`Đã sao chép thời khóa biểu sang ${currentClass?.name}.`);
       setIsCopyModalOpen(false);
       loadData();
     } else {
@@ -501,7 +501,7 @@ export default function AdminTimetablePage() {
     if (selectedClassId === 'all') return;
     const res = TimetableService.clearTimetable(selectedClassId, user);
     if (res.success) {
-      toast.success(`Đã xóa toàn bộ thời khóa biểu lớp ${currentClass?.name}.`);
+      toast.success(`Đã xóa toàn bộ thời khóa biểu ${currentClass?.name}.`);
       setIsClearModalOpen(false);
       loadData();
     } else {
@@ -529,24 +529,35 @@ export default function AdminTimetablePage() {
 
   const shift = currentClass ? getGradeShift(currentClass.grade) : 'morning';
 
+  const handleResetFilters = () => {
+    const defaultClass = classes[0]?.id || 'c-6a1';
+    setSelectedClassId(defaultClass);
+    setTeacherFilter('all');
+    setSubjectFilter('all');
+    setDayFilter('all');
+    toast.info('Đã đặt lại toàn bộ bộ lọc về mặc định.');
+  };
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-5 md:p-6 rounded-sm border border-border shadow-xs">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
-          <div className="flex items-center gap-3">
-            <span className="w-10 h-10 rounded-sm bg-teal-subtle text-teal border border-teal/20 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-2xs">
-              <CalendarDots size={22} weight="duotone" />
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="px-2.5 py-0.5 text-xs font-bold bg-teal-subtle text-teal border border-teal/30 rounded-sm inline-flex items-center gap-1.5">
+              <ShieldCheck size={14} weight="bold" />
+              Trường THCS Nguyễn Tất Thành
             </span>
-            <div>
-              <h1 className="text-xl font-extrabold tracking-wide uppercase text-text-primary">
-                QUẢN LÝ THỜI KHÓA BIỂU TOÀN TRƯỜNG
-              </h1>
-              <p className="text-xs text-text-muted mt-0.5">
-                Kiểm soát, điều phối, tổ chức và kiểm toán lịch học toàn trường theo quy chuẩn THCS.
-              </p>
-            </div>
+            <span className="px-2.5 py-0.5 text-xs font-bold bg-surface-muted text-text-secondary border border-border rounded-sm">
+              Năm học: 2026 - 2027
+            </span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary mt-2">
+            QUẢN LÝ THỜI KHÓA BIỂU TOÀN TRƯỜNG
+          </h1>
+          <p className="text-xs text-text-muted mt-1 font-medium">
+            Kiểm soát, điều phối, tổ chức và kiểm toán lịch học toàn trường theo quy chuẩn THCS
+          </p>
         </div>
 
         {/* Audit Status Badge & Actions */}
@@ -624,6 +635,15 @@ export default function AdminTimetablePage() {
           <div className="flex items-center gap-2">
             <Funnel size={16} className="text-teal" />
             <span className="font-bold text-text-primary">Bộ lọc lịch học toàn trường</span>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="ml-2 inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-text-secondary hover:text-text-primary bg-surface-muted hover:bg-surface border border-border rounded-xs transition-all cursor-pointer shadow-2xs"
+              title="Đặt lại toàn bộ bộ lọc về mặc định"
+            >
+              <ArrowsClockwise size={13} weight="bold" />
+              <span>Đặt lại lọc</span>
+            </button>
           </div>
 
           <div className="flex items-center gap-1 bg-surface-muted p-1 rounded-sm border border-border">
@@ -1272,7 +1292,7 @@ export default function AdminTimetablePage() {
             <div>
               <div className="text-xs text-text-muted font-medium">Phạm vi kiểm toán:</div>
               <div className="text-sm font-bold text-text-primary">
-                {auditScope === 'school' ? 'Toàn bộ 16 lớp THCS (Toàn trường)' : `Lớp ${currentClass?.name}`}
+                {auditScope === 'school' ? 'Toàn bộ 16 lớp THCS (Toàn trường)' : (currentClass?.name || 'Chưa chọn lớp')}
               </div>
             </div>
 
@@ -1655,7 +1675,7 @@ export default function AdminTimetablePage() {
         onClose={() => setIsTemplateModalOpen(false)}
         onConfirm={handleApplyTemplate}
         title="Áp dụng Mẫu chuẩn 28 tiết THCS?"
-        description={`Hệ thống sẽ điền lịch chuẩn THCS cho lớp ${currentClass?.name}. Mọi xung đột lịch dạy với các lớp khác sẽ được kiểm tra nguyên tử (atomic) trước khi ghi.`}
+        description={`Hệ thống sẽ điền lịch chuẩn THCS cho ${currentClass?.name}. Mọi xung đột lịch dạy với các lớp khác sẽ được kiểm tra nguyên tử (atomic) trước khi ghi.`}
         confirmText="Áp dụng mẫu chuẩn"
         variant="primary"
       />
@@ -1714,7 +1734,7 @@ export default function AdminTimetablePage() {
         onClose={() => setIsClearModalOpen(false)}
         onConfirm={handleClearTimetable}
         title="Xóa toàn bộ thời khóa biểu của lớp?"
-        description={`Bạn có chắc chắn muốn xóa toàn bộ thời khóa biểu của lớp ${currentClass?.name}? Thao tác này không thể hoàn tác.`}
+        description={`Bạn có chắc chắn muốn xóa toàn bộ thời khóa biểu của ${currentClass?.name}? Thao tác này không thể hoàn tác.`}
         confirmText="Xác nhận xóa sạch"
         variant="danger"
       />

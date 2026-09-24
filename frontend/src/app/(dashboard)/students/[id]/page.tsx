@@ -153,25 +153,25 @@ export default function StudentDetailPage() {
       id: 'absent',
       title: 'Thông báo vắng mặt',
       description: 'Gửi khi học sinh vắng mặt đầu giờ chưa rõ lý do',
-      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN lớp ${studentClass?.name || 'lớp'} Trường THCS Nguyễn Tất Thành xin thông báo: Hôm nay em chưa có mặt tại lớp. Kính mong gia đình sớm xác nhận tình hình của em với GVCN qua số điện thoại này. Trân trọng!`,
+      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN ${studentClass?.name || 'lớp'} Trường THCS Nguyễn Tất Thành xin thông báo: Hôm nay em chưa có mặt tại lớp. Kính mong gia đình sớm xác nhận tình hình của em với GVCN qua số điện thoại này. Trân trọng!`,
     },
     {
       id: 'late',
       title: 'Nhắc nhở đi học muộn',
       description: 'Nhắc nhở phụ huynh khi học sinh đến lớp muộn',
-      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN lớp ${studentClass?.name || 'lớp'} xin thông báo: Hôm nay em đến lớp muộn. Kính mong gia đình nhắc nhở em chuẩn bị và đi học đúng giờ để đảm bảo tiếp thu trọn vẹn bài học.`,
+      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN ${studentClass?.name || 'lớp'} xin thông báo: Hôm nay em đến lớp muộn. Kính mong gia đình nhắc nhở em chuẩn bị và đi học đúng giờ để đảm bảo tiếp thu trọn vẹn bài học.`,
     },
     {
       id: 'attendance_report',
       title: 'Báo cáo chuyên cần định kỳ',
       description: 'Cập nhật số liệu tham gia học tập của học sinh',
-      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN lớp ${studentClass?.name || 'lớp'} gửi cập nhật tình hình chuyên cần của em: Tỷ lệ đi học đạt ${attendanceRate}% (${presentDays} buổi có mặt, ${absentDays} buổi vắng, ${lateDays} lần đi muộn). Cảm ơn sự đồng hành của gia đình!`,
+      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN ${studentClass?.name || 'lớp'} gửi cập nhật tình hình chuyên cần của em: Tỷ lệ đi học đạt ${attendanceRate}% (${presentDays} buổi có mặt, ${absentDays} buổi vắng, ${lateDays} lần đi muộn). Cảm ơn sự đồng hành của gia đình!`,
     },
     {
       id: 'meeting',
       title: 'Hẹn trao đổi phụ huynh',
       description: 'Mời phụ huynh trao đổi riêng về tình hình học tập',
-      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN lớp ${studentClass?.name || 'lớp'} Trường THCS Nguyễn Tất Thành mong muốn được trao đổi ngắn với phụ huynh về tình hình học tập và rèn luyện của em. Kính mong gia đình thu xếp liên hệ lại với GVCN. Trân trọng cảm ơn!`,
+      body: `Kính gửi phụ huynh em ${student.full_name}, GVCN ${studentClass?.name || 'lớp'} Trường THCS Nguyễn Tất Thành mong muốn được trao đổi ngắn với phụ huynh về tình hình học tập và rèn luyện của em. Kính mong gia đình thu xếp liên hệ lại với GVCN. Trân trọng cảm ơn!`,
     },
   ];
 
@@ -389,7 +389,7 @@ export default function StudentDetailPage() {
               <div className="pt-1">
                 <Link href="/seating">
                   <Button variant="secondary" className="w-full text-xs gap-1.5 h-10">
-                    <span>Mở sơ đồ để chuyển chỗ</span>
+                    <span>Mở sơ đồ chỗ ngồi</span>
                   </Button>
                 </Link>
               </div>
@@ -586,11 +586,10 @@ export default function StudentDetailPage() {
                   key={tpl.id}
                   type="button"
                   onClick={() => setSelectedTemplateIndex(idx)}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                    selectedTemplateIndex === idx
-                      ? 'border-accent bg-accent-subtle/50 text-text-primary shadow-xs'
-                      : 'border-border bg-surface hover:bg-surface-subtle text-text-secondary'
-                  }`}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${selectedTemplateIndex === idx
+                    ? 'border-accent bg-accent-subtle/50 text-text-primary shadow-xs'
+                    : 'border-border bg-surface hover:bg-surface-subtle text-text-secondary'
+                    }`}
                 >
                   <p className={`text-xs font-bold ${selectedTemplateIndex === idx ? 'text-accent' : 'text-text-primary'}`}>
                     {tpl.title}
