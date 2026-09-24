@@ -697,8 +697,16 @@ export default function AdminSeatingPage() {
                   const desk = desks.find((d) => d.row_num === rowNum && d.col_num === colNum);
                   if (!desk) return <div key={colNum} className="h-28 rounded-xs border border-dashed border-border/40" />;
 
-                  const leftSeat = desk.seats[0];
-                  const rightSeat = desk.seats[1];
+                  const seat01 = desk.seats[0]; // logical Seat 01 (left when viewed from back)
+                  const seat02 = desk.seats[1]; // logical Seat 02 (right when viewed from back)
+
+                  // Seat rendering order inside each desk:
+                  // "Nhìn từ cuối lớp lên bảng" (View A): Left is Seat 01, Right is Seat 02
+                  // "Nhìn từ bục giảng xuống lớp" (View B): Left is Seat 02, Right is Seat 01 (mirrored)
+                  const [seatDisplayLeft, seatDisplayRight] =
+                    viewPerspective === 'nhin_tu_duoi_len'
+                      ? [seat01, seat02]
+                      : [seat02, seat01];
 
                   return (
                     <div
@@ -717,7 +725,7 @@ export default function AdminSeatingPage() {
 
                       {/* 2 Seats per Desk */}
                       <div className="grid grid-cols-2 gap-1.5">
-                        {[leftSeat, rightSeat].map((seat, seatIdx) => {
+                        {[seatDisplayLeft, seatDisplayRight].map((seat, seatIdx) => {
                           if (!seat) return null;
                           const isSelected = selectedSeatId === seat.id;
                           const stu = seat.student;
