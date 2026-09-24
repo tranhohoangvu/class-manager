@@ -20,7 +20,7 @@ const DEMO_ACCOUNTS = [
   {
     role: 'ADMIN',
     badge: 'Quản trị viên',
-    badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200/80',
+    badgeColor: 'bg-teal-subtle text-teal border-teal/20',
     name: 'Admin Hệ thống',
     email: 'admin@classmanager.local',
     password: 'admin',
@@ -29,7 +29,7 @@ const DEMO_ACCOUNTS = [
   {
     role: 'TEACHER',
     badge: 'GVCN & GVBM',
-    badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
+    badgeColor: 'bg-success-bg text-success border-success/30',
     name: 'Thầy Nguyễn Văn An',
     email: 'an.nguyen@classmanager.local',
     password: 'teacher1',
@@ -38,7 +38,7 @@ const DEMO_ACCOUNTS = [
   {
     role: 'TEACHER',
     badge: 'Chỉ GVBM',
-    badgeColor: 'bg-amber-50 text-amber-700 border-amber-200/80',
+    badgeColor: 'bg-warning-bg text-warning-700 border-warning/30',
     name: 'Thầy Hoàng Văn Cường',
     email: 'cuong.hoang@classmanager.local',
     password: 'teacher23',
@@ -47,7 +47,7 @@ const DEMO_ACCOUNTS = [
   {
     role: 'TEACHER',
     badge: 'Chỉ GVCN',
-    badgeColor: 'bg-blue-50 text-blue-700 border-blue-200/80',
+    badgeColor: 'bg-accent text-accent-text border-border',
     name: 'Cô Nguyễn Thị Hương',
     email: 'huong.nguyen@classmanager.local',
     password: 'teacher16',
@@ -56,7 +56,7 @@ const DEMO_ACCOUNTS = [
   {
     role: 'TEACHER',
     badge: 'Chưa có lớp',
-    badgeColor: 'bg-zinc-100 text-zinc-700 border-zinc-200/80',
+    badgeColor: 'bg-surface-muted text-text-muted border-border',
     name: 'Thầy Đỗ Văn Tân',
     email: 'unassigned@classmanager.local',
     password: 'unassigned',
@@ -65,7 +65,7 @@ const DEMO_ACCOUNTS = [
   {
     role: 'TEACHER',
     badge: 'Đã khóa',
-    badgeColor: 'bg-rose-50 text-rose-700 border-rose-200/80',
+    badgeColor: 'bg-danger-bg text-danger border-danger/30',
     name: 'Thầy Vũ Đình Trọng',
     email: 'disabled@classmanager.local',
     password: 'disabled',
@@ -130,10 +130,10 @@ export default function LoginPage() {
   return (
     <div className="w-full space-y-4 py-4">
       {/* Login Card */}
-      <div className="bg-surface rounded-2xl border border-border p-6 sm:p-7 shadow-xs">
+      <div className="bg-surface rounded-sm border border-border p-6 sm:p-7 shadow-xs">
         {/* Class Manager Branding */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent border border-accent/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-sm bg-teal-subtle text-teal border border-teal/20 flex items-center justify-center flex-shrink-0 shadow-2xs">
             <ChalkboardTeacher size={22} weight="duotone" />
           </div>
           <div>
@@ -149,10 +149,10 @@ export default function LoginPage() {
         {/* Welcome Heading */}
         <div className="mb-6">
           <h1 className="text-xl font-bold tracking-tight text-text-primary">
-            Welcome back
+            Chào mừng trở lại
           </h1>
           <p className="text-sm text-text-secondary mt-1">
-            Sign in to manage your classes and students.
+            Đăng nhập để quản lý lớp học, nề nếp và thời khóa biểu.
           </p>
         </div>
 
@@ -161,9 +161,9 @@ export default function LoginPage() {
           <div className="space-y-1.5">
             <label
               htmlFor="email"
-              className="text-sm font-semibold text-text-primary block"
+              className="text-xs font-bold text-text-primary block"
             >
-              Email
+              Email nhà trường
             </label>
             <input
               id="email"
@@ -183,7 +183,7 @@ export default function LoginPage() {
           <div className="space-y-1.5">
             <label
               htmlFor="password"
-              className="text-sm font-semibold text-text-primary block"
+              className="text-xs font-bold text-text-primary block"
             >
               Mật khẩu
             </label>
@@ -205,7 +205,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-primary transition-colors cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-accent"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-primary transition-colors cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-accent"
               >
                 {showPassword ? (
                   <EyeSlash size={18} />
@@ -220,7 +220,7 @@ export default function LoginPage() {
           {errorMsg && (
             <div
               role="alert"
-              className="p-3 text-xs rounded-xl bg-danger/10 text-danger border border-danger/20 flex items-start gap-2.5 leading-relaxed"
+              className="p-3 text-xs rounded-sm bg-danger-bg text-danger border border-danger/40 flex items-start gap-2.5 leading-relaxed"
             >
               <WarningCircle size={16} className="flex-shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
@@ -232,29 +232,29 @@ export default function LoginPage() {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full justify-center text-sm font-semibold h-11 rounded-xl shadow-sm hover:shadow mt-2"
+            className="w-full justify-center text-sm font-bold h-11 cursor-pointer mt-2"
             isLoading={loading}
           >
-            Sign in
+            Đăng nhập
           </Button>
 
           {/* Account Creation Messaging */}
-          <p className="text-xs text-center text-text-muted pt-2">
-            Accounts are managed by your administrator.
+          <p className="text-xs text-center text-text-muted pt-2 font-medium">
+            Tài khoản được cấp và quản lý bởi Quản trị viên nhà trường.
           </p>
         </form>
       </div>
 
       {/* Demo Accounts Quick-Select for Prototype - Collapsible Show/Hide */}
-      <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs transition-all">
+      <div className="bg-surface rounded-sm border border-border p-4 shadow-xs transition-all">
         <button
           type="button"
           onClick={() => setShowDemoAccounts(!showDemoAccounts)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors cursor-pointer select-none"
+          className="w-full flex items-center justify-between text-xs font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer select-none"
           aria-expanded={showDemoAccounts}
         >
           <div className="flex items-center gap-2">
-            <Key size={15} className="text-accent" />
+            <Key size={15} className="text-teal" />
             <span>Tài khoản thử nghiệm (1-Click Login)</span>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-text-muted font-normal">
@@ -270,22 +270,22 @@ export default function LoginPage() {
         </button>
 
         {showDemoAccounts && (
-          <div className="mt-3.5 pt-3 border-t border-border/70 space-y-2">
+          <div className="mt-3.5 pt-3 border-t border-border space-y-2">
             {DEMO_ACCOUNTS.map((acc) => (
               <button
                 key={acc.email}
                 type="button"
                 onClick={() => handleQuickSelect(acc)}
-                className="w-full p-2.5 rounded-xl border border-border/70 hover:border-accent/40 bg-surface-muted/30 hover:bg-surface-muted/70 transition-all text-left group flex items-center justify-between gap-3 cursor-pointer"
+                className="w-full p-2.5 rounded-sm border border-border hover:border-border-strong bg-surface-muted/30 hover:bg-surface-muted/70 transition-all text-left group flex items-center justify-between gap-3 cursor-pointer shadow-2xs"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-text-primary group-hover:text-accent transition-colors">
+                    <span className="text-xs font-bold text-text-primary group-hover:text-teal transition-colors">
                       {acc.name}
                     </span>
                     <span
                       className={cn(
-                        'text-[10px] px-1.5 py-0.2 rounded-md font-medium border',
+                        'text-[10px] px-1.5 py-0.5 rounded-sm font-bold border',
                         acc.badgeColor
                       )}
                     >
@@ -296,7 +296,7 @@ export default function LoginPage() {
                 </div>
                 <ArrowRight
                   size={14}
-                  className="text-text-muted/50 group-hover:text-accent group-hover:translate-x-0.5 transition-all flex-shrink-0"
+                  className="text-text-muted group-hover:text-teal group-hover:translate-x-0.5 transition-all flex-shrink-0"
                 />
               </button>
             ))}

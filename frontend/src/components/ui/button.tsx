@@ -16,35 +16,35 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantStyles: Record<ButtonVariant, string> = {
   primary: [
     'bg-accent text-accent-text hover:bg-accent-hover',
-    'border border-accent shadow-sm hover:shadow',
-    'font-semibold active:scale-[0.98] cursor-pointer',
+    'border border-border-strong shadow-[1px_1px_3px_0px_#000000]',
+    'font-bold tracking-wide active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer',
   ].join(' '),
   secondary: [
     'bg-surface text-text-primary hover:bg-surface-muted',
-    'border border-border hover:border-border-strong shadow-sm hover:shadow',
-    'font-semibold active:scale-[0.98] cursor-pointer',
+    'border border-border-strong shadow-[1px_1px_0px_0px_rgba(13,1,41,0.2)] hover:border-border-strong',
+    'font-semibold active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none cursor-pointer',
   ].join(' '),
   ghost: [
     'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-muted',
     'border border-transparent',
-    'font-medium active:scale-[0.98] cursor-pointer',
+    'font-medium active:translate-y-[0.5px] cursor-pointer',
   ].join(' '),
   outline: [
-    'bg-transparent text-accent hover:bg-accent-subtle',
-    'border border-accent/40 hover:border-accent',
-    'font-semibold active:scale-[0.98] cursor-pointer',
+    'bg-transparent text-text-primary hover:bg-accent-subtle',
+    'border border-border-strong hover:bg-surface-muted',
+    'font-semibold active:translate-y-[0.5px] cursor-pointer',
   ].join(' '),
   danger: [
     'bg-danger text-white hover:opacity-95',
-    'border border-danger shadow-sm',
-    'font-semibold active:scale-[0.98] cursor-pointer',
+    'border border-border-strong shadow-[1px_1px_2px_0px_#000000]',
+    'font-semibold active:translate-x-[0.5px] active:translate-y-[0.5px] cursor-pointer',
   ].join(' '),
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs font-medium rounded-lg gap-1.5',
-  md: 'h-9.5 px-4 text-sm font-medium rounded-xl gap-2',
-  lg: 'h-11 px-5 text-sm font-semibold rounded-xl gap-2.5',
+  sm: 'h-8 px-3 text-xs font-semibold rounded-sm gap-1.5',
+  md: 'h-9 px-3.5 text-xs md:text-sm font-semibold rounded-sm gap-2',
+  lg: 'h-10.5 px-4.5 text-sm font-bold rounded-sm gap-2.5',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -69,9 +69,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           'inline-flex items-center justify-center gap-2 whitespace-nowrap',
           'select-none cursor-pointer',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
-          'transition-all duration-150',
-          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+          'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-none disabled:shadow-none',
+          'transition-all duration-100',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-strong',
           variantStyles[variant],
           sizeStyles[size],
           className

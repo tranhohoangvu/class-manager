@@ -31,16 +31,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           className={cn(
             'input-base',
-            error && 'border-danger focus:border-danger focus:shadow-[0_0_0_3px_oklch(0.55_0.190_28/0.15)]',
+            error && 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/25',
             className
           )}
           {...props}
         />
         {error && (
-          <p className="text-[13px] font-medium text-danger">{error}</p>
+          <p className="text-[12px] font-semibold text-danger">{error}</p>
         )}
         {hint && !error && (
-          <p className="text-[13px] text-text-muted">{hint}</p>
+          <p className="text-[12px] text-text-muted">{hint}</p>
         )}
       </div>
     );
@@ -62,11 +62,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, hint, className, id, children, ...props }, ref) => {
     const selectId = id || label?.toLowerCase().replace(/\s+/g, '-');
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         {label && (
           <label
             htmlFor={selectId}
-            className="text-[14px] font-semibold text-text-primary tracking-tight"
+            className="text-[13px] font-bold text-text-primary tracking-tight"
           >
             {label}
             {props.required && <span className="text-danger ml-1">*</span>}
@@ -77,8 +77,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           className={cn(
             'input-base appearance-none cursor-pointer pr-10',
-            'bg-[url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2714%27 height=%2714%27 viewBox=%270 0 14 14%27%3E%3Cpath fill=%27%23666%27 d=%27M7 9.5L2 4.5h10z%27/%3E%3C/svg%3E")] bg-no-repeat bg-[right_14px_center]',
-            error && 'border-danger',
+            'bg-[url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2714%27 height=%2714%27 viewBox=%270 0 14 14%27%3E%3Cpath fill=%27%230d0129%27 d=%27M7 9.5L2 4.5h10z%27/%3E%3C/svg%3E")] bg-no-repeat bg-[right_14px_center]',
+            error && 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/25',
             className
           )}
           {...props}

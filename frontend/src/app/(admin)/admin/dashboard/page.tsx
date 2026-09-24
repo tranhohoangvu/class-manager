@@ -422,7 +422,7 @@ export default function AdminDashboardPage() {
         {auditReport && (
           auditReport.isValid ? (
             /* NORMAL / HEALTHY STATE: Compact inline status row (~42px) */
-            <div className="flex items-center justify-between px-4 py-2.5 rounded-lg border border-success/30 bg-success-bg/40 text-xs shadow-2xs transition-all">
+            <div className="flex items-center justify-between px-4 py-2.5 rounded-sm border border-success/40 bg-success-bg/60 text-xs shadow-xs transition-all">
               <div className="flex items-center gap-2.5 min-w-0">
                 <CheckCircle size={17} weight="fill" className="text-success flex-shrink-0" />
                 <span className="font-semibold text-text-primary truncate">
@@ -435,7 +435,7 @@ export default function AdminDashboardPage() {
               </div>
               <Link
                 href="/admin/timetable"
-                className="text-xs font-semibold text-accent hover:underline flex items-center gap-1 flex-shrink-0 ml-3"
+                className="text-xs font-bold text-teal hover:underline flex items-center gap-1 flex-shrink-0 ml-3"
               >
                 <span>Xem kiểm toán TKB</span>
                 <ArrowRight size={13} weight="bold" />
@@ -443,10 +443,10 @@ export default function AdminDashboardPage() {
             </div>
           ) : (
             /* CONFLICT / ISSUE STATE: Clear actionable alert */
-            <div className="rounded-xl border border-danger/35 bg-danger-bg/40 p-4 text-xs space-y-3 shadow-2xs">
+            <div className="rounded-sm border border-danger/40 bg-danger-bg/60 p-4 text-xs space-y-3 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-danger/10 text-danger flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-sm bg-danger-bg border border-danger/30 text-danger flex items-center justify-center flex-shrink-0">
                     <WarningCircle size={20} weight="fill" />
                   </div>
                   <div>
@@ -472,17 +472,17 @@ export default function AdminDashboardPage() {
                 {auditReport.teacherConflicts.slice(0, 4).map((tc, idx) => (
                   <div
                     key={`tc-${idx}`}
-                    className="p-2.5 rounded-lg bg-surface border border-danger/25 text-text-primary flex items-center justify-between"
+                    className="p-2.5 rounded-sm bg-surface border border-danger/30 text-text-primary flex items-center justify-between shadow-2xs"
                   >
                     <div>
                       <strong className="font-bold">{tc.teacherName}</strong> · {tc.dayName}, {tc.periodLabel}
-                      <div className="text-[11px] text-danger">
+                      <div className="text-[11px] text-danger font-medium">
                         Trùng lịch giữa lớp {tc.className} và {tc.otherClassName || 'lớp khác'}
                       </div>
                     </div>
                     <Link
                       href={`/admin/timetable?classId=${tc.classId}`}
-                      className="text-[11px] font-bold text-accent hover:underline flex items-center gap-1 ml-2 flex-shrink-0"
+                      className="text-[11px] font-bold text-teal hover:underline flex items-center gap-1 ml-2 flex-shrink-0"
                     >
                       <span>Sửa</span>
                       <ArrowSquareOut size={12} />
@@ -492,15 +492,15 @@ export default function AdminDashboardPage() {
                 {auditReport.ruleViolations.slice(0, 4).map((rv, idx) => (
                   <div
                     key={`rv-${idx}`}
-                    className="p-2.5 rounded-lg bg-surface border border-danger/25 text-text-primary flex items-center justify-between"
+                    className="p-2.5 rounded-sm bg-surface border border-danger/30 text-text-primary flex items-center justify-between shadow-2xs"
                   >
                     <div>
                       <strong className="font-bold">{rv.className}</strong> · Môn {rv.subjectName} ({rv.dayName})
-                      <div className="text-[11px] text-danger">{rv.violation}</div>
+                      <div className="text-[11px] text-danger font-medium">{rv.violation}</div>
                     </div>
                     <Link
                       href={`/admin/timetable?classId=${rv.classId}`}
-                      className="text-[11px] font-bold text-accent hover:underline flex items-center gap-1 ml-2 flex-shrink-0"
+                      className="text-[11px] font-bold text-teal hover:underline flex items-center gap-1 ml-2 flex-shrink-0"
                     >
                       <span>Sửa</span>
                       <ArrowSquareOut size={12} />
@@ -514,7 +514,7 @@ export default function AdminDashboardPage() {
 
         {/* High Absence Classes Alert (Only shows when there are absent students) */}
         {highAbsenceClasses.length > 0 && (
-          <div className="rounded-xl border border-warning/35 bg-warning-bg/40 p-3.5 text-xs space-y-2.5 shadow-2xs">
+          <div className="rounded-sm border border-warning/40 bg-warning-bg/60 p-3.5 text-xs space-y-2.5 shadow-xs">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <UserMinus size={17} weight="fill" className="text-warning flex-shrink-0" />
@@ -524,7 +524,7 @@ export default function AdminDashboardPage() {
               </div>
               <Link
                 href="/attendance"
-                className="text-xs font-semibold text-accent hover:underline flex items-center gap-1"
+                className="text-xs font-bold text-teal hover:underline flex items-center gap-1"
               >
                 <span>Mở sổ điểm danh toàn trường</span>
                 <ArrowRight size={12} weight="bold" />
@@ -536,7 +536,7 @@ export default function AdminDashboardPage() {
                 <Link
                   key={item.classId}
                   href="/attendance"
-                  className="px-2.5 py-1 rounded-lg bg-surface border border-warning/30 hover:border-warning text-text-primary text-xs flex items-center gap-2 transition-colors shadow-2xs"
+                  className="px-2.5 py-1 rounded-sm bg-surface border border-warning/40 hover:border-warning text-text-primary text-xs flex items-center gap-2 transition-colors shadow-2xs"
                 >
                   <span className="font-bold">{item.className}</span>
                   <span className="text-[11px] font-bold text-danger">Vắng {item.absentCount}</span>
@@ -553,11 +553,11 @@ export default function AdminDashboardPage() {
           ============================================= */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Tile 1: Thời khóa biểu & Ca học */}
-        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs flex flex-col justify-between">
+        <div className="bg-surface rounded-sm border border-border p-4 shadow-xs hover:border-border-strong transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between text-xs text-text-muted font-medium">
               <span>Thời khóa biểu Toàn trường</span>
-              <span className="font-semibold text-accent">{timetableCompletionRate}% Hoàn tất</span>
+              <span className="font-bold text-teal bg-teal-subtle px-1.5 py-0.5 rounded-sm border border-teal/20">{timetableCompletionRate}% Hoàn tất</span>
             </div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl font-bold tracking-tight text-text-primary font-mono tabular-nums">
@@ -565,25 +565,25 @@ export default function AdminDashboardPage() {
               </span>
               <span className="text-xs text-text-muted">/ {totalRequiredSlots} tiết chuẩn THCS</span>
             </div>
-            <div className="mt-3 w-full bg-surface-muted h-1.5 rounded-full overflow-hidden">
+            <div className="mt-3 w-full bg-surface-muted h-1.5 rounded-full overflow-hidden border border-border/50">
               <div
                 className="bg-accent h-full rounded-full transition-all duration-300"
                 style={{ width: `${timetableCompletionRate}%` }}
               />
             </div>
           </div>
-          <div className="mt-3.5 flex items-center justify-between text-[11px] text-text-muted pt-2.5 border-t border-border/70">
+          <div className="mt-3.5 flex items-center justify-between text-[11px] text-text-muted pt-2.5 border-t border-border">
             <span>Ca Sáng (K6, K9): <strong className="text-text-primary font-mono tabular-nums">{morningSlots}</strong> tiết</span>
             <span>Ca Chiều (K7, K8): <strong className="text-text-primary font-mono tabular-nums">{afternoonSlots}</strong> tiết</span>
           </div>
         </div>
 
         {/* Tile 2: Quy mô Lớp & Học sinh */}
-        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs flex flex-col justify-between">
+        <div className="bg-surface rounded-sm border border-border p-4 shadow-xs hover:border-border-strong transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between text-xs text-text-muted font-medium">
               <span>Quy mô Lớp & Học sinh</span>
-              <span className="font-semibold text-success">{schoolCapacityRate}% Lấp đầy</span>
+              <span className="font-bold text-success bg-success-bg px-1.5 py-0.5 rounded-sm border border-success/30">{schoolCapacityRate}% Lấp đầy</span>
             </div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl font-bold tracking-tight text-text-primary font-mono tabular-nums">
@@ -591,45 +591,45 @@ export default function AdminDashboardPage() {
               </span>
               <span className="text-xs text-text-muted">/ {totalMaxCapacity} học sinh</span>
             </div>
-            <div className="mt-3 w-full bg-surface-muted h-1.5 rounded-full overflow-hidden">
+            <div className="mt-3 w-full bg-surface-muted h-1.5 rounded-full overflow-hidden border border-border/50">
               <div
                 className="bg-success h-full rounded-full transition-all duration-300"
                 style={{ width: `${schoolCapacityRate}%` }}
               />
             </div>
           </div>
-          <div className="mt-3.5 flex items-center justify-between text-[11px] text-text-muted pt-2.5 border-t border-border/70">
+          <div className="mt-3.5 flex items-center justify-between text-[11px] text-text-muted pt-2.5 border-t border-border">
             <span>{activeClasses} lớp ({activeTeachers} GV · 100% có GVCN)</span>
             <span>BQ: <strong className="text-text-primary font-mono tabular-nums">{activeClasses > 0 ? Math.round(students.length / activeClasses) : 0}</strong> HS/lớp</span>
           </div>
         </div>
 
         {/* Tile 3: Nề nếp Chuyên cần Hôm nay */}
-        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs flex flex-col justify-between">
+        <div className="bg-surface rounded-sm border border-border p-4 shadow-xs hover:border-border-strong transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between text-xs text-text-muted font-medium">
               <span>Chuyên cần Toàn trường Hôm nay</span>
-              <span className="font-semibold text-emerald-700">Mục tiêu &ge; 95%</span>
+              <span className="font-bold text-teal bg-teal-subtle px-1.5 py-0.5 rounded-sm border border-teal/20">Mục tiêu &ge; 95%</span>
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-bold tracking-tight text-emerald-700 font-mono tabular-nums">
+              <span className="text-2xl font-bold tracking-tight text-text-primary font-mono tabular-nums">
                 {attendanceOverview.attendanceRate}%
               </span>
               <span className="text-xs text-text-muted">tỷ lệ đi học</span>
             </div>
-            <div className="mt-3 w-full bg-surface-muted h-1.5 rounded-full overflow-hidden">
+            <div className="mt-3 w-full bg-surface-muted h-1.5 rounded-full overflow-hidden border border-border/50">
               <div
-                className="bg-emerald-600 h-full rounded-full transition-all duration-300"
+                className="bg-teal h-full rounded-full transition-all duration-300"
                 style={{ width: `${attendanceOverview.attendanceRate}%` }}
               />
             </div>
           </div>
-          <div className="mt-3.5 flex items-center justify-between text-[11px] text-text-muted pt-2.5 border-t border-border/70">
-            <span className="text-emerald-700 font-semibold">Có mặt: <span className="font-mono tabular-nums">{attendanceOverview.presentCount}</span></span>
+          <div className="mt-3.5 flex items-center justify-between text-[11px] text-text-muted pt-2.5 border-t border-border">
+            <span className="text-teal font-semibold">Có mặt: <span className="font-mono tabular-nums">{attendanceOverview.presentCount}</span></span>
             <span className={attendanceOverview.absentCount > 0 ? 'text-danger font-semibold' : 'text-text-muted'}>
               Vắng: <span className="font-mono tabular-nums">{attendanceOverview.absentCount}</span>
             </span>
-            <span className={attendanceOverview.lateCount > 0 ? 'text-warning-700 font-semibold' : 'text-text-muted'}>
+            <span className={attendanceOverview.lateCount > 0 ? 'text-warning font-semibold' : 'text-text-muted'}>
               Muộn: <span className="font-mono tabular-nums">{attendanceOverview.lateCount}</span>
             </span>
           </div>
@@ -639,18 +639,18 @@ export default function AdminDashboardPage() {
       {/* =============================================
           LEVEL 3: PRIMARY WORKING DATA TABLES & TOOLBAR
           ============================================= */}
-      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xs">
+      <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs">
         {/* Integrated Toolbar */}
         <div className="px-4 py-3 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface">
           {/* Tabs */}
-          <div className="flex items-center gap-1 bg-surface-muted p-1 rounded-lg border border-border">
+          <div className="flex items-center gap-1 bg-surface-muted p-1 rounded-sm border border-border">
             <button
               type="button"
               onClick={() => setActiveTab('classes')}
               className={cn(
-                'px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1.5',
+                'px-3 py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer flex items-center gap-1.5',
                 activeTab === 'classes'
-                  ? 'bg-surface text-text-primary shadow-2xs'
+                  ? 'bg-accent text-accent-text font-bold shadow-xs border border-border-strong'
                   : 'text-text-muted hover:text-text-primary'
               )}
             >
@@ -662,9 +662,9 @@ export default function AdminDashboardPage() {
               type="button"
               onClick={() => setActiveTab('teachers')}
               className={cn(
-                'px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1.5',
+                'px-3 py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer flex items-center gap-1.5',
                 activeTab === 'teachers'
-                  ? 'bg-surface text-text-primary shadow-2xs'
+                  ? 'bg-accent text-accent-text font-bold shadow-xs border border-border-strong'
                   : 'text-text-muted hover:text-text-primary'
               )}
             >
@@ -678,14 +678,14 @@ export default function AdminDashboardPage() {
             {activeTab === 'classes' ? (
               <>
                 {/* Grade filter pills */}
-                <div className="flex items-center bg-surface-muted p-0.5 rounded-lg border border-border text-xs">
+                <div className="flex items-center bg-surface-muted p-0.5 rounded-sm border border-border text-xs">
                   <button
                     type="button"
                     onClick={() => setSelectedGradeFilter('all')}
                     className={cn(
-                      'px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer text-[11px]',
+                      'px-2.5 py-1 rounded-sm font-medium transition-all cursor-pointer text-[11px]',
                       selectedGradeFilter === 'all'
-                        ? 'bg-surface text-text-primary font-bold shadow-2xs'
+                        ? 'bg-accent text-accent-text font-bold shadow-xs'
                         : 'text-text-muted hover:text-text-primary'
                     )}
                   >
@@ -697,9 +697,9 @@ export default function AdminDashboardPage() {
                       type="button"
                       onClick={() => setSelectedGradeFilter(g)}
                       className={cn(
-                        'px-2 py-1 rounded-md font-medium transition-all cursor-pointer text-[11px]',
+                        'px-2 py-1 rounded-sm font-medium transition-all cursor-pointer text-[11px]',
                         selectedGradeFilter === g
-                          ? 'bg-surface text-text-primary font-bold shadow-2xs'
+                          ? 'bg-accent text-accent-text font-bold shadow-xs'
                           : 'text-text-muted hover:text-text-primary'
                       )}
                     >
@@ -715,7 +715,7 @@ export default function AdminDashboardPage() {
                     placeholder="Tìm lớp, GVCN, phòng..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent w-48 sm:w-56"
+                    className="pl-8 pr-3 py-1.5 text-xs rounded-sm border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent w-48 sm:w-56"
                   />
                 </div>
               </>
@@ -727,7 +727,7 @@ export default function AdminDashboardPage() {
                   placeholder="Tìm giáo viên, bộ môn..."
                   value={teacherSearchQuery}
                   onChange={(e) => setTeacherSearchQuery(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent w-52 sm:w-64"
+                  className="pl-8 pr-3 py-1.5 text-xs rounded-sm border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent w-52 sm:w-64"
                 />
               </div>
             )}
@@ -831,17 +831,17 @@ export default function AdminDashboardPage() {
                       <td className="py-3 px-3.5 text-center">
                         <div className="inline-flex items-center gap-1.5 font-mono tabular-nums">
                           {c.timetableComplete ? (
-                            <span className="px-2 py-0.5 rounded-md bg-success-bg text-success border border-success/20 text-[11px] font-bold">
+                            <span className="px-2 py-0.5 rounded-sm bg-success-bg text-success border border-success/30 text-[11px] font-bold">
                               {c.scheduledSlots}/{c.requiredSlots} Tiết
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-md bg-warning-bg text-warning-700 border border-warning/25 text-[11px] font-bold">
+                            <span className="px-2 py-0.5 rounded-sm bg-warning-bg text-warning-700 border border-warning/30 text-[11px] font-bold">
                               {c.scheduledSlots}/{c.requiredSlots} Tiết
                             </span>
                           )}
                           {c.hasTimetableIssues && (
                             <span
-                              className="px-1.5 py-0.5 rounded-md bg-danger-bg text-danger border border-danger/25 text-[10px] font-bold"
+                              className="px-1.5 py-0.5 rounded-sm bg-danger-bg text-danger border border-danger/30 text-[10px] font-bold"
                               title={`${c.issueCount} vấn đề TKB`}
                             >
                               !
@@ -850,18 +850,18 @@ export default function AdminDashboardPage() {
                         </div>
                       </td>
                       <td className="py-3 px-3.5 text-center font-mono tabular-nums">
-                        <div className="font-bold text-emerald-700">{c.attendanceRate}%</div>
+                        <div className="font-bold text-teal">{c.attendanceRate}%</div>
                         <div className="text-[11px] text-text-muted">
                           {c.presentCount} có mặt{c.absentCount > 0 ? `, ${c.absentCount} vắng` : ''}
                         </div>
                       </td>
                       <td className="py-3 px-3.5 text-center">
                         {c.status === 'active' ? (
-                          <span className="px-2 py-0.5 rounded-md bg-success-bg text-success border border-success/20 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-sm bg-success-bg text-success border border-success/30 text-[10px] font-bold">
                             Hoạt động
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-surface-muted text-text-muted text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-sm bg-surface-muted text-text-muted border border-border text-[10px] font-bold">
                             Tạm dừng
                           </span>
                         )}
@@ -870,21 +870,21 @@ export default function AdminDashboardPage() {
                         <div className="flex items-center justify-end gap-1">
                           <Link
                             href={`/admin/timetable?classId=${c.id}`}
-                            className="p-1.5 rounded-md text-text-muted hover:text-accent hover:bg-surface-muted transition-colors"
+                            className="p-1.5 rounded-sm text-text-muted hover:text-accent-text hover:bg-accent border border-transparent hover:border-border transition-colors"
                             title="Xem Thời khóa biểu lớp"
                           >
                             <CalendarBlank size={15} />
                           </Link>
                           <Link
                             href={`/attendance`}
-                            className="p-1.5 rounded-md text-text-muted hover:text-emerald-700 hover:bg-surface-muted transition-colors"
+                            className="p-1.5 rounded-sm text-text-muted hover:text-teal hover:bg-teal-subtle border border-transparent hover:border-teal/30 transition-colors"
                             title="Xem Sổ điểm danh"
                           >
                             <CheckCircle size={15} />
                           </Link>
                           <Link
                             href={`/seating`}
-                            className="p-1.5 rounded-md text-text-muted hover:text-accent hover:bg-surface-muted transition-colors"
+                            className="p-1.5 rounded-sm text-text-muted hover:text-accent-text hover:bg-accent border border-transparent hover:border-border transition-colors"
                             title="Xem Sơ đồ lớp"
                           >
                             <Door size={15} />
@@ -903,7 +903,7 @@ export default function AdminDashboardPage() {
         {activeTab === 'teachers' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-surface-muted/60 text-text-muted text-[11px] font-semibold uppercase tracking-wider border-b border-border">
+              <thead className="bg-surface-muted/80 text-text-muted text-[11px] font-bold uppercase tracking-wider border-b border-border-strong">
                 <tr>
                   <th className="py-2.5 px-3.5">Giáo viên</th>
                   <th className="py-2.5 px-3.5">Chuyên môn / Bộ môn</th>
@@ -924,10 +924,10 @@ export default function AdminDashboardPage() {
                   </tr>
                 ) : (
                   filteredTeachers.map((t) => (
-                    <tr key={t.id} className="hover:bg-accent-subtle/25 transition-colors">
+                    <tr key={t.id} className="hover:bg-accent-subtle/30 transition-colors">
                       <td className="py-3 px-3.5">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-accent/15 text-accent font-bold text-xs flex items-center justify-center border border-accent/20 flex-shrink-0">
+                          <div className="w-7 h-7 rounded-sm bg-accent text-accent-text font-bold text-xs flex items-center justify-center border border-border flex-shrink-0 shadow-2xs">
                             {t.name.charAt(t.name.lastIndexOf(' ') + 1) || t.name.charAt(0)}
                           </div>
                           <div>
@@ -942,7 +942,7 @@ export default function AdminDashboardPage() {
                             t.assignedSubjects.map((s, idx) => (
                               <span
                                 key={idx}
-                                className="px-2 py-0.5 rounded-md bg-surface text-text-secondary border border-border text-[11px] font-semibold"
+                                className="px-2 py-0.5 rounded-sm bg-surface text-text-secondary border border-border text-[11px] font-semibold"
                               >
                                 {s}
                               </span>
@@ -954,7 +954,7 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="py-3 px-3.5">
                         {t.homeroomClass ? (
-                          <span className="px-2.5 py-0.5 text-xs font-bold bg-success-bg text-success border border-success/20 rounded-md inline-flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 text-xs font-bold bg-success-bg text-success border border-success/30 rounded-sm inline-flex items-center gap-1">
                             GVCN {t.homeroomClass}
                           </span>
                         ) : (
@@ -964,27 +964,27 @@ export default function AdminDashboardPage() {
                       <td className="py-3 px-3.5 text-center font-bold text-text-primary font-mono tabular-nums">
                         {t.assignedClassCount > 0 ? `${t.assignedClassCount} lớp` : '—'}
                       </td>
-                      <td className="py-3 px-3.5 text-center font-bold text-accent font-mono tabular-nums">
+                      <td className="py-3 px-3.5 text-center font-bold text-teal font-mono tabular-nums">
                         {t.scheduledPeriods > 0 ? `${t.scheduledPeriods} tiết` : '0 tiết'}
                       </td>
                       <td className="py-3 px-3.5 text-center">
                         {t.hasConflict ? (
-                          <span className="px-2 py-0.5 rounded-md bg-danger-bg text-danger border border-danger/20 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-sm bg-danger-bg text-danger border border-danger/30 text-[10px] font-bold">
                             Xung đột lịch
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-success-bg text-success border border-success/20 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-sm bg-success-bg text-success border border-success/30 text-[10px] font-bold">
                             Ổn định
                           </span>
                         )}
                       </td>
                       <td className="py-3 px-3.5 text-center">
                         {t.status === 'active' ? (
-                          <span className="px-2 py-0.5 rounded-md bg-success-bg text-success border border-success/20 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-sm bg-success-bg text-success border border-success/30 text-[10px] font-bold">
                             Đang công tác
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-danger-bg text-danger border border-danger/20 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-sm bg-danger-bg text-danger border border-danger/30 text-[10px] font-bold">
                             Đã khóa
                           </span>
                         )}
@@ -992,7 +992,7 @@ export default function AdminDashboardPage() {
                       <td className="py-3 px-3.5 text-right">
                         <Link
                           href="/admin/teachers"
-                          className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                          className="text-xs font-bold text-teal hover:underline inline-flex items-center gap-1"
                         >
                           <span>Quản lý</span>
                           <ArrowRight size={12} weight="bold" />
@@ -1010,10 +1010,10 @@ export default function AdminDashboardPage() {
       {/* =============================================
           LEVEL 4: REAL ACTIVITY & SYSTEM AUDIT LOG
           ============================================= */}
-      <div className="bg-surface rounded-xl border border-border p-4 md:p-5 shadow-2xs space-y-3">
+      <div className="bg-surface rounded-sm border border-border p-4 md:p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between pb-2.5 border-b border-border">
           <div className="flex items-center gap-2">
-            <Broadcast size={16} weight="bold" className="text-accent" />
+            <Broadcast size={16} weight="bold" className="text-teal" />
             <h2 className="text-sm font-bold text-text-primary">
               Nhật ký Quản trị & Hoạt động Gần đây
             </h2>
@@ -1024,7 +1024,7 @@ export default function AdminDashboardPage() {
         <div className="divide-y divide-border/70">
           {/* Item 1: Real Timetable Audit Scan */}
           <div className="py-2.5 flex items-start gap-3">
-            <div className="w-7 h-7 rounded-lg bg-success-bg text-success flex items-center justify-center border border-success/20 flex-shrink-0 mt-0.5">
+            <div className="w-7 h-7 rounded-sm bg-success-bg text-success flex items-center justify-center border border-success/30 flex-shrink-0 mt-0.5">
               <ShieldCheck size={16} weight="duotone" />
             </div>
             <div className="flex-1 min-w-0">
@@ -1042,7 +1042,7 @@ export default function AdminDashboardPage() {
 
           {/* Item 2: Real Daily Attendance Log */}
           <div className="py-2.5 flex items-start gap-3">
-            <div className="w-7 h-7 rounded-lg bg-accent/15 text-accent flex items-center justify-center border border-accent/20 flex-shrink-0 mt-0.5">
+            <div className="w-7 h-7 rounded-sm bg-accent text-accent-text flex items-center justify-center border border-border flex-shrink-0 mt-0.5">
               <CheckCircle size={16} weight="duotone" />
             </div>
             <div className="flex-1 min-w-0">
@@ -1063,7 +1063,7 @@ export default function AdminDashboardPage() {
             const classRow = classes.find((c) => c.id === ann.class_id);
             return (
               <div key={ann.id} className="py-2.5 flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-surface-muted text-text-secondary flex items-center justify-center border border-border flex-shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded-sm bg-surface-muted text-text-secondary flex items-center justify-center border border-border flex-shrink-0 mt-0.5">
                   <Article size={16} weight="duotone" />
                 </div>
                 <div className="flex-1 min-w-0">

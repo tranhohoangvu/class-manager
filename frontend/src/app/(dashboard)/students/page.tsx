@@ -350,18 +350,18 @@ export default function StudentsPage() {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
               Danh sách học sinh
             </h1>
-            <span className="px-3 py-1 text-xs font-semibold bg-accent-subtle text-accent rounded-full border border-accent/20">
+            <span className="px-2.5 py-0.5 text-xs font-bold font-mono bg-teal-subtle text-teal rounded-xs border border-teal/30">
               {students.length} học sinh
             </span>
           </div>
-          <p className="text-sm text-text-secondary mt-1.5">
-            Quản lý hồ sơ, thông tin liên lạc và vị trí chỗ ngồi của <span className="font-medium text-text-primary">{currentClass?.name || 'lớp học'}</span>
+          <p className="text-sm text-text-secondary mt-1.5 font-medium">
+            Quản lý hồ sơ, thông tin liên lạc và vị trí chỗ ngồi của <span className="font-semibold text-text-primary">{currentClass?.name || 'lớp học'}</span>
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap no-print">
           <Button variant="secondary" onClick={handleExportExcel} className="gap-2" title="Xuất danh sách ra file Excel">
-            <FileXls size={18} className="text-emerald-600" />
+            <FileXls size={18} className="text-teal" />
             <span>Xuất Excel</span>
           </Button>
 
@@ -378,7 +378,7 @@ export default function StudentsPage() {
                 className="gap-2"
                 title="Nhập danh sách học sinh từ file Excel"
               >
-                <UploadSimple size={18} className="text-accent" />
+                <UploadSimple size={18} />
                 <span>Nhập từ Excel</span>
               </Button>
 
@@ -393,11 +393,11 @@ export default function StudentsPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-4 bg-indigo-50/80 border border-indigo-200/80 rounded-2xl flex items-center justify-between text-sm text-indigo-900 no-print shadow-2xs">
+        <div className="p-3.5 bg-teal-subtle border border-teal/30 rounded-sm flex items-center justify-between text-sm text-text-primary no-print shadow-xs">
           <span className="leading-relaxed">
-            Bạn đang xem danh sách học sinh lớp <strong className="font-semibold">{currentClass?.name}</strong> với vai trò <strong className="font-semibold">Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ tra cứu hồ sơ.
+            Bạn đang xem danh sách học sinh lớp <strong className="font-bold">{currentClass?.name}</strong> với vai trò <strong className="font-bold">Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ tra cứu hồ sơ.
           </span>
-          <span className="px-2.5 py-1 rounded-md bg-indigo-100 font-semibold text-xs text-indigo-800 ml-4 flex-shrink-0">Chỉ xem</span>
+          <span className="px-2 py-0.5 rounded-xs bg-surface border border-teal/30 font-bold text-xs text-teal ml-4 flex-shrink-0">Chỉ xem</span>
         </div>
       )}
 
@@ -413,7 +413,7 @@ export default function StudentsPage() {
             placeholder="Tìm theo tên học sinh, mã HS hoặc số điện thoại phụ huynh..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 h-[46px] text-sm bg-surface rounded-xl border border-border focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs placeholder:text-text-muted transition-all"
+            className="w-full pl-10 pr-4 h-[42px] text-sm bg-surface rounded-xs border border-border-strong focus:outline-none focus:border-accent shadow-xs placeholder:text-text-muted transition-all"
           />
         </div>
 
@@ -421,7 +421,7 @@ export default function StudentsPage() {
           <select
             value={genderFilter}
             onChange={(e) => setGenderFilter(e.target.value)}
-            className="h-[46px] px-3.5 text-sm bg-surface rounded-xl border border-border text-text-primary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs cursor-pointer"
+            className="h-[42px] px-3 text-sm bg-surface rounded-xs border border-border-strong text-text-primary focus:outline-none focus:border-accent shadow-xs cursor-pointer font-medium"
           >
             <option value="all">Tất cả giới tính</option>
             <option value="male">Nam</option>
@@ -431,7 +431,7 @@ export default function StudentsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-[46px] px-3.5 text-sm bg-surface rounded-xl border border-border text-text-primary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs cursor-pointer"
+            className="h-[42px] px-3 text-sm bg-surface rounded-xs border border-border-strong text-text-primary focus:outline-none focus:border-accent shadow-xs cursor-pointer font-medium"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang học</option>
@@ -441,19 +441,19 @@ export default function StudentsPage() {
       </div>
 
       {/* Student Table */}
-      <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs printable-card">
+      <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs printable-card">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
-            <thead className="bg-surface-subtle/80 text-xs font-semibold text-text-muted uppercase border-b border-border tracking-wider">
+            <thead className="bg-surface-muted text-xs font-bold text-text-primary uppercase border-b border-border tracking-wider font-mono">
               <tr>
-                <th className="px-4 py-3.5 w-14 text-center">STT</th>
-                <th className="px-4 py-3.5 w-24">Mã HS</th>
-                <th className="px-5 py-3.5">Học sinh</th>
-                <th className="px-4 py-3.5 w-28">Giới tính</th>
-                <th className="px-4 py-3.5 w-32">Ngày sinh</th>
-                <th className="px-5 py-3.5 w-44">Vị trí chỗ ngồi</th>
-                <th className="px-4 py-3.5 w-32">Trạng thái</th>
-                <th className="px-4 py-3.5 w-28 text-right no-print">Thao tác</th>
+                <th className="px-4 py-3 w-14 text-center">STT</th>
+                <th className="px-4 py-3 w-24">Mã HS</th>
+                <th className="px-5 py-3">Học sinh</th>
+                <th className="px-4 py-3 w-28">Giới tính</th>
+                <th className="px-4 py-3 w-32">Ngày sinh</th>
+                <th className="px-5 py-3 w-44">Vị trí chỗ ngồi</th>
+                <th className="px-4 py-3 w-32">Trạng thái</th>
+                <th className="px-4 py-3 w-28 text-right no-print">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -477,30 +477,30 @@ export default function StudentsPage() {
                   return (
                     <tr
                       key={student.id}
-                      className="hover:bg-surface-subtle/70 transition-colors group min-h-[60px]"
+                      className="hover:bg-surface-muted/50 transition-colors group min-h-[58px]"
                     >
-                      <td className="px-4 py-4 text-center text-text-muted font-mono text-xs">
+                      <td className="px-4 py-3.5 text-center text-text-muted font-mono text-xs">
                         {index + 1}
                       </td>
-                      <td className="px-4 py-4 font-mono text-xs font-semibold text-text-secondary">
+                      <td className="px-4 py-3.5 font-mono text-xs font-bold text-text-secondary">
                         {student.student_code}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-accent-subtle text-accent font-semibold text-sm flex items-center justify-center flex-shrink-0 border border-accent/20">
+                          <div className="w-8 h-8 rounded-xs bg-surface-muted text-text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 border border-border-strong font-mono shadow-xs">
                             {initial}
                           </div>
                           <div>
                             <Link
                               href={`/students/${student.id}`}
-                              className="font-semibold text-text-primary hover:text-accent transition-colors block text-sm"
+                              className="font-bold text-text-primary hover:text-teal transition-colors block text-sm"
                             >
                               {student.full_name}
                             </Link>
                             {student.phone ? (
                               <a
                                 href={`tel:${student.phone}`}
-                                className="text-xs text-text-muted hover:text-text-primary block mt-0.5 transition-colors"
+                                className="text-xs text-text-muted hover:text-text-primary block mt-0.5 transition-colors font-mono"
                                 title="Gọi điện cho phụ huynh"
                               >
                                 SĐT: {student.phone}
@@ -513,46 +513,46 @@ export default function StudentsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3.5">
                         {student.gender === 'male' ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded-md border border-blue-200/60">
-                            <GenderMale size={14} weight="bold" className="text-blue-600" />
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal bg-teal-subtle px-2 py-0.5 rounded-xs border border-teal/30">
+                            <GenderMale size={13} weight="bold" className="text-teal" />
                             Nam
                           </span>
                         ) : student.gender === 'female' ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded-md border border-rose-200/60">
-                            <GenderFemale size={14} weight="bold" className="text-rose-600" />
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#964253] bg-[#fcf0f2] px-2 py-0.5 rounded-xs border border-[#964253]/30">
+                            <GenderFemale size={13} weight="bold" className="text-[#964253]" />
                             Nữ
                           </span>
                         ) : (
                           <span className="text-xs text-text-muted">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-xs font-medium text-text-secondary">
+                      <td className="px-4 py-3.5 text-xs font-mono font-medium text-text-secondary">
                         {student.date_of_birth || '—'}
                       </td>
-                      <td className="px-5 py-4 text-xs">
+                      <td className="px-5 py-3.5 text-xs">
                         {seatInfo ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted text-text-primary font-medium border border-border/80">
-                            <Armchair size={14} weight="duotone" className="text-accent" />
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xs bg-surface-muted text-text-primary font-medium border border-border font-mono">
+                            <Armchair size={13} weight="duotone" className="text-teal" />
                             <span>{seatInfo}</span>
                           </span>
                         ) : (
-                          <span className="text-text-muted italic px-2 py-1 text-xs">Chưa xếp chỗ</span>
+                          <span className="text-text-muted italic px-2 py-0.5 text-xs">Chưa xếp chỗ</span>
                         )}
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3.5">
                         <StudentStatusBadge status={student.status} />
                       </td>
-                      <td className="px-4 py-4 text-right no-print">
+                      <td className="px-4 py-3.5 text-right no-print">
                         <div className="flex items-center justify-end gap-1">
                           <Link href={`/students/${student.id}`}>
                             <button
                               type="button"
                               title="Xem chi tiết hồ sơ"
-                              className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
+                              className="p-1.5 rounded-xs text-text-muted hover:text-text-primary hover:bg-surface-muted border border-transparent hover:border-border transition-colors cursor-pointer"
                             >
-                              <Eye size={17} />
+                              <Eye size={16} />
                             </button>
                           </Link>
                           {isHomeroom && (
@@ -561,17 +561,17 @@ export default function StudentsPage() {
                                 type="button"
                                 title="Sửa thông tin học sinh"
                                 onClick={() => handleOpenEdit(student)}
-                                className="p-2 rounded-lg text-text-muted hover:text-accent hover:bg-surface-muted transition-colors cursor-pointer"
+                                className="p-1.5 rounded-xs text-text-muted hover:text-teal hover:bg-surface-muted border border-transparent hover:border-border transition-colors cursor-pointer"
                               >
-                                <PencilSimple size={17} />
+                                <PencilSimple size={16} />
                               </button>
                               <button
                                 type="button"
                                 title="Xoá học sinh"
                                 onClick={() => setStudentToDelete(student)}
-                                className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors cursor-pointer"
+                                className="p-1.5 rounded-xs text-text-muted hover:text-danger hover:bg-danger-bg border border-transparent hover:border-danger/30 transition-colors cursor-pointer"
                               >
-                                <Trash size={17} />
+                                <Trash size={16} />
                               </button>
                             </>
                           )}

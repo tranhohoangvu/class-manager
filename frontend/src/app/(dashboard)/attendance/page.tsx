@@ -315,8 +315,8 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
 
         <div className="flex items-center gap-3 flex-wrap">
           {/* Subject Selector */}
-          <div className="flex items-center gap-2 bg-surface border border-border px-3.5 py-2 rounded-xl text-[14px] shadow-2xs">
-            <BookOpen size={18} className="text-accent flex-shrink-0" />
+          <div className="flex items-center gap-2 bg-surface border border-border px-3.5 py-2 rounded-sm text-[14px] shadow-xs">
+            <BookOpen size={18} className="text-teal flex-shrink-0" />
             <select
               value={selectedSubjectId}
               onChange={(e) => setSelectedSubjectId(e.target.value)}
@@ -350,7 +350,7 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
           </div>
 
           {/* Date Picker */}
-          <div className="flex items-center gap-2.5 bg-surface border border-border px-4 py-2 rounded-xl text-sm shadow-2xs">
+          <div className="flex items-center gap-2.5 bg-surface border border-border px-3.5 py-2 rounded-sm text-sm shadow-xs">
             <Calendar size={18} className="text-text-muted" />
             <input
               type="date"
@@ -361,11 +361,11 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
           </div>
 
           <Button
-            variant="secondary"
+            variant="outline"
             size="md"
             onClick={handleMarkAllPresent}
             disabled={!canTakeAttendance}
-            className={!canTakeAttendance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+            className={cn('cursor-pointer', !canTakeAttendance && 'opacity-40 cursor-not-allowed')}
           >
             <CheckCircle size={18} weight="bold" />
             <span>Tất cả có mặt</span>
@@ -376,7 +376,7 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
             size="md"
             onClick={handleSave}
             disabled={!canTakeAttendance}
-            className={!canTakeAttendance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+            className={cn('cursor-pointer', !canTakeAttendance && 'opacity-40 cursor-not-allowed')}
           >
             <FloppyDisk size={18} weight="bold" />
             <span>{canTakeAttendance ? 'Lưu điểm danh' : 'Chỉ xem chuyên cần'}</span>
@@ -386,21 +386,21 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
 
       {/* Access Denied Banner when pure GVBM tries to view unassigned subject */}
       {!canViewCurrentSubject && (
-        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="p-4 rounded-sm bg-danger-bg/70 border border-danger/40 text-danger text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-700 flex items-center justify-center font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-sm bg-danger-bg text-danger border border-danger/30 flex items-center justify-center font-bold flex-shrink-0">
               <X size={16} />
             </div>
             <div>
-              <span className="font-bold text-rose-900 block text-sm">
+              <span className="font-bold text-danger block text-sm">
                 Không có quyền xem chuyên cần: {currentSubjectObj ? `Môn ${currentSubjectObj.name}` : 'Buổi học'}
               </span>
-              <span className="text-rose-800/90 text-xs mt-0.5 block">
+              <span className="text-text-secondary text-xs mt-0.5 block font-medium">
                 Giáo viên bộ môn chỉ được xem dữ liệu chuyên cần của các tiết/môn mà mình được phân công phụ trách.
               </span>
             </div>
           </div>
-          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-200/80 text-rose-900 border border-rose-300 self-start sm:self-auto flex-shrink-0">
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-sm bg-danger text-white self-start sm:self-auto flex-shrink-0 shadow-2xs">
             Từ chối truy cập
           </span>
         </div>
@@ -408,16 +408,16 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
 
       {/* Read-Only Mode Banner when teacher (e.g. GVCN) has view permission but not edit permission */}
       {canViewCurrentSubject && !canTakeAttendance && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="p-4 rounded-sm bg-warning-bg/70 border border-warning/40 text-warning-700 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-700 flex items-center justify-center font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-sm bg-warning-bg text-warning-700 border border-warning/30 flex items-center justify-center font-bold flex-shrink-0">
               <BookOpen size={16} />
             </div>
             <div>
-              <span className="font-bold text-amber-900 block text-sm">
+              <span className="font-bold text-warning-700 block text-sm">
                 Chế độ chỉ xem chuyên cần: {currentSubjectObj ? `Môn ${currentSubjectObj.name}` : 'Buổi học'}
               </span>
-              <span className="text-amber-800/90 text-xs mt-0.5 block">
+              <span className="text-text-secondary text-xs mt-0.5 block font-medium">
                 {isHomeroom
                   ? `Bạn là GVCN lớp ${currentClass?.name}. Bạn có toàn quyền theo dõi chuyên cần toàn lớp nhưng không có quyền ghi nhận hay sửa điểm danh thay giáo viên bộ môn phụ trách.`
                   : user?.role === 'ADMIN'
@@ -426,7 +426,7 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
               </span>
             </div>
           </div>
-          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-200/80 text-amber-900 border border-amber-300 self-start sm:self-auto flex-shrink-0">
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-sm bg-surface text-warning-700 border border-warning/40 self-start sm:self-auto flex-shrink-0 shadow-2xs">
             Chỉ xem (Read-only)
           </span>
         </div>
@@ -435,19 +435,19 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
       {/* Smart Contextual Timetable Attendance Banner */}
       {currentSession && currentSession.periodInfo && currentSession.subject && (
         <div className={cn(
-          'p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs',
+          'p-4 rounded-sm border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs',
           isCurrentSessionMySubject
             ? (selectedSubjectId === currentSession.subject.id
-                ? 'bg-blue-50/80 border-blue-200 text-blue-950'
-                : 'bg-amber-50/80 border-amber-200 text-amber-950')
-            : 'bg-slate-50/90 border-slate-200 text-slate-800'
+                ? 'bg-teal-subtle/80 border-teal/30 text-teal'
+                : 'bg-accent-subtle/60 border-border-strong text-accent-text')
+            : 'bg-surface-muted border-border text-text-secondary'
         )}>
           <div className="flex items-center gap-3.5">
             <div className={cn(
-              'w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-xs flex-shrink-0',
+              'w-10 h-10 rounded-sm flex items-center justify-center font-bold border shadow-2xs flex-shrink-0',
               isCurrentSessionMySubject
-                ? (selectedSubjectId === currentSession.subject.id ? 'bg-blue-600' : 'bg-amber-600 animate-pulse')
-                : 'bg-slate-500'
+                ? (selectedSubjectId === currentSession.subject.id ? 'bg-teal text-white border-teal' : 'bg-accent text-accent-text border-border animate-pulse')
+                : 'bg-surface text-text-muted border-border'
             )}>
               <Clock size={20} weight="bold" />
             </div>
@@ -460,24 +460,24 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                 </span>
                 {isCurrentSessionMySubject ? (
                   selectedSubjectId === currentSession.subject.id ? (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-sm bg-teal-subtle text-teal border border-teal/30">
                       ✓ Đang điểm danh đúng môn của bạn
                     </span>
                   ) : (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 border border-amber-300">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-sm bg-accent text-accent-text border border-border">
                       Tiết do bạn phụ trách — Bấm để chọn
                     </span>
                   )
                 ) : (
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-sm bg-surface-muted text-text-muted border border-border">
                     Giáo viên khác phụ trách (Chỉ xem)
                   </span>
                 )}
               </div>
-              <p className="text-xs mt-1 font-medium text-slate-700">
-                Môn <strong>{currentSession.subject.name} ({currentSession.subject.code})</strong>
+              <p className="text-xs mt-1 font-medium text-text-secondary">
+                Môn <strong className="text-text-primary">{currentSession.subject.name} ({currentSession.subject.code})</strong>
                 {currentSession.teacher && (
-                  <span> · Phụ trách: <strong>{currentSession.teacher.name}</strong></span>
+                  <span> · Phụ trách: <strong className="text-text-primary">{currentSession.teacher.name}</strong></span>
                 )}
               </p>
             </div>
@@ -488,7 +488,7 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
               variant="primary"
               size="sm"
               onClick={() => setSelectedSubjectId(currentSession.subject!.id)}
-              className="cursor-pointer whitespace-nowrap self-start sm:self-auto bg-amber-600 hover:bg-amber-700 border-amber-700 text-white"
+              className="cursor-pointer whitespace-nowrap self-start sm:self-auto"
             >
               <Lightning size={16} weight="fill" />
               <span>Chuyển sang môn {currentSession.subject.name}</span>
@@ -499,10 +499,10 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
 
       {/* Quick Period Picker Bar for Today's Timetable */}
       {periodInfo && periodInfo.dayOfWeek >= 2 && periodInfo.dayOfWeek <= 7 && (
-        <div className="bg-surface border border-border rounded-2xl p-4 shadow-2xs space-y-2.5">
+        <div className="bg-surface border border-border rounded-sm p-4 shadow-xs space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
-              <CalendarDots size={16} className="text-accent" />
+              <CalendarDots size={16} className="text-teal" />
               <span>Các tiết học hôm nay ({TIMETABLE_DAYS.find((d) => d.day === periodInfo.dayOfWeek)?.name})</span>
             </span>
             <span className="text-[11px] text-text-muted">
@@ -516,9 +516,9 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                 type="button"
                 onClick={() => setSelectedSubjectId('')}
                 className={cn(
-                  'px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border',
+                  'px-3 py-1.5 rounded-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border',
                   selectedSubjectId === ''
-                    ? 'bg-accent text-white border-accent shadow-2xs'
+                    ? 'bg-accent text-accent-text border-border-strong font-bold shadow-xs'
                     : 'bg-surface-muted/60 text-text-secondary hover:text-text-primary hover:bg-surface-muted border-border'
                 )}
               >
@@ -561,27 +561,27 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                       : `Tiết ${p.period} do GV khác phụ trách (Không có quyền xem)`
                   }
                   className={cn(
-                    'px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-1.5',
+                    'px-3 py-1.5 rounded-sm text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-1.5',
                     !canViewThisPeriod
                       ? 'opacity-40 bg-surface-muted/40 text-text-muted border-dashed border-border cursor-not-allowed'
                       : isSelected
-                      ? 'bg-accent text-white border-accent shadow-2xs cursor-pointer'
+                      ? 'bg-accent text-accent-text border-border-strong font-bold shadow-xs cursor-pointer'
                       : isCurrent
-                      ? 'bg-blue-50 text-blue-700 border-blue-300 font-bold cursor-pointer'
+                      ? 'bg-teal-subtle text-teal border-teal/30 font-bold cursor-pointer'
                       : !canAttendThisPeriod
-                      ? 'bg-amber-500/10 text-amber-900 border-amber-500/20 hover:bg-amber-500/20 cursor-pointer'
-                      : 'bg-surface-muted/60 text-text-secondary hover:text-text-primary hover:bg-surface-muted border-border cursor-pointer'
+                      ? 'bg-warning-bg/40 text-warning-700 border-warning/30 hover:bg-warning-bg/60 cursor-pointer'
+                      : 'bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-muted border-border cursor-pointer'
                   )}
                 >
                   <span>{p.label}: {subj.name}</span>
                   {!canAttendThisPeriod && canViewThisPeriod && (
-                    <span className="text-[10px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-900 font-medium">Chỉ xem</span>
+                    <span className="text-[10px] px-1 py-0.5 rounded-sm bg-warning-bg text-warning-700 font-bold border border-warning/30">Chỉ xem</span>
                   )}
                   {!canViewThisPeriod && (
                     <span className="text-[10px] text-text-muted">(GV khác)</span>
                   )}
                   {isCurrent && canAttendThisPeriod && (
-                    <span className={cn('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-blue-600 animate-ping')} />
+                    <span className={cn('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-accent-text' : 'bg-teal animate-ping')} />
                   )}
                 </button>
               );
@@ -591,33 +591,33 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
       )}
 
       {/* Real-time Summary Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
-          <span className="text-[13px] font-bold text-text-muted uppercase tracking-wider">Tổng sĩ số</span>
-          <div className="text-2xl sm:text-3xl font-bold text-text-primary mt-1.5">{total}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+        <div className="bg-surface rounded-sm border border-border p-4 shadow-xs">
+          <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Tổng sĩ số</span>
+          <div className="text-2xl sm:text-3xl font-bold text-text-primary mt-1 font-mono tabular-nums">{total}</div>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
+        <div className="bg-surface rounded-sm border border-border p-4 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-bold text-success uppercase tracking-wider">Có mặt</span>
-            <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700">{presentRate}%</span>
+            <span className="text-[11px] font-bold text-success uppercase tracking-wider">Có mặt</span>
+            <span className="text-xs font-bold px-1.5 py-0.5 rounded-sm bg-success-bg text-success border border-success/30 font-mono tabular-nums">{presentRate}%</span>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-success mt-1.5">{presentCount}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-success mt-1 font-mono tabular-nums">{presentCount}</div>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
-          <span className="text-[13px] font-bold text-danger uppercase tracking-wider">Vắng mặt</span>
-          <div className="text-2xl sm:text-3xl font-bold text-danger mt-1.5">{absentCount}</div>
+        <div className="bg-surface rounded-sm border border-border p-4 shadow-xs">
+          <span className="text-[11px] font-bold text-danger uppercase tracking-wider">Vắng mặt</span>
+          <div className="text-2xl sm:text-3xl font-bold text-danger mt-1 font-mono tabular-nums">{absentCount}</div>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
-          <span className="text-[13px] font-bold text-warning uppercase tracking-wider">Đi muộn</span>
-          <div className="text-2xl sm:text-3xl font-bold text-warning mt-1.5">{lateCount}</div>
+        <div className="bg-surface rounded-sm border border-border p-4 shadow-xs">
+          <span className="text-[11px] font-bold text-warning uppercase tracking-wider">Đi muộn</span>
+          <div className="text-2xl sm:text-3xl font-bold text-warning mt-1 font-mono tabular-nums">{lateCount}</div>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
-          <span className="text-[13px] font-bold text-text-secondary uppercase tracking-wider">Có phép</span>
-          <div className="text-2xl sm:text-3xl font-bold text-text-primary mt-1.5">{excusedCount}</div>
+        <div className="bg-surface rounded-sm border border-border p-4 shadow-xs">
+          <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Có phép</span>
+          <div className="text-2xl sm:text-3xl font-bold text-text-primary mt-1 font-mono tabular-nums">{excusedCount}</div>
         </div>
       </div>
 
@@ -628,10 +628,10 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
           <button
             type="button"
             onClick={() => setStatusFilter('all')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               statusFilter === 'all'
-                ? 'bg-text-primary text-surface shadow-xs font-bold'
-                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+                ? 'bg-accent text-accent-text font-bold shadow-xs border border-border-strong'
+                : 'bg-surface hover:bg-surface-muted text-text-secondary border border-border'
             }`}
           >
             Tất cả ({total})
@@ -640,22 +640,22 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
           <button
             type="button"
             onClick={() => setStatusFilter('not_present')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
               statusFilter === 'not_present'
-                ? 'bg-rose-600 text-white shadow-xs font-bold'
+                ? 'bg-danger text-white shadow-xs font-bold border border-danger'
                 : notPresentCount > 0
-                ? 'bg-rose-50 hover:bg-rose-100/80 text-rose-800 border border-rose-200'
-                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+                ? 'bg-danger-bg text-danger border border-danger/30 hover:bg-danger-bg/80'
+                : 'bg-surface hover:bg-surface-muted text-text-secondary border border-border'
             }`}
             title="Lọc nhanh các học sinh vắng hoặc đi muộn"
           >
             <span>Chưa có mặt</span>
             <span
-              className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${
+              className={`px-1.5 py-0.5 rounded-sm text-[11px] font-bold ${
                 statusFilter === 'not_present'
                   ? 'bg-white/20 text-white'
                   : notPresentCount > 0
-                  ? 'bg-rose-200 text-rose-900'
+                  ? 'bg-danger text-white'
                   : 'bg-surface-muted text-text-muted'
               }`}
             >
@@ -666,10 +666,10 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
           <button
             type="button"
             onClick={() => setStatusFilter('present')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               statusFilter === 'present'
-                ? 'bg-emerald-600 text-white shadow-xs font-bold'
-                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+                ? 'bg-success text-white shadow-xs font-bold border border-success'
+                : 'bg-surface hover:bg-surface-muted text-text-secondary border border-border'
             }`}
           >
             Có mặt ({presentCount})
@@ -678,10 +678,10 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
           <button
             type="button"
             onClick={() => setStatusFilter('absent')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               statusFilter === 'absent'
-                ? 'bg-rose-600 text-white shadow-xs font-bold'
-                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+                ? 'bg-danger text-white shadow-xs font-bold border border-danger'
+                : 'bg-surface hover:bg-surface-muted text-text-secondary border border-border'
             }`}
           >
             Vắng ({absentCount})
@@ -690,10 +690,10 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
           <button
             type="button"
             onClick={() => setStatusFilter('late')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               statusFilter === 'late'
-                ? 'bg-amber-600 text-white shadow-xs font-bold'
-                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+                ? 'bg-warning text-white shadow-xs font-bold border border-warning'
+                : 'bg-surface hover:bg-surface-muted text-text-secondary border border-border'
             }`}
           >
             Muộn ({lateCount})
@@ -702,10 +702,10 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
           <button
             type="button"
             onClick={() => setStatusFilter('excused')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               statusFilter === 'excused'
-                ? 'bg-slate-700 text-white shadow-xs font-bold'
-                : 'bg-surface hover:bg-surface-subtle text-text-secondary border border-border'
+                ? 'bg-accent text-accent-text font-bold shadow-xs border border-border-strong'
+                : 'bg-surface hover:bg-surface-muted text-text-secondary border border-border'
             }`}
           >
             Có phép ({excusedCount})
@@ -724,42 +724,42 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
               placeholder="Tìm học sinh, mã HS..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 h-[38px] text-xs bg-surface rounded-xl border border-border focus:outline-none focus:border-accent shadow-2xs placeholder:text-text-muted"
+              className="w-full pl-9 pr-3 h-[38px] text-xs bg-surface rounded-sm border border-border focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent shadow-xs placeholder:text-text-muted"
             />
           </div>
 
           <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
             onClick={handleCopyReport}
-            className="gap-1.5 text-xs whitespace-nowrap flex-shrink-0"
+            className="gap-1.5 text-xs whitespace-nowrap flex-shrink-0 cursor-pointer"
             title="Sao chép báo cáo chuyên cần gửi Ban Giám hiệu"
           >
-            <Copy size={15} weight="bold" className="text-accent" />
+            <Copy size={15} weight="bold" className="text-teal" />
             <span>Sao chép báo cáo BGH</span>
           </Button>
         </div>
       </div>
 
       {/* Attendance Student List Table */}
-      <div className="bg-surface rounded-3xl border border-border overflow-hidden shadow-sm">
+      <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-surface-muted/60 text-xs font-semibold text-text-secondary uppercase border-b border-border tracking-wider">
+            <thead className="bg-surface-muted/90 text-xs font-bold text-text-muted uppercase border-b border-border-strong tracking-wider">
               <tr>
-                <th className="px-5 py-4 w-14 text-center">STT</th>
-                <th className="px-5 py-4 w-28">Mã HS</th>
-                <th className="px-5 py-4 min-w-[220px]">Họ và tên học sinh</th>
-                <th className="px-5 py-4 w-[380px] text-center">Trạng thái điểm danh</th>
-                <th className="px-5 py-4">Ghi chú / Lý do vắng</th>
+                <th className="px-5 py-3.5 w-14 text-center">STT</th>
+                <th className="px-5 py-3.5 w-28">Mã HS</th>
+                <th className="px-5 py-3.5 min-w-[220px]">Họ và tên học sinh</th>
+                <th className="px-5 py-3.5 w-[380px] text-center">Trạng thái điểm danh</th>
+                <th className="px-5 py-3.5">Ghi chú / Lý do vắng</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border font-medium">
               {!canViewCurrentSubject ? (
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-text-muted text-sm">
                     <div className="max-w-md mx-auto space-y-1">
-                      <p className="font-bold text-rose-700 text-sm">Không có quyền truy cập chuyên cần môn học này</p>
+                      <p className="font-bold text-danger text-sm">Không có quyền truy cập chuyên cần môn học này</p>
                       <p className="text-xs text-text-muted">
                         Giáo viên bộ môn chỉ được xem dữ liệu điểm danh của các tiết/môn mà mình được phân công giảng dạy.
                       </p>
@@ -776,33 +776,31 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                 filteredList.map((item, index) => (
                 <tr
                   key={item.student_id}
-                  className={`hover:bg-surface-muted/40 transition-colors ${
-                    item.status === 'absent'
-                      ? 'bg-rose-500/5'
-                      : item.status === 'late'
-                      ? 'bg-amber-500/5'
-                      : ''
-                  }`}
+                  className={cn(
+                    'hover:bg-accent-subtle/30 transition-colors',
+                    item.status === 'absent' && 'bg-danger-bg/40',
+                    item.status === 'late' && 'bg-warning-bg/40'
+                  )}
                 >
-                  <td className="px-5 py-4 text-center text-text-muted font-mono text-[13px] font-semibold">
+                  <td className="px-5 py-3.5 text-center text-text-muted font-mono text-[13px] font-semibold">
                     {(index + 1).toString().padStart(2, '0')}
                   </td>
-                  <td className="px-5 py-4 font-mono text-[13px] text-text-secondary font-medium">
+                  <td className="px-5 py-3.5 font-mono text-[13px] text-text-secondary font-medium">
                     {item.student_code}
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-accent/10 text-accent font-bold text-xs flex items-center justify-center flex-shrink-0 border border-accent/20">
+                      <div className="w-8 h-8 rounded-sm bg-accent text-accent-text font-bold text-xs flex items-center justify-center flex-shrink-0 border border-border shadow-2xs">
                         {item.full_name.charAt(0)}
                       </div>
-                      <span className="font-bold text-text-primary text-[15px]">
+                      <span className="font-bold text-text-primary text-[14px]">
                         {item.full_name}
                       </span>
                     </div>
                   </td>
-                  <td className="px-5 py-3 text-center whitespace-nowrap">
+                  <td className="px-5 py-2.5 text-center whitespace-nowrap">
                     <div className={cn(
-                      "inline-flex items-center gap-1 p-1 bg-surface-muted/60 rounded-xl border border-border/80 shadow-2xs",
+                      "inline-flex items-center gap-1 p-1 bg-surface-muted rounded-sm border border-border shadow-2xs",
                       !canTakeAttendance && "opacity-60 pointer-events-none"
                     )}>
                       {/* Present Button */}
@@ -811,15 +809,15 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                         disabled={!canTakeAttendance}
                         onClick={() => handleSetStatus(item.student_id, 'present')}
                         title={!canTakeAttendance ? 'Bạn chỉ có quyền xem chuyên cần môn này' : 'Điểm danh: Có mặt'}
-                        className={`h-8 px-3 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
-                          !canTakeAttendance ? 'cursor-not-allowed' : 'cursor-pointer'
-                        } ${
+                        className={cn(
+                          'h-7 px-2.5 rounded-sm text-xs font-semibold inline-flex items-center justify-center gap-1 whitespace-nowrap transition-all',
+                          !canTakeAttendance ? 'cursor-not-allowed' : 'cursor-pointer',
                           item.status === 'present'
-                            ? 'bg-emerald-600 text-white shadow-xs font-bold'
-                            : 'text-emerald-700 hover:bg-emerald-500/10'
-                        }`}
+                            ? 'bg-success-bg text-success border border-success/40 shadow-xs font-bold'
+                            : 'text-success hover:bg-success-bg/50'
+                        )}
                       >
-                        <Check size={14} weight="bold" />
+                        <Check size={13} weight="bold" />
                         <span>Có mặt</span>
                       </button>
 
@@ -829,15 +827,15 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                         disabled={!canTakeAttendance}
                         onClick={() => handleSetStatus(item.student_id, 'absent')}
                         title={!canTakeAttendance ? 'Bạn chỉ có quyền xem chuyên cần môn này' : 'Điểm danh: Vắng'}
-                        className={`h-8 px-3 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
-                          !canTakeAttendance ? 'cursor-not-allowed' : 'cursor-pointer'
-                        } ${
+                        className={cn(
+                          'h-7 px-2.5 rounded-sm text-xs font-semibold inline-flex items-center justify-center gap-1 whitespace-nowrap transition-all',
+                          !canTakeAttendance ? 'cursor-not-allowed' : 'cursor-pointer',
                           item.status === 'absent'
-                            ? 'bg-rose-600 text-white shadow-xs font-bold'
-                            : 'text-rose-700 hover:bg-rose-500/10'
-                        }`}
+                            ? 'bg-danger-bg text-danger border border-danger/40 shadow-xs font-bold'
+                            : 'text-danger hover:bg-danger-bg/50'
+                        )}
                       >
-                        <X size={14} weight="bold" />
+                        <X size={13} weight="bold" />
                         <span>Vắng</span>
                       </button>
 
@@ -847,15 +845,15 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                         disabled={!canTakeAttendance}
                         onClick={() => handleSetStatus(item.student_id, 'late')}
                         title={!canTakeAttendance ? 'Bạn chỉ có quyền xem chuyên cần môn này' : 'Điểm danh: Muộn'}
-                        className={`h-8 px-3 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
-                          !canTakeAttendance ? 'cursor-not-allowed' : 'cursor-pointer'
-                        } ${
+                        className={cn(
+                          'h-7 px-2.5 rounded-sm text-xs font-semibold inline-flex items-center justify-center gap-1 whitespace-nowrap transition-all',
+                          !canTakeAttendance ? 'cursor-not-allowed' : 'cursor-pointer',
                           item.status === 'late'
-                            ? 'bg-amber-600 text-white shadow-xs font-bold'
-                            : 'text-amber-700 hover:bg-amber-500/10'
-                        }`}
+                            ? 'bg-warning-bg text-warning-700 border border-warning/40 shadow-xs font-bold'
+                            : 'text-warning-700 hover:bg-warning-bg/50'
+                        )}
                       >
-                        <Clock size={14} weight="bold" />
+                        <Clock size={13} weight="bold" />
                         <span>Muộn</span>
                       </button>
 
@@ -865,20 +863,20 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                         disabled={!canTakeAttendance}
                         onClick={() => handleSetStatus(item.student_id, 'excused')}
                         title={!canTakeAttendance ? 'Bạn chỉ có quyền xem chuyên cần môn này' : 'Điểm danh: Phép'}
-                        className={`h-8 px-3 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
-                          !canTakeAttendance ? 'cursor-not-allowed' : 'cursor-pointer'
-                        } ${
+                        className={cn(
+                          'h-7 px-2.5 rounded-sm text-xs font-semibold inline-flex items-center justify-center gap-1 whitespace-nowrap transition-all',
+                          !canTakeAttendance ? 'cursor-not-allowed' : 'cursor-pointer',
                           item.status === 'excused'
-                            ? 'bg-slate-800 text-white shadow-xs font-bold'
-                            : 'text-slate-700 hover:bg-slate-200'
-                        }`}
+                            ? 'bg-surface text-text-primary border border-border-strong shadow-xs font-bold'
+                            : 'text-text-secondary hover:bg-surface-muted'
+                        )}
                       >
-                        <ClipboardText size={14} weight="bold" />
+                        <ClipboardText size={13} weight="bold" />
                         <span>Phép</span>
                       </button>
                     </div>
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-3">
                     <input
                       type="text"
                       disabled={!canTakeAttendance}
@@ -894,7 +892,7 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
                           : 'Ghi chú thêm...'
                       }
                       className={cn(
-                        "w-full h-10 text-[13px] px-3.5 bg-surface rounded-xl border border-border focus:outline-none focus:border-accent text-text-primary placeholder:text-text-muted shadow-2xs",
+                        "w-full h-9 text-[13px] px-3 bg-surface rounded-sm border border-border focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent text-text-primary placeholder:text-text-muted shadow-2xs font-normal",
                         !canTakeAttendance && "opacity-60 bg-surface-muted/40 cursor-not-allowed"
                       )}
                     />
@@ -906,24 +904,24 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
         </div>
 
         {/* Footer save bar */}
-        <div className="px-8 py-5 bg-surface-muted/40 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-sm text-text-secondary font-medium">
+        <div className="px-6 py-4 bg-surface-muted/80 border-t border-border-strong flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-xs text-text-secondary font-medium font-mono tabular-nums">
             <span>Sĩ số: <strong className="text-text-primary font-bold">{total}</strong> học sinh</span>
             <span>·</span>
-            <span className="text-emerald-700 font-bold">{presentCount} có mặt</span>
+            <span className="text-success font-bold">{presentCount} có mặt</span>
             <span>·</span>
-            <span className="text-rose-700 font-bold">{absentCount} vắng</span>
+            <span className="text-danger font-bold">{absentCount} vắng</span>
             <span>·</span>
-            <span className="text-amber-700 font-bold">{lateCount} muộn</span>
+            <span className="text-warning-700 font-bold">{lateCount} muộn</span>
           </div>
           <Button
             variant="primary"
-            size="lg"
+            size="md"
             onClick={handleSave}
             disabled={!canTakeAttendance}
-            className={cn('shadow-sm', !canTakeAttendance && 'opacity-40 cursor-not-allowed')}
+            className={cn('cursor-pointer', !canTakeAttendance && 'opacity-40 cursor-not-allowed')}
           >
-            <FloppyDisk size={20} weight="bold" />
+            <FloppyDisk size={18} weight="bold" />
             <span>{canTakeAttendance ? 'Lưu kết quả điểm danh' : 'Chỉ xem chuyên cần'}</span>
           </Button>
         </div>

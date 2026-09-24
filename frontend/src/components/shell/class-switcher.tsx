@@ -50,35 +50,35 @@ export function ClassSwitcher() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'w-full flex items-center justify-between p-2 rounded-xl border border-border bg-surface hover:bg-surface-muted transition-all text-left group',
-          isOpen && 'border-accent/50 ring-1 ring-accent/20 bg-surface-muted'
+          'w-full flex items-center justify-between p-2 rounded-sm border border-border-strong bg-surface hover:bg-surface-muted transition-all text-left group shadow-[1px_1px_0px_0px_rgba(13,1,41,0.15)]',
+          isOpen && 'border-border-strong ring-2 ring-accent bg-surface-muted'
         )}
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div
             className={cn(
-              'w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0',
+              'w-7.5 h-7.5 rounded-sm flex items-center justify-center font-bold text-xs flex-shrink-0 border',
               isHomeroom
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                ? 'bg-success-bg text-success border-success/35'
+                : 'bg-teal-subtle text-teal border-teal/35'
             )}
           >
             {currentClass ? currentClass.grade : 'L'}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold text-text-primary block truncate leading-tight">
+              <span className="text-xs font-bold text-text-primary block truncate leading-tight">
                 {currentClass ? currentClass.name : 'Chọn lớp'}
               </span>
             </div>
             <div className="flex items-center gap-1 mt-0.5">
               <span
                 className={cn(
-                  'text-[10px] px-1 py-0.2 rounded font-medium truncate',
+                  'text-[10px] px-1 py-0.2 rounded-sm font-bold truncate',
                   isHomeroom
-                    ? 'bg-emerald-100/70 text-emerald-800'
-                    : 'bg-indigo-100/70 text-indigo-800'
+                    ? 'bg-success-bg text-success'
+                    : 'bg-teal-subtle text-teal'
                 )}
               >
                 {currentItem?.roleLabel || 'Giáo viên'}
@@ -89,7 +89,7 @@ export function ClassSwitcher() {
 
         {assignedClassesWithRoles.length > 1 && (
           <CaretUpDown
-            size={14}
+            size={13}
             className="text-text-muted group-hover:text-text-primary flex-shrink-0"
           />
         )}
@@ -97,8 +97,8 @@ export function ClassSwitcher() {
 
       {/* Dropdown Menu */}
       {isOpen && assignedClassesWithRoles.length > 1 && (
-        <div className="absolute left-2 right-2 top-full mt-1 z-50 bg-surface border border-border rounded-xl shadow-lg p-1.5 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150 max-h-72 overflow-y-auto">
-          <div className="px-2 py-1 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+        <div className="absolute left-2 right-2 top-full mt-1.5 z-50 bg-surface border border-border-strong rounded-sm shadow-[3px_3px_0px_0px_rgba(13,1,41,0.2)] p-1.5 space-y-1 animate-in fade-in slide-in-from-top-1 duration-100 max-h-72 overflow-y-auto">
+          <div className="px-2 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
             Các lớp bạn phụ trách ({assignedClassesWithRoles.length})
           </div>
 
@@ -113,32 +113,32 @@ export function ClassSwitcher() {
                   setIsOpen(false);
                 }}
                 className={cn(
-                  'w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-colors text-left group',
+                  'w-full flex items-center justify-between px-2.5 py-2 rounded-sm text-xs transition-colors text-left group',
                   isSelected
-                    ? 'bg-accent-subtle text-accent font-semibold'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted'
+                    ? 'bg-accent text-text-primary font-bold border border-border-strong shadow-[1px_1px_0px_#000]'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted border border-transparent hover:border-border'
                 )}
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
-                    <span className="font-semibold block truncate">{item.classInfo.name}</span>
+                    <span className="font-bold block truncate">{item.classInfo.name}</span>
                     <span
                       className={cn(
-                        'text-[10px] px-1.5 py-0.2 rounded font-medium flex-shrink-0',
+                        'text-[10px] px-1.5 py-0.2 rounded-sm font-bold flex-shrink-0',
                         item.isHomeroom
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                          ? 'bg-success-bg text-success border border-success/30'
+                          : 'bg-teal-subtle text-teal border border-teal/30'
                       )}
                     >
                       {item.roleLabel}
                     </span>
                   </div>
-                  <span className="block text-[10px] text-text-muted font-normal mt-0.5">
+                  <span className="block text-[10px] text-text-muted font-medium mt-0.5">
                     {item.classInfo.room_name} · 30 học sinh
                   </span>
                 </div>
 
-                {isSelected && <Check size={14} weight="bold" className="flex-shrink-0 ml-2 text-accent" />}
+                {isSelected && <Check size={14} weight="bold" className="flex-shrink-0 ml-2 text-text-primary" />}
               </button>
             );
           })}

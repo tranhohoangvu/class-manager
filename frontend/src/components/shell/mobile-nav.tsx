@@ -17,46 +17,46 @@ export function MobileNav({ isOpen, onToggle, isAdmin = false }: MobileNavProps)
   const { user } = useAuth();
 
   return (
-    <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-surface border-b border-border shadow-xs">
-      <div className="flex items-center gap-3">
+    <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-surface border-b border-border-strong shadow-[0_1px_2px_0_rgba(13,1,41,0.08)]">
+      <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={onToggle}
           aria-label={isOpen ? 'Đóng bảng điều hướng' : 'Mở bảng điều hướng'}
-          className="p-2 -ml-1 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
+          className="p-1.5 -ml-1 rounded-sm text-text-secondary hover:text-text-primary hover:bg-surface-muted border border-transparent hover:border-border transition-colors cursor-pointer"
         >
-          {isOpen ? <X size={22} /> : <List size={22} />}
+          {isOpen ? <X size={20} /> : <List size={20} />}
         </button>
 
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-accent/15 text-accent flex items-center justify-center font-bold text-sm border border-accent/20">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-sm bg-teal text-white flex items-center justify-center font-bold text-xs border border-border-strong shadow-[1px_1px_0px_#000]">
             {isAdmin ? (
-              <ShieldCheck size={16} weight="duotone" />
+              <ShieldCheck size={16} weight="bold" />
             ) : (
-              <ChalkboardTeacher size={16} weight="duotone" />
+              <ChalkboardTeacher size={16} weight="bold" />
             )}
           </div>
-          <span className="text-[14px] font-bold text-text-primary tracking-tight">
+          <span className="text-[13px] font-bold text-text-primary tracking-tight">
             THCS Nguyễn Tất Thành
           </span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {isAdmin ? (
-          <span className="px-2.5 py-1 text-[12px] font-semibold bg-indigo-500/10 text-indigo-700 border border-indigo-500/25 rounded-lg">
+          <span className="px-2 py-0.5 text-[11px] font-bold bg-teal-subtle text-teal border border-teal/30 rounded-sm">
             Quản trị
           </span>
         ) : currentClass ? (
           <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 text-[12px] font-bold bg-accent/10 text-accent rounded-lg border border-accent/20">
+            <span className="px-2 py-0.5 text-[11px] font-bold bg-accent text-text-primary rounded-sm border border-border-strong shadow-[1px_1px_0px_#000]">
               {currentClass.name}
             </span>
             <span
-              className={`px-2 py-1 text-[11px] font-semibold rounded-lg border ${
+              className={`px-1.5 py-0.5 text-[10px] font-bold rounded-sm border ${
                 isHomeroom
-                  ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/25'
-                  : 'bg-indigo-500/10 text-indigo-700 border-indigo-500/25'
+                  ? 'bg-success-bg text-success border-success/35'
+                  : 'bg-teal-subtle text-teal border-teal/35'
               }`}
             >
               {isHomeroom ? 'GVCN' : 'GVBM'}

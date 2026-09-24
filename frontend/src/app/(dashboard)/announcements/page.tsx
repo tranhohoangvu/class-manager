@@ -101,11 +101,11 @@ export default function AnnouncementsPage() {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
               Bảng thông báo lớp học
             </h1>
-            <span className="px-3 py-1 text-xs font-semibold bg-accent-subtle text-accent rounded-full border border-accent/20">
+            <span className="px-2.5 py-0.5 text-xs font-bold font-mono bg-teal-subtle text-teal rounded-xs border border-teal/30">
               {announcements.length} thông báo
             </span>
           </div>
-          <p className="text-sm text-text-secondary mt-1.5">
+          <p className="text-sm text-text-secondary mt-1.5 font-medium">
             Gửi dặn dò, lịch thi cử, phân công và các sự kiện quan trọng tới học sinh và phụ huynh <strong className="font-semibold text-text-primary">{currentClass?.name || 'lớp'}</strong>
           </p>
         </div>
@@ -120,11 +120,11 @@ export default function AnnouncementsPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-4 bg-indigo-50/80 border border-indigo-200/80 rounded-2xl flex items-center justify-between text-sm text-indigo-900 shadow-2xs">
+        <div className="p-3.5 bg-teal-subtle border border-teal/30 rounded-sm flex items-center justify-between text-sm text-text-primary shadow-xs">
           <span className="leading-relaxed">
-            Bạn đang xem bảng thông báo lớp <strong className="font-semibold">{currentClass?.name}</strong> với vai trò <strong className="font-semibold">Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ chỉ xem thông báo từ GVCN.
+            Bạn đang xem bảng thông báo lớp <strong className="font-bold">{currentClass?.name}</strong> với vai trò <strong className="font-bold">Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ chỉ xem thông báo từ GVCN.
           </span>
-          <span className="px-2.5 py-1 rounded-md bg-indigo-100 font-semibold text-xs text-indigo-800 ml-4 flex-shrink-0">Chỉ xem</span>
+          <span className="px-2 py-0.5 rounded-xs bg-surface border border-teal/30 font-bold text-xs text-teal ml-4 flex-shrink-0">Chỉ xem</span>
         </div>
       )}
 
@@ -142,18 +142,18 @@ export default function AnnouncementsPage() {
           announcements.map((ann) => (
             <div
               key={ann.id}
-              className={`p-6 sm:p-7 rounded-2xl border transition-all ${
+              className={`p-6 sm:p-7 rounded-sm border transition-all ${
                 ann.is_pinned
-                  ? 'bg-surface border-accent/40 shadow-xs ring-1 ring-accent/15'
-                  : 'bg-surface border-border shadow-2xs hover:shadow-xs'
+                  ? 'bg-accent/10 border-2 border-accent shadow-xs'
+                  : 'bg-surface border border-border-strong shadow-xs hover:border-accent'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2.5 flex-wrap">
                     {ann.is_pinned && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-accent-subtle text-accent border border-accent/20">
-                        <PushPin size={13} weight="fill" />
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xs text-[10px] font-bold font-mono uppercase bg-accent text-accent-text border border-border-strong shadow-xs">
+                        <PushPin size={12} weight="fill" />
                         Ghim ưu tiên
                       </span>
                     )}
@@ -166,8 +166,8 @@ export default function AnnouncementsPage() {
                     {ann.content}
                   </p>
 
-                  <div className="flex items-center gap-2 text-xs text-text-muted pt-3 border-t border-border/60 mt-3">
-                    <Calendar size={15} />
+                  <div className="flex items-center gap-2 text-xs text-text-muted pt-3 border-t border-border mt-3 font-mono">
+                    <Calendar size={14} />
                     <span>Đăng ngày {formatDateVietnamese(ann.created_at)}</span>
                   </div>
                 </div>
@@ -177,23 +177,23 @@ export default function AnnouncementsPage() {
                     <button
                       type="button"
                       onClick={() => handleTogglePin(ann.id, ann.is_pinned)}
-                      className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                      className={`p-1.5 rounded-xs border transition-colors cursor-pointer ${
                         ann.is_pinned
-                          ? 'text-accent bg-accent-subtle hover:bg-accent/20'
-                          : 'text-text-muted hover:text-text-primary hover:bg-surface-muted'
+                          ? 'text-accent-text bg-accent border-border-strong shadow-xs'
+                          : 'text-text-muted border-transparent hover:text-text-primary hover:bg-surface-muted hover:border-border'
                       }`}
                       title={ann.is_pinned ? 'Bỏ ghim' : 'Ghim lên đầu'}
                     >
-                      <PushPin size={18} weight={ann.is_pinned ? 'fill' : 'regular'} />
+                      <PushPin size={17} weight={ann.is_pinned ? 'fill' : 'regular'} />
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setAnnouncementToDelete(ann)}
-                      className="p-2 rounded-xl text-text-muted hover:text-danger hover:bg-danger-subtle transition-colors cursor-pointer"
+                      className="p-1.5 rounded-xs border border-transparent text-text-muted hover:text-danger hover:bg-danger-bg hover:border-danger/30 transition-colors cursor-pointer"
                       title="Xoá thông báo"
                     >
-                      <Trash size={18} />
+                      <Trash size={17} />
                     </button>
                   </div>
                 )}
@@ -221,7 +221,7 @@ export default function AnnouncementsPage() {
           />
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1.5">
+            <label className="block text-xs font-bold text-text-primary uppercase tracking-wider mb-1.5 font-mono">
               Nội dung thông báo
             </label>
             <textarea
@@ -229,7 +229,7 @@ export default function AnnouncementsPage() {
               onChange={(e) => setContent(e.target.value)}
               rows={4}
               placeholder="Nhập nội dung chi tiết thông báo..."
-              className="w-full text-sm p-3.5 bg-surface rounded-xl border border-border focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 text-text-primary placeholder:text-text-muted transition-all"
+              className="w-full text-sm p-3.5 bg-surface rounded-xs border border-border-strong focus:outline-none focus:border-accent text-text-primary placeholder:text-text-muted transition-all shadow-xs"
             />
           </div>
 
@@ -238,7 +238,7 @@ export default function AnnouncementsPage() {
               type="checkbox"
               checked={isPinned}
               onChange={(e) => setIsPinned(e.target.checked)}
-              className="rounded border-border text-accent focus:ring-accent w-4 h-4 cursor-pointer"
+              className="rounded-xs border-border-strong text-accent focus:ring-accent w-4 h-4 cursor-pointer"
             />
             <span className="text-sm font-medium text-text-primary">
               Ghim thông báo này lên đầu trang

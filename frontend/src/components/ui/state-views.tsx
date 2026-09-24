@@ -30,13 +30,13 @@ export function EmptyStateView({
   actionHref,
 }: EmptyStateViewProps) {
   return (
-    <div className="bg-surface rounded-2xl border border-border p-12 text-center max-w-lg mx-auto my-8 space-y-4">
-      <div className="w-14 h-14 mx-auto rounded-2xl bg-surface-muted text-text-muted flex items-center justify-center">
-        {icon || <MagnifyingGlass size={28} className="opacity-60" />}
+    <div className="bg-surface rounded-sm border border-border-strong shadow-[2px_2px_0px_0px_rgba(13,1,41,0.15)] p-10 text-center max-w-lg mx-auto my-8 space-y-4">
+      <div className="w-12 h-12 mx-auto rounded-sm bg-surface-muted text-text-muted border border-border flex items-center justify-center">
+        {icon || <MagnifyingGlass size={26} className="opacity-70" />}
       </div>
       <div className="space-y-1">
-        <h3 className="text-base font-semibold text-text-primary">{title}</h3>
-        {description && <p className="text-sm text-text-muted max-w-sm mx-auto">{description}</p>}
+        <h3 className="text-base font-bold text-text-primary">{title}</h3>
+        {description && <p className="text-xs text-text-muted max-w-sm mx-auto">{description}</p>}
       </div>
       {(actionText && (onAction || actionHref)) && (
         <div className="pt-2">
@@ -67,12 +67,12 @@ export function ErrorStateView({
   onRetry,
 }: ErrorStateViewProps) {
   return (
-    <div className="bg-surface rounded-2xl border border-danger/20 p-8 text-center max-w-md mx-auto my-8 space-y-4">
-      <div className="w-12 h-12 mx-auto rounded-full bg-danger/10 text-danger flex items-center justify-center">
+    <div className="bg-surface rounded-sm border border-danger shadow-[2px_2px_0px_0px_rgba(158,42,43,0.2)] p-8 text-center max-w-md mx-auto my-8 space-y-4">
+      <div className="w-12 h-12 mx-auto rounded-sm bg-danger/10 text-danger border border-danger/30 flex items-center justify-center">
         <WarningCircle size={26} />
       </div>
       <div className="space-y-1">
-        <h3 className="text-base font-semibold text-text-primary">{title}</h3>
+        <h3 className="text-base font-bold text-text-primary">{title}</h3>
         <p className="text-xs text-text-muted">{message}</p>
       </div>
       {onRetry && (
@@ -97,12 +97,12 @@ export function UnauthorizedView({
   backHref = '/dashboard',
 }: UnauthorizedViewProps) {
   return (
-    <div className="bg-surface rounded-2xl border border-amber-500/20 p-8 text-center max-w-md mx-auto my-8 space-y-4">
-      <div className="w-12 h-12 mx-auto rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-        <ShieldWarning size={28} />
+    <div className="bg-surface rounded-sm border border-warning shadow-[2px_2px_0px_0px_rgba(183,121,31,0.2)] p-8 text-center max-w-md mx-auto my-8 space-y-4">
+      <div className="w-12 h-12 mx-auto rounded-sm bg-warning/10 text-warning border border-warning/30 flex items-center justify-center">
+        <ShieldWarning size={26} />
       </div>
       <div className="space-y-1">
-        <h3 className="text-base font-semibold text-text-primary">{title}</h3>
+        <h3 className="text-base font-bold text-text-primary">{title}</h3>
         <p className="text-xs text-text-muted">{message}</p>
       </div>
       <div className="pt-2">

@@ -358,8 +358,8 @@ export default function TimetablePage() {
   if (!isLoaded || !activeClass) {
     return (
       <div className="p-8 space-y-6">
-        <div className="h-8 w-48 bg-surface-muted rounded animate-pulse" />
-        <div className="h-96 bg-surface-muted rounded-xl animate-pulse" />
+        <div className="h-8 w-48 bg-surface-muted rounded-xs animate-pulse" />
+        <div className="h-96 bg-surface-muted rounded-sm animate-pulse" />
       </div>
     );
   }
@@ -370,9 +370,9 @@ export default function TimetablePage() {
 
   const renderPeriodRow = (period: (typeof TIMETABLE_PERIODS)[0]) => {
     return (
-      <tr key={period.period} className="hover:bg-surface-muted/30 transition-colors">
+      <tr key={period.period} className="hover:bg-surface-muted/40 transition-colors">
         {/* Period Label Header Column */}
-        <td className="py-3.5 px-3 bg-surface-muted/30 text-center border-r border-border">
+        <td className="py-3 px-3 bg-surface-muted text-center border-r border-border font-mono">
           <span className="text-xs font-bold text-text-primary block">
             {period.label}
           </span>
@@ -399,11 +399,11 @@ export default function TimetablePage() {
             return (
               <td
                 key={day.day}
-                className="py-2.5 px-3 border-l border-border bg-surface-muted/15 text-center align-middle"
+                className="py-2.5 px-3 border-l border-border bg-surface-muted/20 text-center align-middle"
               >
-                <div className="h-full min-h-[72px] rounded-xl border border-dashed border-border/40 bg-surface-muted/25 flex flex-col items-center justify-center text-text-muted/40 select-none">
-                  <span className="text-xs font-bold">—</span>
-                  <span className="text-[10px] font-medium">
+                <div className="h-full min-h-[72px] rounded-xs border border-dashed border-border-strong bg-surface-muted/40 flex flex-col items-center justify-center text-text-muted/50 select-none">
+                  <span className="text-xs font-bold font-mono">—</span>
+                  <span className="text-[10px] font-mono font-medium">
                     {isSatEmpty
                       ? 'Không có tiết'
                       : classShift === 'morning'
@@ -422,36 +422,36 @@ export default function TimetablePage() {
                 onClick={() => canEdit && handleOpenEdit(day.day, period.period)}
                 className={cn(
                   'py-2.5 px-3 border-l border-border transition-all align-top',
-                  canEdit ? 'cursor-pointer hover:bg-violet-50/20' : '',
-                  isOngoing ? 'bg-violet-100/50 ring-2 ring-inset ring-violet-500' : ''
+                  canEdit ? 'cursor-pointer hover:bg-accent/10' : '',
+                  isOngoing ? 'bg-accent/20 ring-2 ring-inset ring-accent' : ''
                 )}
               >
                 <div
                   className={cn(
-                    'h-full min-h-[72px] p-2.5 rounded-xl border border-violet-300 bg-gradient-to-br from-violet-50 via-purple-50/70 to-indigo-50/50 shadow-2xs flex flex-col justify-between transition-all group relative'
+                    'h-full min-h-[72px] p-2.5 rounded-xs border-2 border-violet-800 bg-gradient-to-br from-violet-700 via-violet-800 to-indigo-900 text-white shadow-xs flex flex-col justify-between transition-all group relative'
                   )}
                 >
                   <div className="flex items-start justify-between gap-1">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="w-2 h-2 rounded-full bg-violet-600 animate-pulse flex-shrink-0" />
-                      <span className="text-xs font-black text-violet-950 leading-tight truncate">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
+                      <span className="text-xs font-bold text-white leading-tight truncate">
                         Sinh hoạt lớp
                       </span>
                     </div>
-                    <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-violet-600 text-white shadow-2xs flex-shrink-0">
+                    <span className="text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-xs bg-amber-300 text-amber-950 border border-amber-400 shadow-xs flex-shrink-0">
                       SHL
                     </span>
                   </div>
 
-                  <div className="mt-1 flex items-center justify-between text-[11px]">
-                    <span className="truncate font-semibold text-violet-900 group-hover:text-violet-950">
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-white/90">
+                    <span className="truncate font-semibold">
                       {homeroomTeacher ? (
                         `GVCN: ${homeroomTeacher.name.replace('Thầy ', '').replace('Cô ', '')}`
                       ) : (
-                        <span className="text-rose-600 font-bold">Chưa gán GVCN</span>
+                        <span className="text-amber-300 font-bold">Chưa gán GVCN</span>
                       )}
                     </span>
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-violet-200/80 text-violet-800 flex-shrink-0">
+                    <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 rounded-xs bg-white/20 text-white flex-shrink-0">
                       Cố định
                     </span>
                   </div>
@@ -466,14 +466,14 @@ export default function TimetablePage() {
               onClick={() => canEdit && handleOpenEdit(day.day, period.period)}
               className={cn(
                 'py-2.5 px-3 border-l border-border transition-all align-top',
-                canEdit ? 'cursor-pointer hover:bg-accent/5' : '',
-                isOngoing ? 'bg-blue-50/40 ring-1 ring-inset ring-blue-400' : ''
+                canEdit ? 'cursor-pointer hover:bg-accent/10' : '',
+                isOngoing ? 'bg-accent/15 ring-2 ring-inset ring-accent' : ''
               )}
             >
               {subj ? (
                 <div
                   className={cn(
-                    'h-full min-h-[72px] p-2.5 rounded-xl border flex flex-col justify-between transition-all group relative',
+                    'h-full min-h-[72px] p-2.5 rounded-xs border border-border-strong border-l-[3.5px] flex flex-col justify-between transition-all group relative shadow-xs',
                     colorStyle.bg,
                     colorStyle.border
                   )}
@@ -482,15 +482,19 @@ export default function TimetablePage() {
                     <span className={cn('text-xs font-bold leading-tight line-clamp-1', colorStyle.text)}>
                       {subj.name}
                     </span>
-                    <span className={cn('text-[9px] font-extrabold px-1.5 py-0.2 rounded border', colorStyle.badgeBg, colorStyle.border)}>
+                    <span className={cn('text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-xs border shadow-2xs', colorStyle.badgeBg, colorStyle.border)}>
                       {subj.code}
                     </span>
                   </div>
 
                   <div className="mt-1 flex items-center justify-between text-[11px] text-text-secondary">
-                    <span className="truncate text-text-muted group-hover:text-text-primary transition-colors">
-                      {teacher ? teacher.name.replace('Thầy ', '').replace('Cô ', '') : '—'}
-                    </span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colorStyle.dot)} />
+                      <span className="truncate font-medium text-text-secondary group-hover:text-text-primary transition-colors">
+                        {teacher ? teacher.name.replace('Thầy ', '').replace('Cô ', '') : '—'}
+                      </span>
+                    </div>
+
                     {canEdit && (
                       <PencilSimple
                         size={12}
@@ -502,14 +506,14 @@ export default function TimetablePage() {
               ) : (
                 <div
                   className={cn(
-                    'h-full min-h-[72px] rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-text-muted/60 hover:text-accent hover:border-accent/40 hover:bg-surface-muted/40 transition-all p-2',
+                    'h-full min-h-[72px] rounded-xs border border-dashed border-border-strong flex flex-col items-center justify-center text-text-muted/60 hover:text-accent hover:border-accent hover:bg-accent/10 transition-all p-2',
                     canEdit ? 'cursor-pointer' : 'opacity-40'
                   )}
                 >
                   {canEdit ? (
                     <Plus size={16} />
                   ) : (
-                    <span className="text-[11px]">—</span>
+                    <span className="text-[11px] font-mono">—</span>
                   )}
                 </div>
               )}
@@ -527,29 +531,29 @@ export default function TimetablePage() {
           ============================================= */}
       <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto no-print">
         {/* Header & Page Title */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-strong">
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-2xl font-bold tracking-tight text-text-primary">
                 Thời khóa biểu — {activeClass.name}
               </h1>
               <span className={cn(
-                "text-[11px] font-bold px-3 py-0.5 rounded-full border",
+                "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-xs border shadow-xs uppercase",
                 classShift === 'morning'
-                  ? "bg-amber-50 text-amber-900 border-amber-200"
-                  : "bg-indigo-50 text-indigo-900 border-indigo-200"
+                  ? "bg-accent/30 text-accent-text border-border-strong"
+                  : "bg-teal/15 text-teal border-teal/40"
               )}>
-                {classShift === 'morning' ? '☀️ Ca Sáng (Khối 6, 9 · Tiết 1–5)' : '🌤️ Ca Chiều (Khối 7, 8 · Tiết 6–10)'}
+                {classShift === 'morning' ? 'Ca Sáng (Khối 6, 9 · Tiết 1–5)' : 'Ca Chiều (Khối 7, 8 · Tiết 6–10)'}
               </span>
               {!canEdit && (
-                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-surface-muted text-text-muted border border-border">
+                <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-xs bg-surface-muted text-text-secondary border border-border-strong shadow-xs">
                   Chế độ chỉ xem
                 </span>
               )}
             </div>
             <p className="text-xs text-text-muted mt-1">
               {activeClass.room_name || 'Chưa xếp phòng'} · Năm học {activeClass.school_year} · GVCN:{' '}
-              <span className="font-medium text-text-secondary">{homeroomTeacher?.name || 'Chưa gán'}</span>
+              <span className="font-semibold text-text-primary">{homeroomTeacher?.name || 'Chưa gán'}</span>
             </p>
           </div>
 
@@ -569,7 +573,7 @@ export default function TimetablePage() {
                   className="cursor-pointer"
                   title="Áp dụng 30 tiết mẫu chuẩn THCS phân bổ đều các môn"
                 >
-                  <Lightning size={16} className="text-amber-600" />
+                  <Lightning size={16} className="text-accent-text" />
                   <span>Xếp mẫu chuẩn</span>
                 </Button>
 
@@ -600,22 +604,22 @@ export default function TimetablePage() {
         {/* =============================================
             CLASS SELECTOR & GRADE SHIFT FILTER BAR
             ============================================= */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-2xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/70">
+        <div className="bg-surface border border-border-strong rounded-xs p-4 sm:p-5 space-y-3.5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border-strong/40">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted">
                 Lớp đang xem:
               </span>
-              <span className="text-sm font-extrabold text-text-primary">
+              <span className="text-sm font-bold text-text-primary">
                 {activeClass.name}
               </span>
               <span className={cn(
-                "text-[10px] font-bold px-2 py-0.5 rounded-full border",
+                "text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs border shadow-xs uppercase",
                 classShift === 'morning'
-                  ? "bg-amber-50 text-amber-900 border-amber-200"
-                  : "bg-indigo-50 text-indigo-900 border-indigo-200"
+                  ? "bg-accent/25 text-accent-text border-border-strong"
+                  : "bg-teal/15 text-teal border-teal/40"
               )}>
-                {classShift === 'morning' ? '☀️ Ca Sáng (Khối 6, 9)' : '🌤️ Ca Chiều (Khối 7, 8)'}
+                {classShift === 'morning' ? 'Ca Sáng (Khối 6, 9)' : 'Ca Chiều (Khối 7, 8)'}
               </span>
             </div>
 
@@ -624,21 +628,21 @@ export default function TimetablePage() {
               type="button"
               onClick={() => setShowOppositeShift(!showOppositeShift)}
               className={cn(
-                'px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 self-start sm:self-auto',
+                'px-3 py-1.5 rounded-xs border border-border-strong text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 self-start sm:self-auto shadow-xs',
                 showOppositeShift
-                  ? 'bg-surface-muted text-text-primary border-border hover:bg-surface-muted/80'
-                  : 'bg-accent/10 text-accent border-accent/30 hover:bg-accent/20'
+                  ? 'bg-surface-muted text-text-primary hover:bg-surface-muted/80'
+                  : 'bg-accent/20 text-accent-text hover:bg-accent/35'
               )}
             >
               {showOppositeShift ? (
                 <>
                   <EyeSlash size={15} />
-                  <span>{classShift === 'morning' ? 'Ẩn các tiết ca Chiều' : 'Ẩn các tiết ca Sáng'}</span>
+                  <span>{classShift === 'morning' ? 'Ẩn tiết ca Chiều' : 'Ẩn tiết ca Sáng'}</span>
                 </>
               ) : (
                 <>
                   <Eye size={15} />
-                  <span>{classShift === 'morning' ? 'Hiện các tiết ca Chiều' : 'Hiện các tiết ca Sáng'}</span>
+                  <span>{classShift === 'morning' ? 'Hiện tiết ca Chiều' : 'Hiện tiết ca Sáng'}</span>
                 </>
               )}
             </button>
@@ -650,19 +654,19 @@ export default function TimetablePage() {
               type="button"
               onClick={() => setGradeFilter('all')}
               className={cn(
-                'px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer',
+                'px-3.5 py-1.5 rounded-xs text-xs font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer border border-border-strong shadow-xs',
                 gradeFilter === 'all'
-                  ? 'bg-text-primary text-surface shadow-2xs'
-                  : 'bg-surface-muted/60 text-text-secondary hover:text-text-primary hover:bg-surface-muted border border-border/50'
+                  ? 'bg-accent text-accent-text'
+                  : 'bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-muted'
               )}
             >
               Tất cả ({allowedClasses.length} lớp)
             </button>
             {[
-              { grade: 6, label: 'Khối 6', shift: '☀️ Ca Sáng' },
-              { grade: 7, label: 'Khối 7', shift: '🌤️ Ca Chiều' },
-              { grade: 8, label: 'Khối 8', shift: '🌤️ Ca Chiều' },
-              { grade: 9, label: 'Khối 9', shift: '☀️ Ca Sáng' },
+              { grade: 6, label: 'Khối 6', shift: 'Ca Sáng' },
+              { grade: 7, label: 'Khối 7', shift: 'Ca Chiều' },
+              { grade: 8, label: 'Khối 8', shift: 'Ca Chiều' },
+              { grade: 9, label: 'Khối 9', shift: 'Ca Sáng' },
             ]
               .filter((g) => allowedClasses.some((c) => c.grade === g.grade))
               .map((g) => {
@@ -673,14 +677,14 @@ export default function TimetablePage() {
                     type="button"
                     onClick={() => setGradeFilter(g.grade)}
                     className={cn(
-                      'px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border',
+                      'px-3.5 py-1.5 rounded-xs text-xs font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border border-border-strong shadow-xs',
                       gradeFilter === g.grade
-                        ? 'bg-accent text-white border-accent shadow-2xs font-bold'
-                        : 'bg-surface-muted/60 border-border/50 text-text-secondary hover:text-text-primary hover:bg-surface-muted'
+                        ? 'bg-accent text-accent-text'
+                        : 'bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-muted'
                     )}
                   >
                     <span>{g.label}</span>
-                    <span className="text-[10px] opacity-85 font-normal">({count} lớp · {g.shift})</span>
+                    <span className="text-[10px] opacity-80 font-normal">({count} lớp · {g.shift})</span>
                   </button>
                 );
               })}
@@ -699,22 +703,24 @@ export default function TimetablePage() {
                     type="button"
                     onClick={() => handleSelectClass(c.id)}
                     className={cn(
-                      'px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border',
+                      'px-3 py-1.5 rounded-xs text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs',
                       isSelected
                         ? shift === 'morning'
-                          ? 'bg-amber-500 text-white border-amber-600 shadow-xs ring-2 ring-amber-300'
-                          : 'bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-300'
-                        : 'bg-surface border-border text-text-secondary hover:text-text-primary hover:border-accent/50'
+                          ? 'bg-amber-300 text-amber-950 border-2 border-border-strong ring-2 ring-amber-300'
+                          : 'bg-teal text-white border-2 border-border-strong ring-2 ring-teal/40'
+                        : shift === 'morning'
+                        ? 'bg-amber-50/70 border border-amber-300/80 text-amber-950 hover:bg-amber-100 hover:border-amber-400'
+                        : 'bg-teal-50/50 border border-teal/30 text-teal hover:bg-teal-100/50 hover:border-teal/50'
                     )}
                   >
                     <span>{c.name}</span>
                     <span className={cn(
-                      'text-[9px] px-1.5 py-0.2 rounded font-semibold',
+                      'text-[9px] px-1.5 py-0.2 rounded-xs font-mono font-bold border',
                       isSelected
-                        ? 'bg-white/20 text-white'
+                        ? 'bg-black/15 text-inherit border-black/20'
                         : shift === 'morning'
-                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                        : 'bg-indigo-50 text-indigo-800 border border-indigo-200'
+                        ? 'bg-amber-200/70 text-amber-900 border-amber-300'
+                        : 'bg-teal-100 text-teal border-teal/30'
                     )}>
                       {shift === 'morning' ? 'Sáng' : 'Chiều'}
                     </span>
@@ -723,7 +729,7 @@ export default function TimetablePage() {
               })}
           </div>
           {user?.role !== 'ADMIN' && (
-            <div className="flex items-center gap-1.5 text-[11px] text-text-muted pt-1">
+            <div className="flex items-center gap-1.5 text-[11px] font-mono text-text-muted pt-1">
               <Lock size={12} className="text-text-muted" />
               <span>Chỉ hiển thị các lớp bạn được phân công giảng dạy hoặc chủ nhiệm ({allowedClasses.length} lớp).</span>
             </div>
@@ -732,21 +738,21 @@ export default function TimetablePage() {
 
         {/* Real-time Current Period Notification Banner */}
         {periodInfo && periodInfo.isSchoolHours && (
-          <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-blue-50/90 border border-blue-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-sky-50/80 border-2 border-blue-400 rounded-xs p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs animate-pulse">
+              <div className="w-10 h-10 rounded-xs bg-blue-600 text-white border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs animate-pulse">
                 <Clock size={20} weight="bold" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-blue-900 uppercase tracking-wider">
+                  <span className="text-xs font-mono font-bold text-blue-950 uppercase tracking-wider">
                     {periodInfo.status === 'in_period'
                       ? `Đang trong giờ học: ${periodInfo.periodConfig?.label} (${periodInfo.periodConfig?.startTime} - ${periodInfo.periodConfig?.endTime})`
                       : 'Giờ giải lao giữa tiết'}
                   </span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
                 </div>
-                <p className="text-xs text-blue-800/90 mt-0.5 font-medium">
+                <p className="text-xs text-blue-900 mt-0.5 font-medium">
                   {periodInfo.status === 'in_period' && periodInfo.period ? (
                     (() => {
                       const entry = timetableMap.get(`${periodInfo.dayOfWeek}-${periodInfo.period}`);
@@ -764,8 +770,8 @@ export default function TimetablePage() {
               </div>
             </div>
 
-            <div className="text-[11px] text-blue-700/80 font-medium bg-white/70 px-3 py-1.5 rounded-lg border border-blue-100 self-start sm:self-auto">
-              Hệ thống tự nhận diện theo thời gian thực
+            <div className="text-[11px] font-mono font-semibold text-blue-900 bg-white/90 px-3 py-1.5 rounded-xs border border-blue-200 self-start sm:self-auto shadow-xs">
+              Thời gian thực
             </div>
           </div>
         )}
@@ -781,15 +787,15 @@ export default function TimetablePage() {
                 type="button"
                 onClick={() => setMobileSelectedDay(d.day)}
                 className={cn(
-                  'px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5',
+                  'px-3.5 py-2 rounded-xs text-xs font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border border-border-strong shadow-xs',
                   isSelected
-                    ? 'bg-accent text-white shadow-2xs'
-                    : 'bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-muted'
+                    ? 'bg-accent text-accent-text'
+                    : 'bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-muted'
                 )}
               >
                 <span>{d.name}</span>
                 {isToday && (
-                  <span className={cn('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-emerald-500')} />
+                  <span className={cn('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-accent-text' : 'bg-emerald-600')} />
                 )}
               </button>
             );
@@ -822,17 +828,17 @@ export default function TimetablePage() {
               return (
                 <div
                   key={period.period}
-                  className="p-3 rounded-2xl border border-dashed border-border/60 bg-surface-muted/20 flex items-center justify-between text-text-muted"
+                  className="p-3 rounded-xs border border-dashed border-border-strong/60 bg-surface-muted/20 flex items-center justify-between text-text-muted"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-surface-muted text-text-muted border border-border">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-xs bg-surface-muted text-text-muted border border-border-strong">
                       {period.label}
                     </span>
-                    <span className="text-[11px]">
+                    <span className="text-[11px] font-mono">
                       {period.startTime} - {period.endTime}
                     </span>
                   </div>
-                  <span className="text-xs font-medium italic">
+                  <span className="text-xs font-mono italic">
                     {classShift === 'morning' ? 'Ca Chiều' : 'Ca Sáng'} (Lớp không học)
                   </span>
                 </div>
@@ -844,35 +850,35 @@ export default function TimetablePage() {
                 key={period.period}
                 onClick={() => canEdit && handleOpenEdit(mobileSelectedDay, period.period)}
                 className={cn(
-                  'p-4 rounded-2xl border transition-all',
+                  'p-4 rounded-xs border border-border-strong shadow-xs transition-all',
                   isSaturdaySHL
-                    ? 'border-violet-300 bg-gradient-to-br from-violet-50/90 to-purple-50/70 shadow-2xs'
+                    ? 'border-2 border-border-strong bg-accent/25'
                     : isCurrentPeriod
-                    ? 'ring-2 ring-blue-500 border-blue-400 bg-blue-50/30'
-                    : 'bg-surface border-border',
-                  canEdit && 'cursor-pointer hover:border-accent/40 active:scale-[0.99]'
+                    ? 'ring-2 ring-border-strong border-border-strong bg-accent/15'
+                    : 'bg-surface',
+                  canEdit && 'cursor-pointer hover:bg-surface-muted active:scale-[0.99]'
                 )}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className={cn(
-                      'text-xs font-bold px-2.5 py-0.5 rounded-md border',
+                      'text-xs font-mono font-bold px-2.5 py-0.5 rounded-xs border border-border-strong shadow-xs',
                       isSaturdaySHL
-                        ? 'bg-violet-600 text-white border-violet-600'
-                        : 'bg-surface-muted text-text-primary border-border'
+                        ? 'bg-accent text-accent-text'
+                        : 'bg-surface-muted text-text-primary'
                     )}>
                       {period.label}
                     </span>
-                    <span className="text-[11px] text-text-muted font-medium">
+                    <span className="text-[11px] font-mono text-text-muted font-medium">
                       {period.startTime} - {period.endTime}
                     </span>
                   </div>
                   {isSaturdaySHL ? (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 border border-violet-200">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs bg-accent text-accent-text border border-border-strong shadow-xs uppercase">
                       Cố định Thứ 7
                     </span>
                   ) : isCurrentPeriod && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 animate-pulse">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs bg-accent text-accent-text border border-border-strong shadow-xs uppercase animate-pulse">
                       Đang học
                     </span>
                   )}
@@ -881,15 +887,15 @@ export default function TimetablePage() {
                 {isSaturdaySHL ? (
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-extrabold text-violet-950">
+                      <span className="text-sm font-bold text-text-primary">
                         Sinh hoạt lớp
                       </span>
-                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-violet-600 text-white">
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs bg-border-strong text-surface">
                         SHL
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-violet-900 font-medium">
-                      <ChalkboardTeacher size={14} className="text-violet-700" />
+                    <div className="flex items-center gap-1.5 text-xs text-text-secondary font-medium">
+                      <ChalkboardTeacher size={14} className="text-teal" />
                       <span>
                         GVCN: {homeroomTeacher ? homeroomTeacher.name : 'Chưa gán GVCN'}
                       </span>
@@ -901,7 +907,7 @@ export default function TimetablePage() {
                       <span className="text-sm font-bold text-text-primary">
                         {subj.name}
                       </span>
-                      <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-md border', colorStyle.badgeBg, colorStyle.border)}>
+                      <span className={cn('text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs border border-border-strong shadow-xs', colorStyle.badgeBg)}>
                         {subj.code}
                       </span>
                     </div>
@@ -911,7 +917,7 @@ export default function TimetablePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="py-2 text-center text-xs text-text-muted flex items-center justify-center gap-1 border border-dashed border-border rounded-xl">
+                  <div className="py-2 text-center text-xs font-mono text-text-muted flex items-center justify-center gap-1 border border-dashed border-border-strong rounded-xs">
                     <Plus size={14} />
                     <span>Tiết trống {canEdit ? '— Bấm để gán môn' : ''}</span>
                   </div>
@@ -922,12 +928,12 @@ export default function TimetablePage() {
         </div>
 
         {/* Desktop View: Full Matrix Grid with 2 Sessions */}
-        <div className="hidden md:block bg-surface border border-border rounded-2xl overflow-hidden shadow-2xs">
+        <div className="hidden md:block bg-surface border border-border-strong rounded-xs overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-surface-muted/60 border-b border-border">
-                  <th className="py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider w-28 text-center">
+                <tr className="bg-surface-muted border-b border-border-strong">
+                  <th className="py-3 px-4 text-xs font-mono font-bold text-text-muted uppercase tracking-wider w-28 text-center">
                     Tiết / Giờ
                   </th>
                   {TIMETABLE_DAYS.map((day) => {
@@ -936,14 +942,14 @@ export default function TimetablePage() {
                       <th
                         key={day.day}
                         className={cn(
-                          'py-3 px-4 text-xs font-bold uppercase tracking-wider text-center border-l border-border',
-                          isToday ? 'bg-accent/10 text-accent font-extrabold' : 'text-text-primary'
+                          'py-3 px-4 text-xs font-mono font-bold uppercase tracking-wider text-center border-l border-border-strong',
+                          isToday ? 'bg-accent/25 text-accent-text font-black' : 'text-text-primary'
                         )}
                       >
                         <div className="flex items-center justify-center gap-1.5">
                           <span>{day.name}</span>
                           {isToday && (
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Hôm nay" />
+                            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" title="Hôm nay" />
                           )}
                         </div>
                       </th>
@@ -951,12 +957,12 @@ export default function TimetablePage() {
                   })}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border-strong">
                 {/* 1. MORNING SESSION BANNER */}
                 <tr className={cn(
-                  "border-b border-border/80 transition-colors",
+                  "border-b-2 border-border-strong transition-colors",
                   classShift === 'morning'
-                    ? "bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-blue-50/90"
+                    ? "bg-gradient-to-r from-amber-100/90 via-amber-50 to-orange-50/70"
                     : "bg-surface-muted/50"
                 )}>
                   <td colSpan={7} className="py-2.5 px-4">
@@ -964,19 +970,19 @@ export default function TimetablePage() {
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "w-2.5 h-2.5 rounded-full",
-                          classShift === 'morning' ? "bg-blue-600 animate-pulse" : "bg-gray-400"
+                          classShift === 'morning' ? "bg-amber-600 animate-pulse" : "bg-text-muted"
                         )} />
                         <span className={cn(
-                          "text-xs font-black uppercase tracking-wider",
-                          classShift === 'morning' ? "text-blue-950" : "text-text-muted"
+                          "text-xs font-mono font-bold uppercase tracking-wider",
+                          classShift === 'morning' ? "text-amber-950 font-black" : "text-text-muted"
                         )}>
                           Buổi Sáng (Tiết 1 – Tiết 5 · 07:15 – 11:30)
                         </span>
                         <span className={cn(
-                          "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                          "text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs border shadow-xs uppercase",
                           classShift === 'morning'
-                            ? "bg-blue-100 text-blue-900 border border-blue-200"
-                            : "bg-surface text-text-muted border border-border"
+                            ? "bg-amber-200 text-amber-950 border-amber-400"
+                            : "bg-surface text-text-muted border-border-strong"
                         )}>
                           {classShift === 'morning' ? 'Ca học chính khóa của lớp' : `Khối ${classGrade} không học ca này`}
                         </span>
@@ -986,23 +992,23 @@ export default function TimetablePage() {
                           <button
                             type="button"
                             onClick={() => setShowOppositeShift(!showOppositeShift)}
-                            className="text-xs font-bold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-white/80 px-2.5 py-1 rounded-lg border border-border shadow-2xs"
+                            className="text-xs font-mono font-bold text-teal hover:underline flex items-center gap-1 cursor-pointer bg-surface px-2.5 py-1 rounded-xs border border-border-strong shadow-xs uppercase"
                           >
                             {showOppositeShift ? (
                               <>
                                 <EyeSlash size={14} />
-                                <span>Ẩn các tiết ca Sáng</span>
+                                <span>Ẩn tiết ca Sáng</span>
                               </>
                             ) : (
                               <>
                                 <Eye size={14} />
-                                <span>Hiện các tiết ca Sáng</span>
+                                <span>Hiện tiết ca Sáng</span>
                               </>
                             )}
                           </button>
                         )}
-                        <span className="text-[11px] font-medium text-blue-800 bg-white/80 px-2.5 py-0.5 rounded-full border border-blue-200">
-                          07:00 – 07:15: Sinh hoạt đầu giờ (15 phút)
+                        <span className="text-[11px] font-mono font-medium text-amber-900 bg-white/90 px-2.5 py-0.5 rounded-xs border border-amber-300 shadow-xs">
+                          07:00 – 07:15: Sinh hoạt đầu giờ (15p)
                         </span>
                       </div>
                     </div>
@@ -1015,16 +1021,16 @@ export default function TimetablePage() {
                     {renderPeriodRow(TIMETABLE_PERIODS[0])}
                     {renderPeriodRow(TIMETABLE_PERIODS[1])}
                     {/* Break after P2 (10 mins) */}
-                    <tr className="bg-amber-50/50 border-y border-amber-200/60">
-                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-semibold text-amber-800">
+                    <tr className="bg-amber-50/70 border-y border-amber-300/80">
+                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-mono font-bold text-amber-900">
                         ☕ Giờ giải lao 10 phút (08:45 – 08:55)
                       </td>
                     </tr>
                     {renderPeriodRow(TIMETABLE_PERIODS[2])}
                     {renderPeriodRow(TIMETABLE_PERIODS[3])}
                     {/* Break after P4 (5 mins) */}
-                    <tr className="bg-amber-50/30 border-y border-amber-100">
-                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-medium text-amber-700">
+                    <tr className="bg-amber-50/40 border-y border-amber-200">
+                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-mono text-amber-800">
                         Giờ giải lao 5 phút (10:25 – 10:30) · Áp dụng Thứ Hai đến Thứ Sáu
                       </td>
                     </tr>
@@ -1034,9 +1040,9 @@ export default function TimetablePage() {
 
                 {/* 3. AFTERNOON SESSION BANNER */}
                 <tr className={cn(
-                  "border-y-2 border-border transition-colors",
+                  "border-y-2 border-border-strong transition-colors",
                   classShift === 'afternoon'
-                    ? "bg-gradient-to-r from-indigo-50/90 via-purple-50/70 to-indigo-50/90"
+                    ? "bg-gradient-to-r from-teal-100/90 via-teal-50 to-emerald-50/70"
                     : "bg-surface-muted/50"
                 )}>
                   <td colSpan={7} className="py-2.5 px-4">
@@ -1044,19 +1050,19 @@ export default function TimetablePage() {
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "w-2.5 h-2.5 rounded-full",
-                          classShift === 'afternoon' ? "bg-indigo-600 animate-pulse" : "bg-gray-400"
+                          classShift === 'afternoon' ? "bg-teal animate-pulse" : "bg-text-muted"
                         )} />
                         <span className={cn(
-                          "text-xs font-black uppercase tracking-wider",
-                          classShift === 'afternoon' ? "text-indigo-950" : "text-text-muted"
+                          "text-xs font-mono font-bold uppercase tracking-wider",
+                          classShift === 'afternoon' ? "text-teal font-black" : "text-text-muted"
                         )}>
                           Buổi Chiều (Tiết 6 – Tiết 10 · 13:00 – 17:15)
                         </span>
                         <span className={cn(
-                          "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                          "text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs border shadow-xs uppercase",
                           classShift === 'afternoon'
-                            ? "bg-indigo-100 text-indigo-900 border border-indigo-200"
-                            : "bg-surface text-text-muted border border-border"
+                            ? "bg-teal-200 text-teal-950 border-teal-400"
+                            : "bg-surface text-text-muted border-border-strong"
                         )}>
                           {classShift === 'afternoon' ? 'Ca học chính khóa của lớp' : `Khối ${classGrade} không học ca này`}
                         </span>
@@ -1066,23 +1072,23 @@ export default function TimetablePage() {
                           <button
                             type="button"
                             onClick={() => setShowOppositeShift(!showOppositeShift)}
-                            className="text-xs font-bold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-white/80 px-2.5 py-1 rounded-lg border border-border shadow-2xs"
+                            className="text-xs font-mono font-bold text-amber-900 hover:underline flex items-center gap-1 cursor-pointer bg-surface px-2.5 py-1 rounded-xs border border-border-strong shadow-xs uppercase"
                           >
                             {showOppositeShift ? (
                               <>
                                 <EyeSlash size={14} />
-                                <span>Ẩn các tiết ca Chiều</span>
+                                <span>Ẩn tiết ca Chiều</span>
                               </>
                             ) : (
                               <>
                                 <Eye size={14} />
-                                <span>Hiện các tiết ca Chiều</span>
+                                <span>Hiện tiết ca Chiều</span>
                               </>
                             )}
                           </button>
                         )}
-                        <span className="text-[11px] font-medium text-indigo-800 bg-white/80 px-2.5 py-0.5 rounded-full border border-indigo-200">
-                          12:45 – 13:00: Sinh hoạt đầu giờ (15 phút)
+                        <span className="text-[11px] font-mono font-medium text-teal-900 bg-white/90 px-2.5 py-0.5 rounded-xs border border-teal-300 shadow-xs">
+                          12:45 – 13:00: Sinh hoạt đầu giờ (15p)
                         </span>
                       </div>
                     </div>
@@ -1095,16 +1101,16 @@ export default function TimetablePage() {
                     {renderPeriodRow(TIMETABLE_PERIODS[5])}
                     {renderPeriodRow(TIMETABLE_PERIODS[6])}
                     {/* Break after P7 (10 mins) */}
-                    <tr className="bg-amber-50/50 border-y border-amber-200/60">
-                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-semibold text-amber-800">
+                    <tr className="bg-teal-50/70 border-y border-teal-300/80">
+                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-mono font-bold text-teal-900">
                         ☕ Giờ giải lao 10 phút (14:30 – 14:40)
                       </td>
                     </tr>
                     {renderPeriodRow(TIMETABLE_PERIODS[7])}
                     {renderPeriodRow(TIMETABLE_PERIODS[8])}
                     {/* Break after P9 (5 mins) */}
-                    <tr className="bg-amber-50/30 border-y border-amber-100">
-                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-medium text-amber-700">
+                    <tr className="bg-teal-50/40 border-y border-teal-200">
+                      <td colSpan={7} className="py-1 px-4 text-center text-[11px] font-mono text-teal-800">
                         Giờ giải lao 5 phút (16:10 – 16:15) · Áp dụng Thứ Hai đến Thứ Sáu
                       </td>
                     </tr>
@@ -1117,12 +1123,12 @@ export default function TimetablePage() {
         </div>
 
         {/* Legend / Palette of Subjects */}
-        <div className="bg-surface border border-border rounded-2xl p-4 space-y-2.5 shadow-2xs">
+        <div className="bg-surface border border-border-strong rounded-xs p-4 space-y-2.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-text-primary uppercase tracking-wider">
+            <span className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider">
               Bảng quy chuẩn Môn học & Sinh hoạt lớp THCS
             </span>
-            <span className="text-[11px] text-text-muted font-medium">
+            <span className="text-[11px] font-mono text-text-muted font-medium">
               Tổng số tiết: {timetable.length} / 56 tiết tuần (Thứ 2 - 6: 10 tiết · Thứ 7: 6 tiết)
             </span>
           </div>
@@ -1135,9 +1141,8 @@ export default function TimetablePage() {
                 <div
                   key={s.id}
                   className={cn(
-                    'p-2.5 rounded-xl border flex items-center justify-between gap-2',
-                    color.bg,
-                    color.border
+                    'p-2.5 rounded-xs border border-border-strong shadow-xs flex items-center justify-between gap-2',
+                    color.bg
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -1146,7 +1151,7 @@ export default function TimetablePage() {
                       {s.name}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/80 text-text-secondary border border-black/5 flex-shrink-0">
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-xs bg-surface text-text-secondary border border-border-strong shadow-xs flex-shrink-0">
                     {count} tiết
                   </span>
                 </div>
@@ -1297,26 +1302,26 @@ export default function TimetablePage() {
       >
         <div className="space-y-4">
           {editError && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+            <div className="p-3.5 rounded-xs bg-rose-50 border border-border-strong text-rose-800 text-xs flex items-start gap-2.5 shadow-xs">
               <WarningCircle size={18} className="text-rose-600 flex-shrink-0 mt-0.5" />
-              <div className="whitespace-pre-line leading-relaxed font-medium">{editError}</div>
+              <div className="whitespace-pre-line leading-relaxed font-mono font-medium">{editError}</div>
             </div>
           )}
 
           {editingSlot?.day === 7 && editingSlot.period === homeroomSlot.period ? (
-            <div className="p-4 rounded-xl bg-violet-50 border border-violet-200 text-violet-900 space-y-2">
+            <div className="p-4 rounded-xs bg-accent/20 border border-border-strong text-text-primary space-y-2 shadow-xs">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-violet-600 animate-pulse" />
-                <span className="text-sm font-bold text-violet-950">
+                <span className="w-2.5 h-2.5 rounded-full bg-accent-text animate-pulse" />
+                <span className="text-sm font-bold text-accent-text">
                   Tiết Sinh hoạt lớp cố định (Thứ Bảy - Tiết {homeroomSlot.period})
                 </span>
               </div>
-              <p className="text-xs text-violet-800 leading-relaxed">
+              <p className="text-xs text-text-secondary leading-relaxed">
                 Theo quy chế, Tiết {editingSlot.period} Thứ Bảy của Khối {classGrade} ({classShift === 'morning' ? 'Ca Sáng' : 'Ca Chiều'}) luôn cố định là <strong>Sinh hoạt lớp</strong> cùng <strong>Giáo viên chủ nhiệm</strong> ({homeroomTeacher?.name || 'Chưa gán GVCN'}). Tiết học này không thể đổi sang môn học khác hoặc gán cho giáo viên bộ môn.
               </p>
               <div className="pt-2 text-xs">
-                <p className="font-semibold text-violet-950">Giáo viên phụ trách:</p>
-                <p className="text-violet-800 mt-0.5 font-medium">
+                <p className="font-bold text-text-primary">Giáo viên phụ trách:</p>
+                <p className="text-text-secondary mt-0.5 font-medium">
                   {homeroomTeacher ? `${homeroomTeacher.name} (${homeroomTeacher.email})` : 'Lớp chưa được phân công Giáo viên chủ nhiệm'}
                 </p>
               </div>
@@ -1324,13 +1329,13 @@ export default function TimetablePage() {
           ) : (
             <>
               <div>
-                <label className="block text-xs font-semibold text-text-primary mb-1.5">
+                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-primary mb-1.5">
                   Môn học <span className="text-rose-500">*</span>
                 </label>
                 <select
                   value={editSubjectId}
                   onChange={(e) => handleSubjectChange(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-3.5 py-2.5 rounded-xs border border-border-strong bg-surface text-text-primary text-sm shadow-xs focus:outline-none focus:ring-1 focus:ring-accent"
                 >
                   <option value="">-- Tiết trống / Chưa xếp --</option>
                   {subjects.filter((s) => s.id !== 'sub-shl').map((s) => (
@@ -1342,7 +1347,7 @@ export default function TimetablePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-primary mb-1.5">
+                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-primary mb-1.5">
                   Giáo viên giảng dạy
                 </label>
                 <select
@@ -1351,7 +1356,7 @@ export default function TimetablePage() {
                     setEditTeacherId(e.target.value);
                     setEditError(null);
                   }}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-3.5 py-2.5 rounded-xs border border-border-strong bg-surface text-text-primary text-sm shadow-xs focus:outline-none focus:ring-1 focus:ring-accent"
                 >
                   <option value="">-- Tự động theo phân công môn --</option>
                   {teachers.map((t) => (
@@ -1360,14 +1365,14 @@ export default function TimetablePage() {
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] text-text-muted mt-1.5">
+                <p className="text-[11px] font-mono text-text-muted mt-1.5">
                   Hệ thống tự động tra cứu giáo viên phụ trách môn của lớp từ bảng phân công giảng dạy.
                 </p>
               </div>
             </>
           )}
 
-          <div className="flex items-center justify-between pt-4 border-t border-border mt-6">
+          <div className="flex items-center justify-between pt-4 border-t border-border-strong mt-6">
             {editSubjectId && !(editingSlot?.day === 7 && editingSlot?.period === homeroomSlot.period) ? (
               <Button
                 variant="ghost"
@@ -1426,14 +1431,14 @@ export default function TimetablePage() {
           </p>
 
           {copyError && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5 max-h-48 overflow-y-auto">
+            <div className="p-3.5 rounded-xs bg-rose-50 border border-border-strong text-rose-800 text-xs flex items-start gap-2.5 max-h-48 overflow-y-auto shadow-xs">
               <WarningCircle size={18} className="text-rose-600 flex-shrink-0 mt-0.5" />
-              <div className="whitespace-pre-line leading-relaxed font-medium">{copyError}</div>
+              <div className="whitespace-pre-line leading-relaxed font-mono font-medium">{copyError}</div>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-text-primary mb-1.5">
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-primary mb-1.5">
               Chọn lớp học nguồn
             </label>
             <select
@@ -1442,7 +1447,7 @@ export default function TimetablePage() {
                 setSourceClassId(e.target.value);
                 setCopyError(null);
               }}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3.5 py-2.5 rounded-xs border border-border-strong bg-surface text-text-primary text-sm shadow-xs focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="">-- Chọn một lớp nguồn --</option>
               {allClasses
@@ -1455,14 +1460,14 @@ export default function TimetablePage() {
             </select>
           </div>
 
-          <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-800 text-xs flex items-start gap-2">
-            <Info size={16} className="flex-shrink-0 mt-0.5 text-amber-700" />
+          <div className="p-3 rounded-xs bg-surface-muted border border-border-strong text-text-secondary text-xs flex items-start gap-2 shadow-xs">
+            <Info size={16} className="flex-shrink-0 mt-0.5 text-text-primary" />
             <span>
               Lưu ý: Hành động này sẽ thay thế toàn bộ lịch học hiện tại của lớp {activeClass.name}.
             </span>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-border-strong">
             <Button
               variant="secondary"
               type="button"

@@ -305,8 +305,8 @@ export default function SeatingPage() {
   if (!isLoaded) {
     return (
       <div className="p-8 space-y-6 max-w-7xl mx-auto">
-        <div className="h-8 w-64 bg-surface-muted rounded-xl animate-pulse" />
-        <div className="h-[600px] bg-surface-muted rounded-2xl animate-pulse" />
+        <div className="h-8 w-64 bg-surface-muted rounded-xs animate-pulse" />
+        <div className="h-[600px] bg-surface-muted rounded-sm animate-pulse" />
       </div>
     );
   }
@@ -338,18 +338,18 @@ export default function SeatingPage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border no-print">
         <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="px-2.5 py-1 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80 rounded-lg inline-flex items-center gap-1.5 shadow-2xs">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-2.5 py-1 text-xs font-bold bg-teal-subtle text-teal border border-teal/30 rounded-xs inline-flex items-center gap-1.5 shadow-xs">
               <Chalkboard size={14} weight="bold" />
               Trường THCS Nguyễn Tất Thành
             </span>
-            <span className="px-2.5 py-1 text-xs font-semibold bg-surface-muted text-text-secondary border border-border rounded-lg">
+            <span className="px-2.5 py-1 text-xs font-semibold bg-surface-muted text-text-secondary border border-border rounded-xs">
               {currentClass ? currentClass.name : 'Lớp học'} · Phòng {currentClass?.room_name || '101'}
             </span>
-            <span className="px-2.5 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg">
+            <span className="px-2.5 py-1 text-xs font-bold bg-success-bg text-success border border-success/30 rounded-xs">
               {seatedCount}/{totalCapacity} chỗ đã xếp
             </span>
-            <span className="px-2.5 py-1 text-xs font-medium text-text-muted bg-surface-muted rounded-lg border border-border">
+            <span className="px-2.5 py-1 text-xs font-medium text-text-muted bg-surface-muted rounded-xs border border-border">
               {genderStats.maleCount} Nam · {genderStats.femaleCount} Nữ
             </span>
           </div>
@@ -391,19 +391,19 @@ export default function SeatingPage() {
             <CalendarCheck size={16} weight="bold" />
             <span>Chuyên cần hôm nay</span>
             {todayAbsentCount > 0 && (
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse absolute -top-1 -right-1" />
+              <span className="w-2 h-2 rounded-full bg-danger animate-pulse absolute -top-1 -right-1" />
             )}
           </Button>
 
           {/* Gender Filter Segmented Control */}
-          <div className="inline-flex items-center rounded-xl border border-border bg-surface p-0.5 gap-0.5 text-xs shadow-2xs">
+          <div className="inline-flex items-center rounded-xs border border-border-strong bg-surface p-0.5 gap-0.5 text-xs shadow-xs">
             <button
               type="button"
               onClick={() => setGenderFilter('all')}
               className={cn(
-                'px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer text-[12px]',
+                'px-2.5 py-1 rounded-xs font-semibold transition-all cursor-pointer text-[12px]',
                 genderFilter === 'all'
-                  ? 'bg-accent text-white shadow-2xs'
+                  ? 'bg-accent text-accent-text font-bold shadow-xs'
                   : 'text-text-muted hover:text-text-primary'
               )}
             >
@@ -413,10 +413,10 @@ export default function SeatingPage() {
               type="button"
               onClick={() => setGenderFilter('male')}
               className={cn(
-                'px-2 py-1 rounded-lg font-semibold transition-all flex items-center gap-1 cursor-pointer text-[12px]',
+                'px-2 py-1 rounded-xs font-semibold transition-all flex items-center gap-1 cursor-pointer text-[12px]',
                 genderFilter === 'male'
-                  ? 'bg-blue-600 text-white shadow-2xs'
-                  : 'text-text-muted hover:text-blue-600'
+                  ? 'bg-teal text-surface font-bold shadow-xs'
+                  : 'text-text-muted hover:text-teal'
               )}
             >
               <GenderMale size={13} weight="bold" />
@@ -426,10 +426,10 @@ export default function SeatingPage() {
               type="button"
               onClick={() => setGenderFilter('female')}
               className={cn(
-                'px-2 py-1 rounded-lg font-semibold transition-all flex items-center gap-1 cursor-pointer text-[12px]',
+                'px-2 py-1 rounded-xs font-semibold transition-all flex items-center gap-1 cursor-pointer text-[12px]',
                 genderFilter === 'female'
-                  ? 'bg-rose-600 text-white shadow-2xs'
-                  : 'text-text-muted hover:text-rose-600'
+                  ? 'bg-[#964253] text-surface font-bold shadow-xs'
+                  : 'text-text-muted hover:text-[#964253]'
               )}
             >
               <GenderFemale size={13} weight="bold" />
@@ -466,7 +466,7 @@ export default function SeatingPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearAll}
-                className="text-text-muted hover:text-rose-600 gap-1.5"
+                className="text-text-muted hover:text-danger gap-1.5"
               >
                 <ArrowsClockwise size={16} />
                 <span>Xếp lại từ đầu</span>
@@ -478,14 +478,14 @@ export default function SeatingPage() {
 
       {/* Role Banner for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-4 bg-indigo-50 border border-indigo-200/80 rounded-2xl flex items-center justify-between text-sm text-indigo-950 no-print shadow-2xs">
+        <div className="p-3.5 bg-teal-subtle border border-teal/30 rounded-sm flex items-center justify-between text-sm text-text-primary no-print shadow-xs">
           <div className="flex items-center gap-2.5">
-            <ChalkboardTeacher size={20} className="text-indigo-600 flex-shrink-0" weight="duotone" />
+            <ChalkboardTeacher size={20} className="text-teal flex-shrink-0" weight="duotone" />
             <span>
               Bạn đang tra cứu sơ đồ {currentClass?.name} với vai trò <strong>Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>.
             </span>
           </div>
-          <span className="px-2.5 py-1 rounded-lg bg-indigo-100/80 font-bold text-xs text-indigo-700">
+          <span className="px-2 py-0.5 rounded-xs bg-surface border border-teal/30 font-bold text-xs text-teal">
             Chế độ tra cứu
           </span>
         </div>
@@ -493,16 +493,16 @@ export default function SeatingPage() {
 
       {/* Floating Action Banner when seat is selected */}
       {selectedSeatId && (
-        <div className="p-4 bg-indigo-50 border-2 border-indigo-300 rounded-2xl flex items-center justify-between text-sm shadow-xs no-print">
+        <div className="p-3.5 bg-accent/20 border-2 border-accent rounded-sm flex items-center justify-between text-sm shadow-xs no-print">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 animate-pulse shadow-xs">
+            <div className="w-8 h-8 rounded-xs bg-accent text-accent-text border border-border-strong flex items-center justify-center flex-shrink-0 animate-pulse shadow-xs">
               <ArrowsLeftRight size={18} weight="bold" />
             </div>
             <div>
               <span className="font-bold text-text-primary text-[15px]">
                 Đang chọn: {selectedStudent ? selectedStudent.full_name : 'Ghế trống'}
               </span>
-              <span className="text-text-muted ml-2 text-xs">
+              <span className="text-text-secondary ml-2 text-xs font-medium">
                 (Nhấp ghế khác trên sơ đồ để hoán đổi, hoặc bấm học sinh chưa xếp bên dưới để gán vào)
               </span>
             </div>
@@ -511,7 +511,7 @@ export default function SeatingPage() {
             variant="ghost"
             size="sm"
             onClick={() => setSelectedSeatId(null)}
-            className="text-text-muted hover:text-text-primary h-8 px-3"
+            className="text-text-muted hover:text-text-primary h-8 px-3 border border-border bg-surface"
           >
             <X size={16} />
             <span>Hủy chọn</span>
@@ -521,9 +521,9 @@ export default function SeatingPage() {
 
       {/* Helper notice when Attendance Overlay is active */}
       {showAttendanceOverlay && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs text-amber-900 no-print">
+        <div className="p-3 bg-warning-bg border border-warning/40 rounded-sm flex items-center justify-between text-xs text-warning no-print shadow-xs">
           <div className="flex items-center gap-2">
-            <CalendarCheck size={16} className="text-amber-700 flex-shrink-0" weight="bold" />
+            <CalendarCheck size={16} className="text-warning flex-shrink-0" weight="bold" />
             <span>
               Đang bật lớp phủ <strong>Chuyên cần hôm nay ({formatDateVietnamese(new Date())})</strong>: Ghế học sinh Vắng được đánh dấu viền đỏ, Đi muộn viền vàng.
             </span>
@@ -531,7 +531,7 @@ export default function SeatingPage() {
           <button
             type="button"
             onClick={() => setShowAttendanceOverlay(false)}
-            className="text-amber-700 hover:text-amber-900 font-semibold underline cursor-pointer"
+            className="text-text-primary hover:underline font-bold cursor-pointer"
           >
             Tắt lớp phủ
           </button>
@@ -541,15 +541,15 @@ export default function SeatingPage() {
       {/* ========================================================================= */}
       {/* CLASSROOM SEATING MAP CONTAINER */}
       {/* ========================================================================= */}
-      <div className="bg-surface rounded-3xl border border-border p-6 md:p-8 shadow-sm space-y-7 printable-card">
+      <div className="bg-surface rounded-sm border border-border-strong p-6 md:p-8 shadow-xs space-y-7 printable-card">
         {/* Back Wall Marker (Rendered on top when viewPerspective === 'nhin_tu_buc_giang') */}
         {viewPerspective === 'nhin_tu_buc_giang' && (
-          <div className="w-full pb-3 border-b-2 border-dashed border-border/80 flex items-center justify-between text-xs text-text-muted">
+          <div className="w-full pb-3 border-b-2 border-dashed border-border-strong flex items-center justify-between text-xs text-text-muted">
             <div className="flex items-center gap-2 font-medium">
-              <div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-700" />
+              <div className="w-2.5 h-2.5 rounded-full bg-border-strong" />
               <span>Cửa sổ thông gió & Tường sau phòng học</span>
             </div>
-            <div className="font-bold uppercase tracking-widest text-text-muted inline-flex items-center gap-1.5">
+            <div className="font-bold uppercase tracking-widest text-text-muted inline-flex items-center gap-1.5 font-mono">
               <span>PHÍA SAU LỚP</span>
               <ArrowUp size={14} weight="bold" />
             </div>
@@ -558,39 +558,39 @@ export default function SeatingPage() {
 
         {/* Front Area when in 'nhin_tu_duoi_len' perspective (View A: Nhìn từ dưới lên - Board at top) */}
         {viewPerspective === 'nhin_tu_duoi_len' && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6 border-b-2 border-border/80">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6 border-b-2 border-border-strong">
             {/* Front Left: BÀN GIÁO VIÊN (Aligned with Dãy 1) */}
-            <div className="bg-amber-50/70 border-2 border-amber-200/90 rounded-2xl p-4 flex items-center gap-3 shadow-2xs">
-              <div className="w-11 h-11 rounded-xl bg-amber-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+            <div className="bg-surface-muted border-2 border-border-strong rounded-sm p-3.5 flex items-center gap-3 shadow-xs">
+              <div className="w-10 h-10 rounded-xs bg-accent text-accent-text border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs">
                 <ChalkboardTeacher size={22} weight="bold" />
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-bold uppercase tracking-wider text-amber-800">BÀN GIÁO VIÊN</div>
-                <div className="text-[11px] text-amber-700 truncate font-medium mt-0.5">
+                <div className="text-xs font-bold uppercase tracking-wider text-text-primary">BÀN GIÁO VIÊN</div>
+                <div className="text-[11px] text-text-muted truncate font-medium mt-0.5">
                   {teacherName ? `GVCN: ${teacherName}` : 'Vị trí giảng dạy (Cạnh Dãy 1)'}
                 </div>
               </div>
             </div>
 
             {/* Front Center: BẢNG LỚP HỌC (Aligned with Dãy 2 & 3) */}
-            <div className="md:col-span-2 bg-[#132a24] text-white border-2 border-[#244b3f] rounded-2xl p-4 text-center shadow-sm relative flex flex-col justify-center">
-              <div className="text-xs font-extrabold uppercase tracking-widest text-emerald-100 flex items-center justify-center gap-2">
+            <div className="md:col-span-2 bg-[#132a24] text-cream border-2 border-[#244b3f] rounded-sm p-4 text-center shadow-xs relative flex flex-col justify-center">
+              <div className="text-xs font-extrabold uppercase tracking-widest text-[#a8dfc8] flex items-center justify-center gap-2">
                 <Chalkboard size={18} weight="bold" />
                 <span>BỤC GIẢNG & BẢNG VIẾT PHẤN</span>
               </div>
-              <div className="text-[11px] text-emerald-300/80 mt-1 font-mono font-medium">
+              <div className="text-[11px] text-cream/70 mt-1 font-mono font-medium">
                 Bảng từ chống lóa 4.0m · Hướng nhìn từ cuối lớp lên bục giảng
               </div>
             </div>
 
             {/* Front Right: CỬA VÀO (Aligned with Dãy 4) */}
-            <div className="bg-emerald-50/70 border-2 border-emerald-200/90 rounded-2xl p-4 flex items-center gap-3 shadow-2xs">
-              <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+            <div className="bg-surface-muted border-2 border-border-strong rounded-sm p-3.5 flex items-center gap-3 shadow-xs">
+              <div className="w-10 h-10 rounded-xs bg-teal text-surface border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs">
                 <Door size={22} weight="bold" />
               </div>
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-emerald-800">CỬA RA VÀO</div>
-                <div className="text-[11px] text-emerald-600 font-medium mt-0.5">Lối vào lớp học (Cạnh Dãy 4)</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-text-primary">CỬA RA VÀO</div>
+                <div className="text-[11px] text-text-muted font-medium mt-0.5">Lối vào lớp học (Cạnh Dãy 4)</div>
               </div>
             </div>
           </div>
@@ -611,9 +611,9 @@ export default function SeatingPage() {
             return (
               <div
                 key={col}
-                className="py-2.5 px-2 bg-surface-muted/60 rounded-xl border border-border/80 flex flex-col items-center justify-center shadow-2xs"
+                className="py-2 px-2 bg-surface-muted rounded-xs border border-border-strong flex flex-col items-center justify-center shadow-xs"
               >
-                <span className="text-xs font-extrabold tracking-wider text-text-primary">{colInfo.label}</span>
+                <span className="text-xs font-extrabold tracking-wider text-text-primary font-mono">{colInfo.label}</span>
                 <span className="text-[10px] text-text-muted font-medium mt-0.5">{colInfo.note}</span>
               </div>
             );
@@ -674,35 +674,35 @@ export default function SeatingPage() {
                           (genderFilter === 'female' && isFemale));
 
                       // Styling rules based on active overlay / filter
-                      let containerClasses = 'bg-surface-muted/40 border-border/90 hover:border-indigo-400 hover:bg-surface shadow-2xs';
+                      let containerClasses = 'bg-surface border-border-strong hover:border-accent hover:bg-surface-muted/30 shadow-xs';
 
                       if (isSeatSelected) {
-                        containerClasses = 'bg-indigo-50 border-indigo-600 ring-4 ring-indigo-200/80 shadow-xs';
+                        containerClasses = 'bg-accent/20 border-accent ring-2 ring-accent shadow-xs';
                       } else if (showAttendanceOverlay && student) {
                         if (attStatus === 'absent') {
-                          containerClasses = 'bg-rose-50/90 border-rose-500 ring-2 ring-rose-300 shadow-xs';
+                          containerClasses = 'bg-danger-bg border-danger ring-2 ring-danger/30 shadow-xs';
                         } else if (attStatus === 'late') {
-                          containerClasses = 'bg-amber-50/90 border-amber-500 ring-2 ring-amber-300 shadow-xs';
+                          containerClasses = 'bg-warning-bg border-warning ring-2 ring-warning/30 shadow-xs';
                         } else if (attStatus === 'excused') {
-                          containerClasses = 'bg-slate-100 border-slate-500 ring-2 ring-slate-300 shadow-xs';
+                          containerClasses = 'bg-surface-muted border-border-strong ring-2 ring-border shadow-xs';
                         } else {
-                          containerClasses = 'bg-emerald-50/40 border-emerald-300/80 shadow-2xs';
+                          containerClasses = 'bg-success-bg border-success/60 shadow-xs';
                         }
                       } else if (isHighlightedByGender) {
                         if (isMale) {
-                          containerClasses = 'bg-blue-50/90 border-blue-400 ring-2 ring-blue-300 shadow-xs';
+                          containerClasses = 'bg-teal-subtle border-teal ring-2 ring-teal/30 shadow-xs';
                         } else if (isFemale) {
-                          containerClasses = 'bg-pink-50/90 border-pink-400 ring-2 ring-pink-300 shadow-xs';
+                          containerClasses = 'bg-[#fcf0f2] border-[#964253] ring-2 ring-[#964253]/30 shadow-xs';
                         }
                       } else if (!student) {
-                        containerClasses = 'bg-surface/50 border-dashed border-border/90 hover:bg-indigo-50/30 hover:border-indigo-300 text-text-muted';
+                        containerClasses = 'bg-surface-muted/30 border-dashed border-border-strong hover:bg-accent/10 hover:border-accent text-text-muted';
                       }
 
                       return (
                         <div
                           onClick={() => handleSeatClick(seatItem)}
                           className={cn(
-                            'p-2.5 rounded-xl border-2 text-xs cursor-pointer transition-all relative group min-h-[84px] flex flex-col justify-between',
+                            'p-2.5 rounded-xs border-2 text-xs cursor-pointer transition-all relative group min-h-[84px] flex flex-col justify-between',
                             containerClasses,
                             isDimmedByGender && 'opacity-25 filter grayscale'
                           )}
@@ -714,13 +714,13 @@ export default function SeatingPage() {
                                   {student.student_code}
                                 </span>
                                 <div className="flex items-center gap-1">
-                                  <span className="text-[9px] font-bold text-text-muted/70 bg-surface-muted px-1 rounded">
+                                  <span className="text-[9px] font-bold text-text-muted font-mono bg-surface-muted px-1 rounded-xs border border-border">
                                     {seatItem === seat01 ? '01' : '02'}
                                   </span>
                                   {student.gender === 'male' ? (
-                                    <GenderMale size={13} weight="bold" className="text-blue-500" />
+                                    <GenderMale size={13} weight="bold" className="text-teal" />
                                   ) : (
-                                    <GenderFemale size={13} weight="bold" className="text-rose-500" />
+                                    <GenderFemale size={13} weight="bold" className="text-[#964253]" />
                                   )}
                                 </div>
                               </div>
@@ -739,22 +739,22 @@ export default function SeatingPage() {
                               {showAttendanceOverlay && attStatus && (
                                 <div className="pt-0.5">
                                   {attStatus === 'absent' && (
-                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-600 text-white tracking-wider">
+                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-danger text-white tracking-wider">
                                       VẮNG
                                     </span>
                                   )}
                                   {attStatus === 'late' && (
-                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500 text-white tracking-wider">
+                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-warning text-accent-text tracking-wider">
                                       MUỘN
                                     </span>
                                   )}
                                   {attStatus === 'excused' && (
-                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-600 text-white tracking-wider">
+                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-surface-muted border border-border-strong text-text-secondary tracking-wider">
                                       PHÉP
                                     </span>
                                   )}
                                   {attStatus === 'present' && (
-                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-600/90 text-white tracking-wider">
+                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-success text-white tracking-wider">
                                       CÓ MẶT
                                     </span>
                                   )}
@@ -765,7 +765,7 @@ export default function SeatingPage() {
                                 <button
                                   type="button"
                                   onClick={(e) => handleRemoveFromSeat(e, seatItem.id)}
-                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm no-print cursor-pointer"
+                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger text-white rounded-xs border border-border-strong flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-xs no-print cursor-pointer"
                                   title="Gỡ khỏi ghế"
                                 >
                                   <X size={11} weight="bold" />
@@ -777,7 +777,7 @@ export default function SeatingPage() {
                               <div className="text-[11px] font-semibold text-text-muted">
                                 {seatItem === seat01 ? '+ Trống (01)' : '+ Trống (02)'}
                               </div>
-                              <div className="text-[9px] text-text-muted/70">
+                              <div className="text-[9px] text-text-muted font-mono">
                                 {seatItem === seat01 ? 'Vị trí 01' : 'Vị trí 02'}
                               </div>
                             </div>
@@ -789,16 +789,16 @@ export default function SeatingPage() {
                     return (
                       <div
                         key={desk.id}
-                        className="bg-surface rounded-2xl border-2 border-border/80 p-3 shadow-2xs hover:border-indigo-300 hover:shadow-xs transition-all flex flex-col justify-between"
+                        className="bg-surface rounded-sm border-2 border-border-strong p-3 shadow-xs hover:border-accent transition-all flex flex-col justify-between"
                       >
                         {/* Desk Header Badge */}
-                        <div className="flex items-center justify-between text-xs pb-2 border-b border-border/70">
+                        <div className="flex items-center justify-between text-xs pb-2 border-b border-border">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-extrabold text-text-primary text-[13px]">
+                            <span className="font-extrabold text-text-primary text-[13px] font-mono">
                               Bàn {desk.desk_number.toString().padStart(2, '0')}
                             </span>
                           </div>
-                          <span className="text-[11px] font-semibold text-text-muted bg-surface-muted px-2 py-0.5 rounded-md border border-border/60">
+                          <span className="text-[11px] font-semibold font-mono text-text-muted bg-surface-muted px-2 py-0.5 rounded-xs border border-border">
                             Dãy {desk.col_num} · H{desk.row_num}
                           </span>
                         </div>
@@ -822,12 +822,12 @@ export default function SeatingPage() {
         {/* =================================================================== */}
         {/* Back Wall Marker when in 'nhin_tu_duoi_len' (View A: Back wall at bottom) */}
         {viewPerspective === 'nhin_tu_duoi_len' && (
-          <div className="w-full pt-5 border-t-2 border-dashed border-border/80 flex items-center justify-between text-xs text-text-muted">
+          <div className="w-full pt-5 border-t-2 border-dashed border-border-strong flex items-center justify-between text-xs text-text-muted">
             <div className="flex items-center gap-2 font-medium">
-              <div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-700" />
+              <div className="w-2.5 h-2.5 rounded-full bg-border-strong" />
               <span>Cửa sổ thông gió & Tường sau phòng học</span>
             </div>
-            <div className="font-bold uppercase tracking-widest text-text-muted inline-flex items-center gap-1.5">
+            <div className="font-bold uppercase tracking-widest text-text-muted inline-flex items-center gap-1.5 font-mono">
               <span>PHÍA SAU LỚP</span>
               <ArrowDown size={14} weight="bold" />
             </div>
@@ -836,8 +836,8 @@ export default function SeatingPage() {
 
         {/* Front Area when in 'nhin_tu_buc_giang' (View B: Nhìn từ bục giảng xuống - Board at bottom) */}
         {viewPerspective === 'nhin_tu_buc_giang' && (
-          <div className="pt-6 border-t-2 border-border/80 space-y-3">
-            <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
+          <div className="pt-6 border-t-2 border-border-strong space-y-3">
+            <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted font-mono">
               <ArrowDown size={14} weight="bold" />
               <span>BỤC GIẢNG & BẢNG LỚP HỌC</span>
               <ArrowDown size={14} weight="bold" />
@@ -845,48 +845,48 @@ export default function SeatingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-stretch">
               {/* Front Left: CỬA RA VÀO (Aligned with Dãy 4) */}
-              <div className="bg-emerald-50/80 border-2 border-emerald-200/90 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs hover:border-emerald-300 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+              <div className="bg-surface-muted border-2 border-border-strong rounded-sm p-4 flex items-center gap-3.5 shadow-xs">
+                <div className="w-11 h-11 rounded-xs bg-teal text-surface border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs">
                   <Door size={24} weight="bold" />
                 </div>
                 <div>
-                  <div className="text-xs font-extrabold uppercase tracking-wider text-emerald-800">
+                  <div className="text-xs font-extrabold uppercase tracking-wider text-text-primary">
                     CỬA RA VÀO
                   </div>
-                  <div className="text-[11px] text-emerald-700 font-medium mt-0.5">
+                  <div className="text-[11px] text-text-muted font-medium mt-0.5">
                     Lối vào lớp học (Cạnh Dãy 4)
                   </div>
                 </div>
               </div>
 
               {/* Front Center: BẢNG VIẾT PHẤN & BỤC GIẢNG (Aligned with Dãy 3 & Dãy 2) */}
-              <div className="md:col-span-2 bg-[#132a24] text-white border-2 border-[#244b3f] rounded-2xl p-4 shadow-sm relative flex flex-col justify-center text-center">
-                <div className="text-[13px] font-extrabold uppercase tracking-widest text-emerald-100 flex items-center justify-center gap-2">
+              <div className="md:col-span-2 bg-[#132a24] text-cream border-2 border-[#244b3f] rounded-sm p-4 shadow-xs relative flex flex-col justify-center text-center">
+                <div className="text-[13px] font-extrabold uppercase tracking-widest text-[#a8dfc8] flex items-center justify-center gap-2">
                   <Chalkboard size={20} weight="bold" />
                   <span>BỤC GIẢNG & BẢNG VIẾT PHẤN</span>
                 </div>
-                <div className="text-[11px] text-emerald-300/80 mt-1 font-mono font-medium">
+                <div className="text-[11px] text-cream/70 mt-1 font-mono font-medium">
                   Bảng từ chống lóa 4.0m · Hướng nhìn từ bục giảng xuống lớp
                 </div>
 
                 {/* Chalk Tray Styling */}
-                <div className="w-48 h-1.5 bg-emerald-950/90 rounded-full mx-auto mt-2 flex items-center justify-center gap-1.5">
+                <div className="w-48 h-1.5 bg-[#091714] rounded-full mx-auto mt-2 flex items-center justify-center gap-1.5">
                   <div className="w-4 h-1 bg-white rounded-xs opacity-90" />
-                  <div className="w-3 h-1 bg-amber-300 rounded-xs opacity-90" />
-                  <div className="w-6 h-1 bg-emerald-800 rounded-xs" />
+                  <div className="w-3 h-1 bg-accent rounded-xs opacity-90" />
+                  <div className="w-6 h-1 bg-teal rounded-xs" />
                 </div>
               </div>
 
               {/* Front Right: BÀN GIÁO VIÊN (Aligned with Dãy 1) */}
-              <div className="bg-amber-50/80 border-2 border-amber-200/90 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs hover:border-amber-300 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-amber-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+              <div className="bg-surface-muted border-2 border-border-strong rounded-sm p-4 flex items-center gap-3.5 shadow-xs">
+                <div className="w-11 h-11 rounded-xs bg-accent text-accent-text border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs">
                   <ChalkboardTeacher size={24} weight="bold" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-extrabold uppercase tracking-wider text-amber-800">
+                  <div className="text-xs font-extrabold uppercase tracking-wider text-text-primary">
                     BÀN GIÁO VIÊN
                   </div>
-                  <div className="text-[11px] text-amber-700 truncate font-medium mt-0.5">
+                  <div className="text-[11px] text-text-muted truncate font-medium mt-0.5">
                     {teacherName ? `GVCN: ${teacherName}` : 'Vị trí giảng bài (Cạnh Dãy 1)'}
                   </div>
                 </div>
@@ -916,10 +916,10 @@ export default function SeatingPage() {
       {/* ========================================================================= */}
       {/* UNSEATED STUDENTS SECTION */}
       {/* ========================================================================= */}
-      <div className="bg-surface rounded-2xl border border-border p-6 shadow-xs space-y-4 no-print">
+      <div className="bg-surface rounded-sm border border-border-strong p-6 shadow-xs space-y-4 no-print">
         <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <UserPlus size={20} className="text-indigo-600" weight="duotone" />
+            <UserPlus size={20} className="text-teal" weight="duotone" />
             <h2 className="text-base font-bold text-text-primary">
               Danh sách học sinh chưa xếp chỗ ({unseatedStudents.length})
             </h2>
@@ -932,8 +932,8 @@ export default function SeatingPage() {
         </div>
 
         {unseatedStudents.length === 0 ? (
-          <div className="py-3 flex items-center gap-2.5 text-sm text-emerald-700 font-semibold bg-emerald-50/60 border border-emerald-100 px-4 rounded-xl">
-            <CheckCircle size={18} weight="bold" className="text-emerald-600" />
+          <div className="py-3 flex items-center gap-2.5 text-sm text-success font-semibold bg-success-bg border border-success/30 px-4 rounded-xs">
+            <CheckCircle size={18} weight="bold" className="text-success" />
             <span>
               Tất cả {students.length} học sinh trong lớp đã có vị trí chỗ ngồi ổn định trên sơ đồ.
             </span>
@@ -946,14 +946,14 @@ export default function SeatingPage() {
                 type="button"
                 disabled={!isHomeroom}
                 onClick={() => isHomeroom && handleAssignUnseated(student.id)}
-                className={`px-3.5 py-2 rounded-xl border border-border bg-surface-muted text-sm font-semibold text-text-primary flex items-center gap-2 transition-all shadow-2xs ${
+                className={`px-3 py-1.5 rounded-xs border border-border-strong bg-surface-muted text-xs font-semibold text-text-primary flex items-center gap-2 transition-all shadow-xs ${
                   isHomeroom
-                    ? 'hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 cursor-pointer'
+                    ? 'hover:bg-accent/20 hover:border-accent cursor-pointer'
                     : 'cursor-default'
                 }`}
               >
                 <span>{student.full_name}</span>
-                <span className="font-mono text-xs text-text-muted">({student.student_code})</span>
+                <span className="font-mono text-[11px] text-text-muted">({student.student_code})</span>
               </button>
             ))}
           </div>

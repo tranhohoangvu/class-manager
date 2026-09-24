@@ -227,9 +227,9 @@ export default function DashboardPage() {
 
       {/* Role Notice for Subject Teachers */}
       {isSubjectTeacher && (
-        <div className="p-5 bg-indigo-500/10 border border-indigo-500/25 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+        <div className="p-4 bg-teal-subtle border border-teal/30 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-700 flex items-center justify-center font-bold text-sm flex-shrink-0 border border-indigo-500/30">
+            <div className="w-10 h-10 rounded-xs bg-teal text-surface flex items-center justify-center font-bold text-xs font-mono flex-shrink-0 border border-border-strong shadow-xs">
               GVBM
             </div>
             <div>
@@ -237,7 +237,7 @@ export default function DashboardPage() {
                 <span className="font-bold text-[14px] text-text-primary">
                   Phân công Bộ môn: {teacherSubjects.map((s) => s.name).join(', ')}
                 </span>
-                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-700 font-semibold">
+                <span className="text-[11px] px-2 py-0.5 rounded-xs bg-surface border border-teal/30 text-teal font-semibold font-mono">
                   Điểm danh tiết học & Xem sơ đồ
                 </span>
               </div>
@@ -256,13 +256,13 @@ export default function DashboardPage() {
       )}
 
       {/* Classroom Focal Status Card (Centerpiece) */}
-      <div className="bg-surface rounded-2xl border border-border p-6 md:p-8 shadow-sm hover:shadow transition-shadow">
+      <div className="bg-surface rounded-sm border border-border-strong p-6 md:p-8 shadow-xs">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left / Center stats: Live Attendance Gauge & Breakdown */}
           <div className="lg:col-span-8 space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[13px] font-bold text-text-muted uppercase tracking-wider">
+                <span className="text-[12px] font-bold text-text-muted uppercase tracking-wider font-mono">
                   Tình trạng chuyên cần ngày hôm nay
                 </span>
                 <div className="flex items-baseline gap-3 mt-1">
@@ -280,63 +280,63 @@ export default function DashboardPage() {
               <div className="hidden sm:block">
                 <span
                   className={cn(
-                    'px-3 py-1.5 rounded-xl text-xs font-bold border',
+                    'px-3 py-1 rounded-xs text-xs font-bold border font-mono',
                     isAttendanceDone
-                      ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/25'
-                      : 'bg-amber-500/10 text-amber-700 border-amber-500/25'
+                      ? 'bg-success-bg text-success border-success/30'
+                      : 'bg-warning-bg text-warning border-warning/30'
                   )}
                 >
-                  {isAttendanceDone ? 'Đã hoàn thành' : 'Đang chờ ghi nhận'}
+                  {isAttendanceDone ? 'ĐÃ HOÀN THÀNH' : 'CHỜ GHI NHẬN'}
                 </span>
               </div>
             </div>
 
             {/* Segmented Progress Bar */}
-            <div className="h-3.5 w-full bg-surface-muted rounded-full overflow-hidden flex gap-0.5 p-0.5 border border-border">
+            <div className="h-3 w-full bg-surface-muted rounded-xs overflow-hidden flex gap-0.5 p-0.5 border border-border-strong">
               {isAttendanceDone ? (
                 <>
                   <div
                     style={{ width: `${(presentCount / (totalStudents || 1)) * 100}%` }}
-                    className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                    className="bg-success h-full rounded-xs transition-all duration-500"
                     title={`Có mặt: ${presentCount}`}
                   />
                   <div
                     style={{ width: `${(lateCount / (totalStudents || 1)) * 100}%` }}
-                    className="bg-amber-500 h-full rounded-full transition-all duration-500"
+                    className="bg-warning h-full rounded-xs transition-all duration-500"
                     title={`Đi muộn: ${lateCount}`}
                   />
                   <div
                     style={{ width: `${(excusedCount / (totalStudents || 1)) * 100}%` }}
-                    className="bg-slate-400 h-full rounded-full transition-all duration-500"
+                    className="bg-slate-400 h-full rounded-xs transition-all duration-500"
                     title={`Có phép: ${excusedCount}`}
                   />
                   <div
                     style={{ width: `${(absentCount / (totalStudents || 1)) * 100}%` }}
-                    className="bg-rose-500 h-full rounded-full transition-all duration-500"
+                    className="bg-danger h-full rounded-xs transition-all duration-500"
                     title={`Vắng: ${absentCount}`}
                   />
                 </>
               ) : (
-                <div className="w-full bg-surface-muted h-full rounded-full animate-pulse" />
+                <div className="w-full bg-surface-muted h-full rounded-xs animate-pulse" />
               )}
             </div>
 
             {/* Attendance Detail Badges */}
             <div className="flex items-center gap-3 sm:gap-6 flex-wrap text-sm font-medium">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-success" />
                 <span className="text-text-secondary">Có mặt:</span>
                 <strong className="text-text-primary font-bold">{presentCount}</strong>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-danger" />
                 <span className="text-text-secondary">Vắng mặt:</span>
-                <strong className="text-rose-600 font-bold">{absentCount}</strong>
+                <strong className="text-danger font-bold">{absentCount}</strong>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-warning" />
                 <span className="text-text-secondary">Đi muộn:</span>
-                <strong className="text-amber-600 font-bold">{lateCount}</strong>
+                <strong className="text-warning font-bold">{lateCount}</strong>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
@@ -349,22 +349,22 @@ export default function DashboardPage() {
           {/* Right side: Quick Specs & Primary Trigger */}
           <div className="lg:col-span-4 lg:border-l lg:border-border lg:pl-8 space-y-4">
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-3 rounded-xl bg-surface-muted/60 border border-border/60">
-                <div className="text-xl font-bold text-text-primary">{totalStudents}</div>
+              <div className="p-3 rounded-xs bg-surface-muted border border-border-strong">
+                <div className="text-xl font-bold font-mono text-text-primary">{totalStudents}</div>
                 <div className="text-[12px] text-text-muted mt-0.5">Sĩ số lớp</div>
               </div>
-              <div className="p-3 rounded-xl bg-surface-muted/60 border border-border/60">
-                <div className="text-xl font-bold text-text-primary">{desks.length}</div>
+              <div className="p-3 rounded-xs bg-surface-muted border border-border-strong">
+                <div className="text-xl font-bold font-mono text-text-primary">{desks.length}</div>
                 <div className="text-[12px] text-text-muted mt-0.5">Bàn học</div>
               </div>
-              <div className="p-3 rounded-xl bg-surface-muted/60 border border-border/60">
-                <div className="text-xl font-bold text-text-primary">{announcements.length}</div>
-                <div className="text-[12px] text-text-muted mt-0.5">Tin thông báo</div>
+              <div className="p-3 rounded-xs bg-surface-muted border border-border-strong">
+                <div className="text-xl font-bold font-mono text-text-primary">{announcements.length}</div>
+                <div className="text-[12px] text-text-muted mt-0.5">Thông báo</div>
               </div>
             </div>
 
             <Link href="/attendance" className="block w-full">
-              <Button variant="primary" size="lg" className="w-full justify-center shadow-sm">
+              <Button variant="primary" size="lg" className="w-full justify-center">
                 <ClipboardText size={20} weight="bold" />
                 <span>{isAttendanceDone ? 'Cập nhật điểm danh' : 'Bắt đầu điểm danh ngay'}</span>
               </Button>
@@ -376,12 +376,12 @@ export default function DashboardPage() {
       {/* Quick Action Dock */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
         <Link href="/attendance">
-          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <div className="bg-surface border border-border-strong rounded-sm p-3.5 flex items-center gap-3 hover:bg-accent/10 hover:border-accent transition-all shadow-xs cursor-pointer group active:translate-x-px active:translate-y-px">
+            <div className="w-10 h-10 rounded-xs bg-surface-muted border border-border text-teal flex items-center justify-center flex-shrink-0 group-hover:bg-accent group-hover:text-accent-text group-hover:border-border-strong transition-colors">
               <ClipboardText size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-text-primary transition-colors">
                 Điểm danh lớp
               </div>
               <div className="text-[11px] text-text-muted">Chuyên cần hôm nay</div>
@@ -390,12 +390,12 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/timetable">
-          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <div className="bg-surface border border-border-strong rounded-sm p-3.5 flex items-center gap-3 hover:bg-accent/10 hover:border-accent transition-all shadow-xs cursor-pointer group active:translate-x-px active:translate-y-px">
+            <div className="w-10 h-10 rounded-xs bg-surface-muted border border-border text-teal flex items-center justify-center flex-shrink-0 group-hover:bg-accent group-hover:text-accent-text group-hover:border-border-strong transition-colors">
               <CalendarDots size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-text-primary transition-colors">
                 Thời khóa biểu
               </div>
               <div className="text-[11px] text-text-muted">Lịch học 6 ngày</div>
@@ -404,12 +404,12 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/seating">
-          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <div className="bg-surface border border-border-strong rounded-sm p-3.5 flex items-center gap-3 hover:bg-accent/10 hover:border-accent transition-all shadow-xs cursor-pointer group active:translate-x-px active:translate-y-px">
+            <div className="w-10 h-10 rounded-xs bg-surface-muted border border-border text-teal flex items-center justify-center flex-shrink-0 group-hover:bg-accent group-hover:text-accent-text group-hover:border-border-strong transition-colors">
               <Armchair size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-text-primary transition-colors">
                 Sắp xếp chỗ ngồi
               </div>
               <div className="text-[11px] text-text-muted">Sơ đồ 20 bàn</div>
@@ -418,12 +418,12 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/students">
-          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <div className="bg-surface border border-border-strong rounded-sm p-3.5 flex items-center gap-3 hover:bg-accent/10 hover:border-accent transition-all shadow-xs cursor-pointer group active:translate-x-px active:translate-y-px">
+            <div className="w-10 h-10 rounded-xs bg-surface-muted border border-border text-teal flex items-center justify-center flex-shrink-0 group-hover:bg-accent group-hover:text-accent-text group-hover:border-border-strong transition-colors">
               <Users size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-text-primary transition-colors">
                 Danh sách học sinh
               </div>
               <div className="text-[11px] text-text-muted">Hồ sơ 40 học sinh</div>
@@ -432,12 +432,12 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/announcements">
-          <div className="bg-surface border border-border rounded-xl p-3.5 flex items-center gap-3 hover:border-accent hover:shadow-sm transition-all cursor-pointer group col-span-2 sm:col-span-1">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <div className="bg-surface border border-border-strong rounded-sm p-3.5 flex items-center gap-3 hover:bg-accent/10 hover:border-accent transition-all shadow-xs cursor-pointer group active:translate-x-px active:translate-y-px col-span-2 sm:col-span-1">
+            <div className="w-10 h-10 rounded-xs bg-surface-muted border border-border text-teal flex items-center justify-center flex-shrink-0 group-hover:bg-accent group-hover:text-accent-text group-hover:border-border-strong transition-colors">
               <Megaphone size={20} weight="duotone" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-text-primary group-hover:text-accent transition-colors">
+              <div className="text-[13px] font-bold text-text-primary group-hover:text-text-primary transition-colors">
                 Bảng thông báo
               </div>
               <div className="text-[11px] text-text-muted">Tin tức lớp học</div>
@@ -451,10 +451,10 @@ export default function DashboardPage() {
         {/* Left Column: Today's Timetable, Notable Attendance & Classroom Seating Preview */}
         <div className="lg:col-span-2 space-y-8">
           {/* Widget 1: Lịch học hôm nay (Today's Timetable Widget) */}
-          <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
-            <div className="px-6 py-4.5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-muted/30">
+          <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs">
+            <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-muted/50">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-9 h-9 rounded-xs bg-teal text-surface flex items-center justify-center flex-shrink-0 shadow-xs border border-border-strong">
                   <CalendarDots size={20} weight="duotone" />
                 </div>
                 <div>
@@ -463,12 +463,12 @@ export default function DashboardPage() {
                       Lịch học hôm nay — {isWeekend ? 'Xem trước Thứ Hai' : todayDayConfig?.name}
                     </h2>
                     {isWeekend ? (
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                        Chủ Nhật (Nghỉ)
+                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-xs bg-surface-muted text-text-muted border border-border">
+                        CHỦ NHẬT (NGHỈ)
                       </span>
                     ) : (
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        Buổi sáng (5 tiết)
+                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-xs bg-teal-subtle text-teal border border-teal/30">
+                        BUỔI SÁNG (5 TIẾT)
                       </span>
                     )}
                   </div>
@@ -482,7 +482,7 @@ export default function DashboardPage() {
 
               <div className="flex items-center gap-2 self-end sm:self-auto">
                 <Link href="/timetable">
-                  <Button variant="ghost" size="sm" className="text-accent cursor-pointer">
+                  <Button variant="ghost" size="sm" className="text-text-primary hover:text-teal cursor-pointer">
                     <span>Xem TKB tuần</span>
                     <ArrowRight size={14} />
                   </Button>
@@ -492,7 +492,7 @@ export default function DashboardPage() {
 
             {/* Progress bar on active school days */}
             {!isWeekend && (
-              <div className="w-full bg-surface-muted h-1 overflow-hidden">
+              <div className="w-full bg-surface-muted h-1 overflow-hidden border-b border-border">
                 <div
                   className="bg-accent h-full transition-all duration-500"
                   style={{ width: `${periodProgressPercent}%` }}
@@ -512,24 +512,24 @@ export default function DashboardPage() {
                   <div
                     key={period.period}
                     className={cn(
-                      'p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all',
+                      'p-3.5 rounded-xs border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all',
                       isOngoing
-                        ? 'bg-blue-50/70 border-blue-300 ring-1 ring-blue-400 shadow-2xs'
+                        ? 'bg-accent/15 border-accent ring-1 ring-accent shadow-xs'
                         : isCompleted
-                        ? 'bg-surface-muted/40 border-border/70 opacity-80'
-                        : 'bg-surface border-border hover:border-accent/40'
+                        ? 'bg-surface-muted/60 border-border opacity-75'
+                        : 'bg-surface border-border-strong hover:border-accent'
                     )}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {/* Period Time Badge */}
                       <div className="text-center w-20 flex-shrink-0">
                         <span className={cn(
-                          'text-xs font-bold block',
-                          isOngoing ? 'text-blue-700' : 'text-text-primary'
+                          'text-xs font-bold font-mono block',
+                          isOngoing ? 'text-accent-text' : 'text-text-primary'
                         )}>
                           {period.label}
                         </span>
-                        <span className="text-[11px] text-text-muted block mt-0.5 font-medium">
+                        <span className="text-[11px] text-text-muted font-mono block mt-0.5">
                           {period.startTime}
                         </span>
                       </div>
@@ -540,7 +540,7 @@ export default function DashboardPage() {
                       {subject ? (
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={cn('text-xs font-extrabold px-1.5 py-0.2 rounded border', colorStyle.badgeBg, colorStyle.border)}>
+                            <span className={cn('text-xs font-extrabold px-1.5 py-0.2 rounded-xs border font-mono', colorStyle.badgeBg, colorStyle.border)}>
                               {subject.code}
                             </span>
                             <span className="text-sm font-bold text-text-primary">
@@ -562,21 +562,21 @@ export default function DashboardPage() {
                     {/* Status Badge & Action */}
                     <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
                       {isOngoing && (
-                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white flex items-center gap-1.5 shadow-2xs animate-pulse">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                          <span>Đang học</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-xs bg-accent text-accent-text border border-border-strong font-mono flex items-center gap-1.5 shadow-xs animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-accent-text" />
+                          <span>ĐANG HỌC</span>
                         </span>
                       )}
 
                       {isCompleted && (
-                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 flex items-center gap-1">
-                          <CheckCircle size={13} weight="fill" className="text-slate-500" />
-                          <span>Đã xong</span>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-xs bg-surface-muted text-text-muted border border-border font-mono flex items-center gap-1">
+                          <CheckCircle size={12} weight="fill" className="text-text-muted" />
+                          <span>ĐÃ XONG</span>
                         </span>
                       )}
 
                       {status === 'upcoming' && (
-                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-surface-muted text-text-muted border border-border">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-xs bg-surface-muted text-text-muted border border-border">
                           {period.startTime}
                         </span>
                       )}
@@ -596,10 +596,10 @@ export default function DashboardPage() {
                           >
                             <button
                               type="button"
-                              className="inline-flex items-center gap-1.5 text-[12px] h-8 px-2.5 rounded-lg bg-surface-muted/80 text-text-muted hover:bg-surface-muted border border-border/80 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1.5 text-[12px] h-8 px-2.5 rounded-xs bg-surface-muted text-text-muted hover:bg-surface border border-border transition-colors cursor-pointer"
                             >
                               <ClipboardText size={14} className="opacity-50" />
-                              <span>Không khả dụng</span>
+                              <span>Chỉ đọc</span>
                             </button>
                           </Link>
                         )
@@ -611,8 +611,8 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Notable Attendance List */}
-          <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
-            <div className="px-6 py-4.5 border-b border-border flex items-center justify-between">
+          <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface-muted/30">
               <div>
                 <h2 className="text-lg font-bold text-text-primary">
                   Tình hình học sinh cần lưu ý hôm nay
@@ -622,7 +622,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <Link href="/attendance">
-                <Button variant="ghost" size="sm" className="text-accent">
+                <Button variant="ghost" size="sm" className="text-text-primary hover:text-teal">
                   <span>Toàn bộ lớp</span>
                   <ArrowRight size={14} />
                 </Button>
@@ -647,7 +647,7 @@ export default function DashboardPage() {
                 </div>
               ) : nonPresentEntries.length === 0 ? (
                 <div className="py-10 text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 rounded-xs bg-success-bg text-success border border-success/30 flex items-center justify-center mx-auto mb-3 shadow-xs">
                     <CheckCircle size={26} weight="duotone" />
                   </div>
                   <p className="text-[16px] font-bold text-text-primary">
@@ -667,7 +667,7 @@ export default function DashboardPage() {
                           <p className="text-[15px] font-bold text-text-primary">
                             {item.studentName}
                           </p>
-                          <p className="text-[12px] text-text-muted">
+                          <p className="text-[12px] text-text-muted font-mono">
                             Mã số: {item.studentCode}
                           </p>
                         </div>
@@ -685,7 +685,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Spatial Classroom Seating Preview */}
-          <div className="bg-surface rounded-2xl border border-border p-6 shadow-xs">
+          <div className="bg-surface rounded-sm border border-border-strong p-6 shadow-xs">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-lg font-bold text-text-primary">
@@ -704,7 +704,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Blackboard & Teacher's Podium Marker (at top matching View A - Nhìn từ dưới lên) */}
-            <div className="w-full py-2.5 mb-3 text-center bg-slate-800 text-slate-100 rounded-xl text-[12px] font-bold tracking-wider uppercase shadow-inner border border-slate-700">
+            <div className="w-full py-2 mb-3 text-center bg-[#132a24] text-[#a8dfc8] rounded-xs text-[11px] font-bold font-mono tracking-wider uppercase border border-[#244b3f]">
               ↑ Phía trước lớp: Bàn giáo viên · Bảng viết phấn · Cửa ra vào
             </div>
 
@@ -720,17 +720,17 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={desk.id}
-                    className="border border-border rounded-xl p-2.5 bg-surface-muted/50 text-center hover:border-accent hover:bg-surface transition-all shadow-2xs"
+                    className="border border-border-strong rounded-xs p-2.5 bg-surface-muted text-center hover:border-accent hover:bg-surface transition-all shadow-xs"
                   >
-                    <div className="text-text-muted font-mono text-[11px] font-semibold mb-1.5 flex items-center justify-between px-0.5">
+                    <div className="text-text-muted font-mono text-[11px] font-bold mb-1.5 flex items-center justify-between px-0.5">
                       <span>Bàn {desk.desk_number.toString().padStart(2, '0')}</span>
                       <span className="text-[10px]">Dãy {desk.col_num}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-1 text-[12px]">
                       <div
                         className={cn(
-                          'truncate py-1 px-1 rounded-md font-semibold',
-                          leftStu ? 'bg-surface text-text-primary shadow-2xs' : 'text-text-muted border border-dashed border-border'
+                          'truncate py-1 px-1 rounded-xs font-semibold',
+                          leftStu ? 'bg-surface text-text-primary border border-border shadow-xs' : 'text-text-muted border border-dashed border-border-strong'
                         )}
                         title={leftStu?.full_name || 'Trống'}
                       >
@@ -738,8 +738,8 @@ export default function DashboardPage() {
                       </div>
                       <div
                         className={cn(
-                          'truncate py-1 px-1 rounded-md font-semibold',
-                          rightStu ? 'bg-surface text-text-primary shadow-2xs' : 'text-text-muted border border-dashed border-border'
+                          'truncate py-1 px-1 rounded-xs font-semibold',
+                          rightStu ? 'bg-surface text-text-primary border border-border shadow-xs' : 'text-text-muted border border-dashed border-border-strong'
                         )}
                         title={rightStu?.full_name || 'Trống'}
                       >
@@ -751,10 +751,10 @@ export default function DashboardPage() {
               })}
             </div>
 
-            <div className="text-center mt-4 pt-3 border-t border-border/60">
+            <div className="text-center mt-4 pt-3 border-t border-border">
               <Link
                 href="/seating"
-                className="text-[14px] font-semibold text-accent hover:underline inline-flex items-center gap-1.5"
+                className="text-[13px] font-bold text-text-primary hover:text-teal inline-flex items-center gap-1.5"
               >
                 <span>Xem toàn bộ sơ đồ chỗ ngồi lớp học</span>
                 <ArrowRight size={14} />
@@ -766,16 +766,16 @@ export default function DashboardPage() {
         {/* Right Column: Pinned Announcements & Classroom Information */}
         <div className="space-y-8">
           {/* Pinned Announcements */}
-          <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
-            <div className="px-6 py-4.5 border-b border-border flex items-center justify-between">
+          <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface-muted/30">
               <div className="flex items-center gap-2.5">
-                <PushPin size={18} className="text-accent" weight="duotone" />
-                <h2 className="text-lg font-bold text-text-primary">
+                <PushPin size={18} className="text-accent-text" weight="duotone" />
+                <h2 className="text-base font-bold text-text-primary">
                   Thông báo lớp
                 </h2>
               </div>
               <Link href="/announcements">
-                <Button variant="ghost" size="sm" className="text-accent">
+                <Button variant="ghost" size="sm" className="text-text-primary hover:text-teal">
                   <span>Tất cả</span>
                   <ArrowRight size={14} />
                 </Button>
@@ -784,21 +784,21 @@ export default function DashboardPage() {
 
             <div className="p-6 space-y-4">
               {pinnedAnnouncement ? (
-                <div className="p-5 rounded-xl bg-accent/5 border border-accent/20">
+                <div className="p-4 rounded-xs bg-accent/15 border border-accent/40 shadow-xs">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-[15px] font-bold text-text-primary leading-snug">
+                    <h3 className="text-[14px] font-bold text-text-primary leading-snug">
                       {pinnedAnnouncement.title}
                     </h3>
                     {pinnedAnnouncement.is_pinned && (
-                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-accent text-white flex-shrink-0 shadow-2xs">
-                        Ghim
+                      <span className="px-1.5 py-0.2 rounded-xs text-[10px] font-bold font-mono uppercase bg-accent text-accent-text border border-border-strong flex-shrink-0 shadow-xs">
+                        GHIM
                       </span>
                     )}
                   </div>
                   <p className="text-[13px] text-text-secondary mt-2.5 leading-relaxed line-clamp-3">
                     {pinnedAnnouncement.content}
                   </p>
-                  <span className="text-[12px] text-text-muted mt-3.5 block font-medium">
+                  <span className="text-[11px] text-text-muted mt-3 block font-mono">
                     Đăng ngày {formatDateVietnamese(pinnedAnnouncement.created_at)}
                   </span>
                 </div>
@@ -812,14 +812,14 @@ export default function DashboardPage() {
                   .filter((a) => a.id !== pinnedAnnouncement?.id)
                   .slice(0, 2)
                   .map((item) => (
-                    <div key={item.id} className="py-2 border-b border-border/50 last:border-0">
+                    <div key={item.id} className="py-2 border-b border-border last:border-0">
                       <Link
                         href="/announcements"
-                        className="text-[14px] font-semibold text-text-primary hover:text-accent transition-colors line-clamp-1"
+                        className="text-[13px] font-semibold text-text-primary hover:text-teal transition-colors line-clamp-1"
                       >
                         {item.title}
                       </Link>
-                      <span className="text-[11px] text-text-muted">
+                      <span className="text-[11px] text-text-muted font-mono block mt-0.5">
                         {formatDateVietnamese(item.created_at)}
                       </span>
                     </div>
@@ -829,26 +829,26 @@ export default function DashboardPage() {
           </div>
 
           {/* Classroom Specifications Card */}
-          <div className="bg-surface rounded-2xl border border-border p-6 shadow-xs space-y-4">
-            <h2 className="text-lg font-bold text-text-primary">
+          <div className="bg-surface rounded-sm border border-border-strong p-6 shadow-xs space-y-4">
+            <h2 className="text-base font-bold text-text-primary">
               Thông tin tổ chức lớp
             </h2>
-            <div className="space-y-3 text-[14px]">
-              <div className="flex items-center justify-between py-2 border-b border-border/60">
+            <div className="space-y-3 text-[13px]">
+              <div className="flex items-center justify-between py-2 border-b border-border">
                 <span className="text-text-muted">Quy mô khối:</span>
                 <span className="font-semibold text-text-primary">Khối {classInfo.grade} (THCS)</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-border/60">
+              <div className="flex items-center justify-between py-2 border-b border-border">
                 <span className="text-text-muted">Sĩ số chuẩn hóa:</span>
-                <span className="font-semibold text-text-primary">30 học sinh / lớp</span>
+                <span className="font-semibold font-mono text-text-primary">30 học sinh / lớp</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-border/60">
+              <div className="flex items-center justify-between py-2 border-b border-border">
                 <span className="text-text-muted">Quy chuẩn chỗ ngồi:</span>
-                <span className="font-semibold text-text-primary">50 chỗ ngồi chuẩn</span>
+                <span className="font-semibold font-mono text-text-primary">50 chỗ ngồi chuẩn</span>
               </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-text-muted">Chương trình:</span>
-                <span className="font-semibold text-accent">10 môn học GDPT</span>
+                <span className="font-bold text-teal">10 môn học GDPT</span>
               </div>
             </div>
           </div>

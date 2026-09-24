@@ -38,13 +38,13 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           onClose={() => setIsMobileNavOpen(false)}
         />
         <main className="app-main flex items-center justify-center p-8">
-          <div className="max-w-md w-full bg-surface border border-border rounded-2xl p-8 text-center space-y-5 shadow-xs">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center">
+          <div className="max-w-md w-full bg-surface border border-border-strong rounded-sm p-8 text-center space-y-5 shadow-xs">
+            <div className="w-14 h-14 mx-auto rounded-xs bg-accent text-accent-text border border-border-strong flex items-center justify-center shadow-xs">
               <Chalkboard size={32} weight="duotone" />
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-text-primary">
+              <h2 className="text-lg font-bold text-text-primary">
                 Chưa được phân công lớp học
               </h2>
               <p className="text-xs text-text-muted leading-relaxed">
@@ -52,7 +52,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               </p>
             </div>
 
-            <div className="p-3 bg-surface-muted rounded-xl text-xs text-text-muted text-left">
+            <div className="p-3 bg-surface-muted rounded-xs border border-border text-xs text-text-muted text-left">
               Vui lòng liên hệ Quản trị viên (Admin) để được gán lớp vào tài khoản. Sau khi được gán, các chức năng quản lý học sinh và sơ đồ lớp sẽ tự động xuất hiện.
             </div>
 

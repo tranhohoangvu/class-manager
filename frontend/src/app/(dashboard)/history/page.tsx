@@ -160,8 +160,8 @@ export default function AttendanceHistoryPage() {
   if (!isLoaded) {
     return (
       <div className="p-8 space-y-4">
-        <div className="h-8 w-48 bg-surface-muted rounded animate-pulse" />
-        <div className="h-96 bg-surface-muted rounded-xl animate-pulse" />
+        <div className="h-8 w-48 bg-surface-muted rounded-xs animate-pulse" />
+        <div className="h-96 bg-surface-muted rounded-sm animate-pulse" />
       </div>
     );
   }
@@ -174,7 +174,7 @@ export default function AttendanceHistoryPage() {
       case 'present':
         return (
           <span
-            className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold inline-flex items-center justify-center border border-emerald-300/60 shadow-2xs"
+            className="w-5 h-5 rounded-xs bg-success text-white text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs"
             title="Có mặt"
           >
             ✓
@@ -183,8 +183,8 @@ export default function AttendanceHistoryPage() {
       case 'absent':
         return (
           <span
-            className="w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold inline-flex items-center justify-center shadow-2xs"
-            title="Vắng"
+            className="w-5 h-5 rounded-xs bg-danger text-white text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs"
+            title="Vắng mặt"
           >
             V
           </span>
@@ -192,7 +192,7 @@ export default function AttendanceHistoryPage() {
       case 'late':
         return (
           <span
-            className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-bold inline-flex items-center justify-center shadow-2xs"
+            className="w-5 h-5 rounded-xs bg-warning text-accent-text text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs"
             title="Đi muộn"
           >
             M
@@ -201,7 +201,7 @@ export default function AttendanceHistoryPage() {
       case 'excused':
         return (
           <span
-            className="w-6 h-6 rounded-full bg-slate-600 text-white text-xs font-bold inline-flex items-center justify-center shadow-2xs"
+            className="w-5 h-5 rounded-xs bg-surface-muted border border-border-strong text-text-secondary text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs"
             title="Có phép"
           >
             P
@@ -219,18 +219,18 @@ export default function AttendanceHistoryPage() {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
               Lịch sử điểm danh {currentClass ? currentClass.name : 'lớp học'}
             </h1>
-            <span className="px-3 py-1 text-xs font-semibold bg-accent-subtle text-accent rounded-full border border-accent/20">
+            <span className="px-2.5 py-0.5 text-xs font-bold font-mono bg-teal-subtle text-teal rounded-xs border border-teal/30">
               {dates.length} buổi đã học
             </span>
           </div>
-          <p className="text-sm text-text-secondary mt-1.5">
-            Bảng theo dõi chuyên cần tổng thể qua các ngày học của <strong className="text-text-primary font-medium">{currentClass?.name || 'lớp'}</strong>
+          <p className="text-sm text-text-secondary mt-1.5 font-medium">
+            Bảng theo dõi chuyên cần tổng thể qua các ngày học của <strong className="text-text-primary font-bold">{currentClass?.name || 'lớp'}</strong>
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap no-print">
           <Button variant="secondary" onClick={handleExportExcel} className="gap-2" title="Xuất ma trận điểm danh ra file Excel">
-            <FileXls size={18} className="text-emerald-600" />
+            <FileXls size={18} className="text-teal" />
             <span>Xuất Excel</span>
           </Button>
 
@@ -249,17 +249,17 @@ export default function AttendanceHistoryPage() {
       </div>
 
       {/* Time Range Filter Bar */}
-      <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs no-print flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-surface rounded-sm border border-border-strong p-4 shadow-xs no-print flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-text-muted uppercase tracking-wider mr-1">Khoảng thời gian:</span>
+          <span className="text-xs font-bold text-text-muted uppercase tracking-wider font-mono mr-1">Khoảng thời gian:</span>
           
           <button
             type="button"
             onClick={() => setTimeRange('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
               timeRange === 'all'
-                ? 'bg-text-primary text-surface shadow-xs font-bold'
-                : 'bg-surface-subtle hover:bg-surface-muted text-text-secondary border border-border/80'
+                ? 'bg-accent text-accent-text border border-border-strong shadow-xs'
+                : 'bg-surface-muted hover:bg-surface text-text-secondary border border-border'
             }`}
           >
             Tất cả ({allDates.length} buổi)
@@ -268,10 +268,10 @@ export default function AttendanceHistoryPage() {
           <button
             type="button"
             onClick={() => setTimeRange('this_week')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
               timeRange === 'this_week'
-                ? 'bg-text-primary text-surface shadow-xs font-bold'
-                : 'bg-surface-subtle hover:bg-surface-muted text-text-secondary border border-border/80'
+                ? 'bg-accent text-accent-text border border-border-strong shadow-xs'
+                : 'bg-surface-muted hover:bg-surface text-text-secondary border border-border'
             }`}
           >
             Tuần này
@@ -280,10 +280,10 @@ export default function AttendanceHistoryPage() {
           <button
             type="button"
             onClick={() => setTimeRange('this_month')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
               timeRange === 'this_month'
-                ? 'bg-text-primary text-surface shadow-xs font-bold'
-                : 'bg-surface-subtle hover:bg-surface-muted text-text-secondary border border-border/80'
+                ? 'bg-accent text-accent-text border border-border-strong shadow-xs'
+                : 'bg-surface-muted hover:bg-surface text-text-secondary border border-border'
             }`}
           >
             Tháng này
@@ -292,10 +292,10 @@ export default function AttendanceHistoryPage() {
           <button
             type="button"
             onClick={() => setTimeRange('custom')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
               timeRange === 'custom'
-                ? 'bg-text-primary text-surface shadow-xs font-bold'
-                : 'bg-surface-subtle hover:bg-surface-muted text-text-secondary border border-border/80'
+                ? 'bg-accent text-accent-text border border-border-strong shadow-xs'
+                : 'bg-surface-muted hover:bg-surface text-text-secondary border border-border'
             }`}
           >
             Tùy chọn khoảng ngày
@@ -303,20 +303,20 @@ export default function AttendanceHistoryPage() {
         </div>
 
         {timeRange === 'custom' && (
-          <div className="flex items-center gap-2 text-xs flex-wrap">
+          <div className="flex items-center gap-2 text-xs flex-wrap font-mono">
             <span className="text-text-muted">Từ:</span>
             <input
               type="date"
               value={customStartDate}
               onChange={(e) => setCustomStartDate(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-accent"
+              className="px-2.5 py-1 rounded-xs border border-border-strong bg-surface text-text-primary text-xs focus:outline-none focus:border-accent shadow-xs"
             />
             <span className="text-text-muted">Đến:</span>
             <input
               type="date"
               value={customEndDate}
               onChange={(e) => setCustomEndDate(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-accent"
+              className="px-2.5 py-1 rounded-xs border border-border-strong bg-surface text-text-primary text-xs focus:outline-none focus:border-accent shadow-xs"
             />
           </div>
         )}
@@ -324,35 +324,35 @@ export default function AttendanceHistoryPage() {
 
       {/* Period KPI Summary Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
-        <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs">
-          <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Số buổi đã học</span>
-          <div className="text-2xl font-bold text-text-primary mt-1">{periodMetrics.totalSessions} buổi</div>
+        <div className="bg-surface rounded-sm border border-border-strong p-4 shadow-xs">
+          <span className="text-xs font-bold text-text-muted uppercase tracking-wider font-mono">Số buổi đã học</span>
+          <div className="text-2xl font-bold font-mono text-text-primary mt-1">{periodMetrics.totalSessions} buổi</div>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs">
+        <div className="bg-surface rounded-sm border border-border-strong p-4 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Chuyên cần kỳ này</span>
-            <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Bình quân</span>
+            <span className="text-xs font-bold text-success uppercase tracking-wider font-mono">Chuyên cần kỳ này</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-xs bg-success-bg text-success border border-success/30 font-mono">Bình quân</span>
           </div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">{periodMetrics.avgRate}%</div>
+          <div className="text-2xl font-bold font-mono text-success mt-1">{periodMetrics.avgRate}%</div>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs">
-          <span className="text-xs font-bold text-rose-700 uppercase tracking-wider">Tổng lượt vắng</span>
-          <div className="text-2xl font-bold text-rose-600 mt-1">{periodMetrics.sumAbsent} lượt</div>
+        <div className="bg-surface rounded-sm border border-border-strong p-4 shadow-xs">
+          <span className="text-xs font-bold text-danger uppercase tracking-wider font-mono">Tổng lượt vắng</span>
+          <div className="text-2xl font-bold font-mono text-danger mt-1">{periodMetrics.sumAbsent} lượt</div>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-4 shadow-2xs">
-          <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">Tổng lượt đi muộn</span>
-          <div className="text-2xl font-bold text-amber-600 mt-1">{periodMetrics.sumLate} lượt</div>
+        <div className="bg-surface rounded-sm border border-border-strong p-4 shadow-xs">
+          <span className="text-xs font-bold text-warning uppercase tracking-wider font-mono">Tổng lượt đi muộn</span>
+          <div className="text-2xl font-bold font-mono text-warning mt-1">{periodMetrics.sumLate} lượt</div>
         </div>
       </div>
 
       {/* Warning Alert if students absent */}
       {studentsNeedingAttention.length > 0 && (
-        <div className="p-5 rounded-2xl bg-warning-bg/90 border border-warning/30 flex items-start gap-4 no-print shadow-2xs">
-          <div className="p-2 rounded-xl bg-amber-100 text-amber-800 flex-shrink-0">
-            <Warning size={22} weight="duotone" />
+        <div className="p-4 rounded-sm bg-warning-bg border border-warning/40 flex items-start gap-4 no-print shadow-xs">
+          <div className="p-1.5 rounded-xs bg-surface text-warning border border-warning/30 flex-shrink-0 shadow-xs">
+            <Warning size={20} weight="duotone" />
           </div>
           <div className="space-y-2 text-sm flex-1">
             <p className="font-bold text-text-primary">
@@ -363,10 +363,10 @@ export default function AttendanceHistoryPage() {
                 <Link
                   key={item.student.id}
                   href={`/students/${item.student.id}`}
-                  className="px-3 py-1.5 rounded-xl bg-surface border border-warning/40 hover:border-warning font-medium text-text-primary inline-flex items-center gap-2 shadow-2xs hover:shadow-xs transition-all text-xs"
+                  className="px-2.5 py-1 rounded-xs bg-surface border border-warning/40 hover:border-warning font-medium text-text-primary inline-flex items-center gap-2 shadow-xs transition-all text-xs"
                 >
-                  <span className="font-semibold">{item.student.full_name}</span>
-                  <span className="text-danger font-bold">({item.absent} vắng, {item.late} muộn)</span>
+                  <span className="font-bold">{item.student.full_name}</span>
+                  <span className="text-danger font-bold font-mono">({item.absent} vắng, {item.late} muộn)</span>
                 </Link>
               ))}
             </div>
@@ -377,26 +377,26 @@ export default function AttendanceHistoryPage() {
       {/* Legend & Summary Info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-text-secondary px-1 no-print">
         <div className="flex items-center gap-4 flex-wrap font-medium">
-          <span className="text-text-primary font-bold text-xs uppercase tracking-wider">Chú giải:</span>
+          <span className="text-text-primary font-bold text-xs uppercase tracking-wider font-mono">Chú giải:</span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold inline-flex items-center justify-center border border-emerald-300">✓</span>
+            <span className="w-5 h-5 rounded-xs bg-success text-white text-[10px] font-bold font-mono inline-flex items-center justify-center">✓</span>
             <span>Có mặt</span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-full bg-rose-600 text-white text-xs font-bold inline-flex items-center justify-center">V</span>
+            <span className="w-5 h-5 rounded-xs bg-danger text-white text-[10px] font-bold font-mono inline-flex items-center justify-center">V</span>
             <span>Vắng</span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-xs font-bold inline-flex items-center justify-center">M</span>
+            <span className="w-5 h-5 rounded-xs bg-warning text-accent-text text-[10px] font-bold font-mono inline-flex items-center justify-center">M</span>
             <span>Đi muộn</span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-full bg-slate-600 text-white text-xs font-bold inline-flex items-center justify-center">P</span>
+            <span className="w-5 h-5 rounded-xs bg-surface-muted border border-border text-text-secondary text-[10px] font-bold font-mono inline-flex items-center justify-center">P</span>
             <span>Có phép</span>
           </span>
         </div>
-        <div className="text-xs text-text-muted">
-          <span>Hiển thị <strong className="text-text-primary font-semibold">{dates.length}</strong> buổi học gần nhất</span>
+        <div className="text-xs text-text-muted font-mono">
+          <span>Hiển thị <strong className="text-text-primary font-bold">{dates.length}</strong> buổi học gần nhất</span>
         </div>
       </div>
 
@@ -410,26 +410,26 @@ export default function AttendanceHistoryPage() {
           actionHref="/attendance"
         />
       ) : (
-        <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs printable-card">
+        <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs printable-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-surface-subtle/90 text-xs font-semibold text-text-muted border-b border-border">
+              <thead className="bg-surface-muted text-xs font-bold text-text-primary uppercase border-b border-border font-mono tracking-wider">
                 <tr>
-                  <th className="px-5 py-4 font-semibold uppercase tracking-wider sticky left-0 bg-surface-subtle z-10 w-52 shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
+                  <th className="px-5 py-3.5 sticky left-0 bg-surface-muted z-10 w-52 shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
                     Học sinh ({students.length})
                   </th>
                   {dates.map((d) => (
-                    <th key={d} className="px-2.5 py-4 text-center font-mono text-xs whitespace-nowrap min-w-[54px]">
+                    <th key={d} className="px-2 py-3.5 text-center font-mono text-xs whitespace-nowrap min-w-[50px]">
                       {formatDateShort(d)}
                     </th>
                   ))}
-                  <th className="px-4 py-4 text-center font-bold text-xs whitespace-nowrap text-success">
+                  <th className="px-4 py-3.5 text-center font-bold text-xs whitespace-nowrap text-success">
                     Có mặt
                   </th>
-                  <th className="px-4 py-4 text-center font-bold text-xs whitespace-nowrap text-danger">
+                  <th className="px-4 py-3.5 text-center font-bold text-xs whitespace-nowrap text-danger">
                     Vắng
                   </th>
-                  <th className="px-4 py-4 text-center font-bold text-xs whitespace-nowrap text-accent">
+                  <th className="px-4 py-3.5 text-center font-bold text-xs whitespace-nowrap text-text-primary">
                     Tỷ lệ
                   </th>
                 </tr>
@@ -439,16 +439,16 @@ export default function AttendanceHistoryPage() {
                   const initial = item.student.full_name.trim().split(' ').slice(-1)[0][0];
 
                   return (
-                    <tr key={item.student.id} className="hover:bg-surface-subtle/60 transition-colors h-[56px]">
-                      <td className="px-5 py-3 sticky left-0 bg-surface z-10 border-r border-border/60 shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
+                    <tr key={item.student.id} className="hover:bg-surface-muted/50 transition-colors h-[54px]">
+                      <td className="px-5 py-3 sticky left-0 bg-surface z-10 border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-accent-subtle text-accent font-semibold text-xs flex items-center justify-center flex-shrink-0">
+                          <div className="w-7 h-7 rounded-xs bg-surface-muted text-text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 border border-border-strong font-mono shadow-xs">
                             {initial}
                           </div>
                           <div className="min-w-0">
                             <Link
                               href={`/students/${item.student.id}`}
-                              className="font-semibold text-text-primary hover:text-accent truncate block text-sm transition-colors"
+                              className="font-bold text-text-primary hover:text-teal truncate block text-sm transition-colors"
                             >
                               {item.student.full_name}
                             </Link>
@@ -466,13 +466,13 @@ export default function AttendanceHistoryPage() {
                           </td>
                         );
                       })}
-                      <td className="px-4 py-3 text-center text-sm font-bold text-success">
+                      <td className="px-4 py-3 text-center text-sm font-bold font-mono text-success">
                         {item.present}
                       </td>
-                      <td className="px-4 py-3 text-center text-sm font-bold text-danger">
+                      <td className="px-4 py-3 text-center text-sm font-bold font-mono text-danger">
                         {item.absent}
                       </td>
-                      <td className="px-4 py-3 text-center text-sm font-bold text-text-primary">
+                      <td className="px-4 py-3 text-center text-sm font-bold font-mono text-text-primary">
                         {item.rate}%
                       </td>
                     </tr>

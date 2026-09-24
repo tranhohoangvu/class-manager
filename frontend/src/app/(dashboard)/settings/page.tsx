@@ -134,66 +134,66 @@ export default function SettingsPage() {
 
       {/* Class Capacity & Occupancy Overview Widget */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
+        <div className="bg-surface rounded-sm border border-border-strong p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+            <span className="text-xs font-bold uppercase tracking-wider text-text-muted font-mono">
               Sĩ số hiện tại
             </span>
-            <div className="p-2 rounded-xl bg-accent/10 text-accent">
+            <div className="p-2 rounded-xs bg-surface-muted text-teal border border-border">
               <Users size={20} weight="duotone" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
+            <span className="text-2xl sm:text-3xl font-bold font-mono text-text-primary tracking-tight">
               {currentEnrolledCount}
             </span>
-            <span className="text-sm font-medium text-text-muted">/ {currentMaxStudents} học sinh</span>
+            <span className="text-sm font-medium font-mono text-text-muted">/ {currentMaxStudents} học sinh</span>
           </div>
           <p className="text-xs text-text-secondary mt-1">Đang theo học tại lớp</p>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
+        <div className="bg-surface rounded-sm border border-border-strong p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+            <span className="text-xs font-bold uppercase tracking-wider text-text-muted font-mono">
               Số chỗ còn trống
             </span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600">
+            <div className="p-2 rounded-xs bg-success-bg text-success border border-success/30">
               <Armchair size={20} weight="duotone" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-bold text-emerald-600 tracking-tight">
+            <span className="text-2xl sm:text-3xl font-bold font-mono text-success tracking-tight">
               {vacantSeats}
             </span>
-            <span className="text-sm font-medium text-text-muted">chỗ ngồi</span>
+            <span className="text-sm font-medium font-mono text-text-muted">chỗ ngồi</span>
           </div>
           <p className="text-xs text-text-secondary mt-1">Khả dụng để tiếp nhận thêm</p>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-xs">
+        <div className="bg-surface rounded-sm border border-border-strong p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+            <span className="text-xs font-bold uppercase tracking-wider text-text-muted font-mono">
               Tỷ lệ lấp đầy
             </span>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600">
+            <div className="p-2 rounded-xs bg-accent/20 text-accent-text border border-border-strong">
               <ChartPieSlice size={20} weight="duotone" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
+            <span className="text-2xl sm:text-3xl font-bold font-mono text-text-primary tracking-tight">
               {occupancyPercentage}%
             </span>
-            <span className="text-xs text-text-muted font-medium">công suất phòng (20 bàn)</span>
+            <span className="text-xs text-text-muted font-mono">công suất phòng (20 bàn)</span>
           </div>
-          <div className="w-full bg-surface-muted rounded-full h-2 mt-3 overflow-hidden">
+          <div className="w-full bg-surface-muted rounded-xs h-2 mt-3 overflow-hidden border border-border">
             <div
               className={cn(
-                'h-2 rounded-full transition-all duration-500',
+                'h-2 rounded-xs transition-all duration-500',
                 occupancyPercentage >= 100
-                  ? 'bg-amber-500'
+                  ? 'bg-warning'
                   : occupancyPercentage >= 80
                   ? 'bg-accent'
-                  : 'bg-emerald-500'
+                  : 'bg-success'
               )}
               style={{ width: `${Math.min(100, occupancyPercentage)}%` }}
             />
@@ -202,9 +202,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Main Settings Form */}
-      <div className="bg-surface rounded-2xl border border-border p-6 sm:p-7 shadow-xs space-y-5">
+      <div className="bg-surface rounded-sm border border-border-strong p-6 sm:p-7 shadow-xs space-y-5">
         <h2 className="text-base font-bold text-text-primary flex items-center gap-2.5 pb-2 border-b border-border">
-          <GraduationCap size={20} className="text-accent" weight="duotone" />
+          <GraduationCap size={20} className="text-teal" weight="duotone" />
           Thông số lớp học
         </h2>
 
@@ -268,16 +268,16 @@ export default function SettingsPage() {
       </div>
 
       {/* Database & Cloud Sync Status */}
-      <div className="bg-surface rounded-2xl border border-border p-6 sm:p-7 shadow-xs space-y-4">
+      <div className="bg-surface rounded-sm border border-border-strong p-6 sm:p-7 shadow-xs space-y-4">
         <h2 className="text-base font-bold text-text-primary flex items-center gap-2.5">
-          <Database size={20} className="text-accent" weight="duotone" />
+          <Database size={20} className="text-teal" weight="duotone" />
           Trạng thái kết nối dữ liệu
         </h2>
 
-        <div className="p-5 rounded-xl bg-surface-subtle border border-border flex items-start gap-4">
+        <div className="p-4 rounded-xs bg-surface-muted border border-border-strong flex items-start gap-4">
           {isBackendConnected ? (
             <>
-              <CheckCircle size={24} className="text-success flex-shrink-0 mt-0.5" weight="fill" />
+              <CheckCircle size={22} className="text-success flex-shrink-0 mt-0.5" weight="fill" />
               <div className="text-sm space-y-1">
                 <p className="font-bold text-text-primary">
                   Đã kết nối Backend Node.js / Express & PostgreSQL
@@ -289,7 +289,7 @@ export default function SettingsPage() {
             </>
           ) : (
             <>
-              <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse mt-1.5 flex-shrink-0" />
+              <div className="w-2.5 h-2.5 rounded-full bg-success animate-pulse mt-1.5 flex-shrink-0" />
               <div className="text-sm space-y-1.5">
                 <p className="font-bold text-text-primary">
                   Chế độ Lưu trữ Cục bộ / Đang kết nối Backend
@@ -298,7 +298,7 @@ export default function SettingsPage() {
                   Tất cả thao tác (thêm/sửa học sinh, xếp chỗ ngồi, điểm danh, tạo thông báo) đều được lưu trữ trực tiếp trên trình duyệt của bạn và bảo toàn sau khi tải lại trang.
                 </p>
                 <p className="text-xs text-text-muted pt-1">
-                  Để khởi chạy backend Express + PostgreSQL: chạy lệnh <code className="px-1.5 py-0.5 rounded bg-surface-muted border border-border font-mono">npm run dev</code> trong thư mục <code className="px-1.5 py-0.5 rounded bg-surface-muted border border-border font-mono">backend/</code>.
+                  Để khởi chạy backend Express + PostgreSQL: chạy lệnh <code className="px-1.5 py-0.5 rounded-xs bg-surface border border-border font-mono">npm run dev</code> trong thư mục <code className="px-1.5 py-0.5 rounded-xs bg-surface border border-border font-mono">backend/</code>.
                 </p>
               </div>
             </>
@@ -307,7 +307,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone: Reset Data */}
-      <div className="bg-surface rounded-2xl border border-rose-200/80 p-6 sm:p-7 shadow-xs space-y-4">
+      <div className="bg-surface rounded-sm border-2 border-danger/40 p-6 sm:p-7 shadow-xs space-y-4">
         <div>
           <h2 className="text-base font-bold text-danger flex items-center gap-2.5">
             <Warning size={20} weight="duotone" />

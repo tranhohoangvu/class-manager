@@ -187,18 +187,18 @@ export default function AdminClassesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="px-2.5 py-1 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80 rounded-lg inline-flex items-center gap-1.5 shadow-2xs">
+            <span className="px-2.5 py-0.5 text-xs font-bold bg-teal-subtle text-teal border border-teal/30 rounded-sm inline-flex items-center gap-1.5">
               <ShieldCheck size={14} weight="bold" />
               Trường THCS Nguyễn Tất Thành
             </span>
-            <span className="px-2.5 py-1 text-xs font-semibold bg-surface-muted text-text-secondary border border-border rounded-lg">
+            <span className="px-2.5 py-0.5 text-xs font-bold bg-surface-muted text-text-secondary border border-border rounded-sm">
               Năm học: 2026 - 2027
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary mt-2">
             Quản lý Lớp học
           </h1>
-          <p className="text-sm text-text-secondary mt-1 font-medium">
+          <p className="text-xs text-text-muted mt-1 font-medium">
             Danh sách 16 lớp học 4 khối (6 - 9), phân công giáo viên chủ nhiệm và phòng học chuyên dụng
           </p>
         </div>
@@ -211,34 +211,34 @@ export default function AdminClassesPage() {
 
       {/* KPI Stats Mini Bar */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs">
-          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Tổng số lớp học</p>
+        <div className="bg-surface rounded-sm border border-border-strong p-3.5 shadow-[1px_1px_0px_#000]">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Tổng số lớp học</p>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-extrabold text-text-primary">{classes.length}</span>
             <span className="text-xs text-text-muted">lớp (4 khối)</span>
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs">
-          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Đang hoạt động</p>
+        <div className="bg-surface rounded-sm border border-border-strong p-3.5 shadow-[1px_1px_0px_#000]">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Đang hoạt động</p>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-extrabold text-emerald-600">{activeClassesCount}</span>
-            <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded">
+            <span className="text-2xl font-extrabold text-success">{activeClassesCount}</span>
+            <span className="text-[11px] text-success font-bold bg-success-bg px-1.5 py-0.5 rounded-sm border border-success/30">
               100% hoạt động
             </span>
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs">
-          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Phân công GVCN</p>
+        <div className="bg-surface rounded-sm border border-border-strong p-3.5 shadow-[1px_1px_0px_#000]">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Phân công GVCN</p>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-extrabold text-indigo-600">{assignedHomeroomCount}</span>
+            <span className="text-2xl font-extrabold text-teal">{assignedHomeroomCount}</span>
             <span className="text-xs text-text-muted">/{activeClassesCount} lớp</span>
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs">
-          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Quy mô học sinh</p>
+        <div className="bg-surface rounded-sm border border-border-strong p-3.5 shadow-[1px_1px_0px_#000]">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Quy mô học sinh</p>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-extrabold text-text-primary">{students.length}</span>
             <span className="text-xs text-text-muted">em toàn trường</span>
@@ -250,25 +250,25 @@ export default function AdminClassesPage() {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-wrap">
         <div className="relative flex-1 max-w-md">
           <MagnifyingGlass
-            size={18}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
           />
           <input
             type="text"
             placeholder="Tìm theo tên lớp, phòng học, năm học..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 h-10 bg-surface border border-border rounded-xl text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 placeholder:text-text-muted shadow-2xs transition-all"
+            className="w-full pl-9 pr-4 h-9 bg-surface border border-border-strong rounded-sm text-xs font-medium focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-text-muted shadow-[1px_1px_0px_rgba(13,1,41,0.1)] transition-all"
           />
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-text-secondary">Khối:</span>
+            <span className="text-xs font-bold text-text-secondary">Khối:</span>
             <select
               value={gradeFilter}
               onChange={(e) => setGradeFilter(e.target.value as any)}
-              className="h-10 bg-surface border border-border px-3.5 rounded-xl text-sm font-medium focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs cursor-pointer text-text-primary"
+              className="h-9 bg-surface border border-border-strong px-3 rounded-sm text-xs font-bold focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer text-text-primary shadow-[1px_1px_0px_rgba(13,1,41,0.1)]"
             >
               <option value="all">Tất cả khối</option>
               <option value="6">Khối 6</option>
@@ -279,11 +279,11 @@ export default function AdminClassesPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-text-secondary">Trạng thái:</span>
+            <span className="text-xs font-bold text-text-secondary">Trạng thái:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="h-10 bg-surface border border-border px-3.5 rounded-xl text-sm font-medium focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 shadow-2xs cursor-pointer text-text-primary"
+              className="h-9 bg-surface border border-border-strong px-3 rounded-sm text-xs font-bold focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer text-text-primary shadow-[1px_1px_0px_rgba(13,1,41,0.1)]"
             >
               <option value="active">Đang hoạt động</option>
               <option value="archived">Đã lưu trữ</option>
@@ -294,18 +294,18 @@ export default function AdminClassesPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
+      <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-[2px_2px_0px_0px_rgba(13,1,41,0.15)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
-            <thead className="bg-surface-muted/60 border-b border-border text-[11px] text-text-muted uppercase tracking-wider font-bold">
+            <thead className="bg-surface-muted border-b border-border-strong text-[11px] text-text-primary uppercase tracking-wider font-bold">
               <tr>
-                <th className="px-5 py-3.5 whitespace-nowrap">Lớp học</th>
-                <th className="px-5 py-3.5 whitespace-nowrap">Khối / Năm học</th>
-                <th className="px-5 py-3.5 whitespace-nowrap">Phòng học</th>
-                <th className="px-5 py-3.5 whitespace-nowrap">Giáo viên chủ nhiệm</th>
-                <th className="px-5 py-3.5 whitespace-nowrap">Sĩ số</th>
-                <th className="px-5 py-3.5 whitespace-nowrap">Trạng thái</th>
-                <th className="px-5 py-3.5 text-right whitespace-nowrap">Thao tác</th>
+                <th className="px-4 py-3 whitespace-nowrap">Lớp học</th>
+                <th className="px-4 py-3 whitespace-nowrap">Khối / Năm học</th>
+                <th className="px-4 py-3 whitespace-nowrap">Phòng học</th>
+                <th className="px-4 py-3 whitespace-nowrap">Giáo viên chủ nhiệm</th>
+                <th className="px-4 py-3 whitespace-nowrap">Sĩ số</th>
+                <th className="px-4 py-3 whitespace-nowrap">Trạng thái</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-text-secondary">
@@ -320,96 +320,96 @@ export default function AdminClassesPage() {
                   const teacher = teachers.find((t) => t.id === c.teacher_id);
                   const classStudents = students.filter((s) => s.class_id === c.id);
                   return (
-                    <tr key={c.id} className="hover:bg-surface-muted/40 transition-colors">
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-accent/15 text-accent font-bold text-sm flex items-center justify-center flex-shrink-0 border border-accent/20">
+                    <tr key={c.id} className="hover:bg-accent/15 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-sm bg-accent text-text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 border border-border-strong shadow-[1px_1px_0px_0px_rgba(13,1,41,0.2)]">
                             {c.grade}
                           </div>
                           <div>
                             <button
                               type="button"
                               onClick={() => setSelectedClassDetail(c)}
-                              className="font-bold text-text-primary hover:text-accent transition-colors block text-sm text-left"
+                              className="font-bold text-text-primary hover:text-teal transition-colors block text-xs text-left cursor-pointer"
                             >
                               {c.name}
                             </button>
-                            <span className="text-xs text-text-muted">
+                            <span className="text-[11px] text-text-muted">
                               {c.desk_count * 2} chỗ ngồi chuẩn
                             </span>
                           </div>
                         </div>
                       </td>
 
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <span className="text-sm font-semibold text-text-primary block">Khối {c.grade}</span>
-                        <span className="text-xs text-text-muted">{c.school_year}</span>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-xs font-bold text-text-primary block">Khối {c.grade}</span>
+                        <span className="text-[11px] text-text-muted">{c.school_year}</span>
                       </td>
 
-                      <td className="px-5 py-3.5 text-sm text-text-secondary whitespace-nowrap">
-                        {c.room_name || <span className="text-text-muted italic text-xs">Chưa xếp phòng</span>}
+                      <td className="px-4 py-3 text-xs text-text-secondary whitespace-nowrap">
+                        {c.room_name || <span className="text-text-muted italic text-[11px]">Chưa xếp phòng</span>}
                       </td>
 
-                      <td className="px-5 py-3.5 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         {teacher ? (
-                          <div className="text-sm">
-                            <span className="font-semibold text-text-primary block">
+                          <div className="text-xs">
+                            <span className="font-bold text-text-primary block">
                               {teacher.name}
                             </span>
-                            <span className="text-xs text-text-muted">{teacher.email}</span>
+                            <span className="text-[11px] text-text-muted">{teacher.email}</span>
                           </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-semibold whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] text-warning bg-warning-bg px-2 py-0.5 rounded-sm border border-warning/30 font-bold whitespace-nowrap">
                             Chưa phân công
                           </span>
                         )}
                       </td>
 
-                      <td className="px-5 py-3.5 text-sm whitespace-nowrap">
+                      <td className="px-4 py-3 text-xs whitespace-nowrap">
                         <span className="font-bold text-text-primary">
                           {classStudents.length}
                         </span>
-                        <span className="text-xs text-text-muted">/{c.max_students} HS</span>
+                        <span className="text-[11px] text-text-muted">/{c.max_students} HS</span>
                       </td>
 
-                      <td className="px-5 py-3.5 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         {c.status === 'active' ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full whitespace-nowrap">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold bg-success-bg text-success border border-success/30 rounded-sm whitespace-nowrap">
+                            <span className="w-1.5 h-1.5 rounded-full bg-success" />
                             Đang học
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-surface-muted text-text-muted border border-border rounded-full whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold bg-surface-muted text-text-muted border border-border rounded-sm whitespace-nowrap">
                             Đã lưu trữ
                           </span>
                         )}
                       </td>
 
-                      <td className="px-5 py-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setSelectedClassDetail(c)}
                             title="Xem GVCN & Phân công 10 GVBM"
-                            className="p-2 text-text-muted hover:text-accent hover:bg-surface-muted rounded-xl transition-colors cursor-pointer"
+                            className="p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-muted rounded-sm border border-transparent hover:border-border transition-colors cursor-pointer"
                           >
-                            <Users size={18} />
+                            <Users size={16} />
                           </button>
 
                           <button
                             onClick={() => openEditModal(c)}
                             title="Chỉnh sửa lớp / Đổi giáo viên"
-                            className="p-2 text-text-muted hover:text-accent hover:bg-surface-muted rounded-xl transition-colors cursor-pointer"
+                            className="p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-muted rounded-sm border border-transparent hover:border-border transition-colors cursor-pointer"
                           >
-                            <PencilSimple size={18} />
+                            <PencilSimple size={16} />
                           </button>
 
                           {c.status === 'active' && (
                             <button
                               onClick={() => setTargetArchiveClass(c)}
                               title="Lưu trữ lớp học này"
-                              className="p-2 text-text-muted hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-colors cursor-pointer"
+                              className="p-1.5 text-text-muted hover:text-warning hover:bg-warning-bg rounded-sm border border-transparent hover:border-warning/30 transition-colors cursor-pointer"
                             >
-                              <Archive size={18} />
+                              <Archive size={16} />
                             </button>
                           )}
                         </div>

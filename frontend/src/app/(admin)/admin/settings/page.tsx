@@ -30,19 +30,19 @@ export default function AdminSettingsPage() {
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="pb-5 border-b border-border">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+      <div className="pb-5 border-b border-border-strong">
+        <h1 className="text-2xl font-bold tracking-tight text-text-primary">
           Cài đặt hệ thống
         </h1>
-        <p className="text-sm text-text-muted mt-1">
+        <p className="text-xs text-text-muted mt-1">
           Cấu hình quy mô toàn trường và quản lý cơ sở dữ liệu mẫu
         </p>
       </div>
 
       {/* General School Settings */}
-      <div className="bg-surface rounded-xl border border-border p-6 space-y-5">
-        <div className="flex items-center gap-2 text-sm font-semibold text-text-primary pb-2 border-b border-border">
-          <GearSix size={18} className="text-accent" />
+      <div className="bg-surface rounded-sm border border-border-strong p-6 space-y-5 shadow-[2px_2px_0px_0px_rgba(13,1,41,0.1)]">
+        <div className="flex items-center gap-2 text-sm font-bold text-text-primary pb-2 border-b border-border">
+          <GearSix size={18} className="text-teal" />
           <span>Thông tin đơn vị trường học</span>
         </div>
 
@@ -74,16 +74,16 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* System Status & Architecture */}
-      <div className="bg-surface rounded-xl border border-border p-6 space-y-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-text-primary pb-2 border-b border-border">
-          <Database size={18} className="text-accent" />
+      <div className="bg-surface rounded-sm border border-border-strong p-6 space-y-4 shadow-[2px_2px_0px_0px_rgba(13,1,41,0.1)]">
+        <div className="flex items-center gap-2 text-sm font-bold text-text-primary pb-2 border-b border-border">
+          <Database size={18} className="text-teal" />
           <span>Trạng thái kiến trúc dữ liệu</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div className="p-3.5 bg-surface-muted/60 rounded-lg border border-border space-y-1">
-            <span className="text-text-muted block">Chế độ lưu trữ</span>
-            <span className="font-semibold text-text-primary block text-sm">
+          <div className="p-3.5 bg-surface-muted/60 rounded-sm border border-border space-y-1">
+            <span className="text-text-muted block font-medium">Chế độ lưu trữ</span>
+            <span className="font-bold text-text-primary block text-sm">
               LocalStorage Repository (Prototype)
             </span>
             <span className="text-text-muted block">
@@ -91,9 +91,9 @@ export default function AdminSettingsPage() {
             </span>
           </div>
 
-          <div className="p-3.5 bg-surface-muted/60 rounded-lg border border-border space-y-1">
-            <span className="text-text-muted block">Mô hình phân quyền</span>
-            <span className="font-semibold text-text-primary block text-sm">
+          <div className="p-3.5 bg-surface-muted/60 rounded-sm border border-border space-y-1">
+            <span className="text-text-muted block font-medium">Mô hình phân quyền</span>
+            <span className="font-bold text-text-primary block text-sm">
               Role-Based Access Control (RBAC)
             </span>
             <span className="text-text-muted block">
@@ -104,9 +104,9 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Reset System Data */}
-      <div className="bg-surface rounded-xl border border-danger/30 p-6 space-y-4">
+      <div className="bg-surface rounded-sm border border-danger/40 p-6 space-y-4 shadow-[2px_2px_0px_0px_rgba(158,42,43,0.12)]">
         <div>
-          <h2 className="text-sm font-semibold text-danger">Khôi phục dữ liệu mẫu hệ thống</h2>
+          <h2 className="text-sm font-bold text-danger">Khôi phục dữ liệu mẫu hệ thống</h2>
           <p className="text-xs text-text-muted mt-1">
             Khôi phục toàn bộ dữ liệu mẫu (1 Admin, 5 Giáo viên, 6 Lớp học cùng danh sách học sinh, sơ đồ chỗ ngồi và lịch sử điểm danh ban đầu).
           </p>
@@ -115,7 +115,7 @@ export default function AdminSettingsPage() {
         <Button
           variant="secondary"
           onClick={() => setIsResetConfirmOpen(true)}
-          className="text-danger hover:bg-danger/10 border-danger/30"
+          className="text-danger hover:bg-danger-bg border-danger/40"
         >
           <ArrowClockwise size={16} />
           <span>Đặt lại toàn bộ dữ liệu</span>

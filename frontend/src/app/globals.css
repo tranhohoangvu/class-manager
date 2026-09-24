@@ -9,37 +9,43 @@
    COLOR TOKENS
    ============================================= */
 :root {
-  /* Page & warm surfaces */
-  --bg:               oklch(0.985 0.006 85);   /* Warm, friendly paper base */
-  --surface:          oklch(1 0 0);            /* Crisp white primary working surface */
-  --surface-muted:    oklch(0.968 0.008 85);   /* Subtle warm secondary surface */
-  --surface-subtle:   oklch(0.968 0.008 85);
-  --surface-elevated: oklch(1 0 0);
+  /* Page & warm stationery surfaces */
+  --bg:               #fffcf7;   /* Cream Paper Canvas */
+  --surface:          #ffffff;   /* Pure White working surface */
+  --surface-muted:    #f7f4ed;   /* Muted paper surface for headers */
+  --surface-subtle:   #faf7f0;
+  --surface-elevated: #ffffff;
 
-  /* Borders */
-  --border:           oklch(0.905 0.008 85);   /* Delicate, warm border */
-  --border-strong:    oklch(0.800 0.012 85);   /* Emphasized border */
+  /* Borders — Hairline Ink Violet & subtle dividers */
+  --border:           rgba(13, 1, 41, 0.16);   /* Subtle inner hairline border */
+  --border-strong:    #0d0129;                 /* Structural 1px Ink Violet */
 
-  /* Text */
-  --text-primary:     oklch(0.180 0.015 260);  /* Deep ink neutral — rich contrast */
-  --text-secondary:   oklch(0.380 0.015 260);  /* Supporting text */
-  --text-muted:       oklch(0.550 0.012 260);  /* Metadata, placeholder */
+  /* Text — Ink Violet */
+  --text-primary:     #0d0129;  /* Deep violet ink — 16.8:1 WCAG contrast */
+  --text-secondary:   #4a4458;  /* Secondary ink */
+  --text-muted:       #787285;  /* Muted metadata */
 
-  /* Accent — Scholastic Navy / Royal Indigo */
-  --accent:           oklch(0.480 0.140 245);
-  --accent-hover:     oklch(0.420 0.145 245);
-  --accent-subtle:    oklch(0.960 0.030 245);  /* Light tinted wash */
-  --accent-text:      oklch(1 0 0);
+  /* Accent — Butter Yellow (Sticky Note / Physical Stamp) */
+  --accent:           #fae59b;
+  --accent-hover:     #f3dc82;
+  --accent-subtle:    #fef9e7;
+  --accent-text:      #0d0129;
 
-  /* Semantic Status colors */
-  --success:          oklch(0.520 0.150 150);  /* Sage/forest green — Present */
-  --success-bg:       oklch(0.965 0.040 150);
-  --warning:          oklch(0.650 0.145 75);   /* Golden amber — Late */
-  --warning-bg:       oklch(0.970 0.040 75);
-  --danger:           oklch(0.550 0.190 28);   /* Coral rose — Absent */
-  --danger-bg:        oklch(0.975 0.040 28);
-  --neutral:          oklch(0.520 0.015 250);  /* Excused / Neutral */
-  --neutral-bg:       oklch(0.960 0.008 85);
+  /* Anchor — Deep Teal */
+  --teal:             #19615c;
+  --teal-hover:       #134e4a;
+  --teal-subtle:      #e6f4f2;
+  --teal-text:        #ffffff;
+
+  /* Scholastic Semantic Status Inks */
+  --success:          #2d6a4f;  /* Forest Sage — Có mặt / 0 xung đột */
+  --success-bg:       #edf7f0;
+  --warning:          #b7791f;  /* Amber Ochre — Đi muộn / Cảnh báo */
+  --warning-bg:       #fef9e7;
+  --danger:           #9e2a2b;  /* Crimson Ink — Vắng mặt / Trùng tiết */
+  --danger-bg:        #fdf2f2;
+  --neutral:          #4a4e69;  /* Slate Muted — Có phép / Trống */
+  --neutral-bg:       #f3f4f6;
 
   /* Spacing Scale */
   --space-1:  4px;
@@ -52,35 +58,37 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  /* Radius */
-  --radius-sm:  6px;
-  --radius:     8px;
-  --radius-md:  10px;
-  --radius-lg:  14px;
-  --radius-xl:  18px;
-  --radius-2xl: 24px;
+  /* Radius — Geometric Sharp / Micro-bevel */
+  --radius-sm:  2px;
+  --radius:     4px;
+  --radius-md:  4px;
+  --radius-lg:  6px;
+  --radius-xl:  8px;
+  --radius-2xl: 8px;
 
-  /* Elevation Shadows */
-  --shadow-sm:  0 1px 3px 0 oklch(0.18 0.015 260 / 0.05);
-  --shadow:     0 2px 6px -1px oklch(0.18 0.015 260 / 0.07),
-                0 1px 3px -1px oklch(0.18 0.015 260 / 0.04);
-  --shadow-md:  0 6px 16px -2px oklch(0.18 0.015 260 / 0.08),
-                0 2px 6px -2px oklch(0.18 0.015 260 / 0.04);
-  --shadow-lg:  0 12px 28px -4px oklch(0.18 0.015 260 / 0.10);
+  /* Elevation Shadows — Hard Offset & Sharp Depth */
+  --shadow-button: 1px 1px 3px 0px #000000;
+  --shadow-offset: 2px 2px 0px 0px #0d0129;
+  --shadow-sm:  1px 1px 2px 0 rgba(13, 1, 41, 0.06);
+  --shadow:     2px 2px 0px 0 rgba(13, 1, 41, 0.08);
+  --shadow-md:  4px 4px 0px 0 rgba(13, 1, 41, 0.10),
+                0 4px 12px -2px rgba(13, 1, 41, 0.08);
+  --shadow-lg:  6px 6px 0px 0 rgba(13, 1, 41, 0.12),
+                0 12px 24px -4px rgba(13, 1, 41, 0.12);
 
   /* Typography Scale — Prominent & Human */
   --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: var(--font-geist-mono), 'JetBrains Mono', monospace;
 
-  --text-xs:   13px;
+  --text-xs:   12px;
   --text-sm:   14px;
   --text-base: 15px;
   --text-md:   16px;
   --text-lg:   18px;
-  --text-xl:   21px;
-  --text-2xl:  26px;
-  --text-3xl:  32px;
-  --text-4xl:  38px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  28px;
+  --text-4xl:  36px;
 
   --leading-tight:  1.22;
   --leading-snug:   1.35;
@@ -106,6 +114,10 @@
   --color-accent-hover:   var(--accent-hover);
   --color-accent-subtle:  var(--accent-subtle);
   --color-accent-text:    var(--accent-text);
+  --color-teal:           var(--teal);
+  --color-teal-hover:     var(--teal-hover);
+  --color-teal-subtle:    var(--teal-subtle);
+  --color-teal-text:      var(--teal-text);
   --color-success:        var(--success);
   --color-success-bg:     var(--success-bg);
   --color-success-subtle: var(--success-bg);
@@ -178,37 +190,37 @@ body {
 }
 
 /* =============================================
-   ATTENDANCE STATUS BADGES
+   ATTENDANCE STATUS BADGES — Scholastic Inks
    ============================================= */
 .badge-present {
   background-color: var(--success-bg);
   color: var(--success);
-  border: 1px solid oklch(0.52 0.140 148 / 0.2);
+  border: 1px solid rgba(45, 106, 79, 0.28);
 }
 
 .badge-absent {
   background-color: var(--danger-bg);
   color: var(--danger);
-  border: 1px solid oklch(0.52 0.180 25 / 0.2);
+  border: 1px solid rgba(158, 42, 43, 0.32);
 }
 
 .badge-late {
   background-color: var(--warning-bg);
   color: var(--warning);
-  border: 1px solid oklch(0.62 0.130 70 / 0.2);
+  border: 1px solid rgba(183, 121, 31, 0.30);
 }
 
 .badge-excused {
   background-color: var(--neutral-bg);
   color: var(--neutral);
-  border: 1px solid oklch(0.56 0.008 240 / 0.2);
+  border: 1px solid rgba(74, 78, 105, 0.25);
 }
 
 /* =============================================
    FOCUS STYLES — Accessible, visible
    ============================================= */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--border-strong);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -284,22 +296,22 @@ textarea {
 }
 
 .data-table tbody tr:hover td {
-  background-color: oklch(0.48 0.14 245 / 0.035);
+  background-color: rgba(250, 229, 155, 0.15);
 }
 
 /* =============================================
-   FORM INPUTS — Generous & Comfortable (46px)
+   FORM INPUTS — Generous & Comfortable (42px)
    ============================================= */
 .input-base {
   width: 100%;
-  height: 46px;
-  padding: 10px 16px;
-  font-size: 15px;
+  height: 42px;
+  padding: 8px 14px;
+  font-size: 14px;
   font-family: var(--font-sans);
   color: var(--text-primary);
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   outline: none;
   box-shadow: var(--shadow-sm);
   transition: border-color 180ms ease, box-shadow 180ms ease;
@@ -314,8 +326,8 @@ textarea {
 }
 
 .input-base:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px oklch(0.48 0.14 245 / 0.14);
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .input-base:disabled {

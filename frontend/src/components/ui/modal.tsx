@@ -78,15 +78,15 @@ export function Modal({
       {/* Panel */}
       <div
         className={cn(
-          'relative z-10 w-full bg-surface rounded-2xl',
-          'border border-border shadow-lg max-h-[90dvh] flex flex-col',
+          'relative z-10 w-full bg-surface rounded-sm',
+          'border border-border-strong shadow-[4px_4px_0px_0px_rgba(13,1,41,0.25)] max-h-[90dvh] flex flex-col',
           sizeClasses[size]
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-border flex-shrink-0">
+        <div className="flex items-start justify-between p-4.5 border-b border-border-strong flex-shrink-0 bg-surface-muted/30">
           <div>
-            <h2 id="modal-title" className="text-base font-semibold text-text-primary">
+            <h2 id="modal-title" className="text-[15px] font-bold text-text-primary">
               {title}
             </h2>
             {description && (
@@ -96,18 +96,18 @@ export function Modal({
           <button
             onClick={onClose}
             aria-label="Đóng"
-            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
+            className="p-1 rounded-sm text-text-muted hover:text-text-primary hover:bg-surface-muted border border-transparent hover:border-border transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-5 overflow-y-auto flex-1">{children}</div>
+        <div className="p-4.5 overflow-y-auto flex-1">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border">
+          <div className="flex items-center justify-end gap-2 px-4.5 py-3.5 border-t border-border-strong bg-surface-muted/40">
             {footer}
           </div>
         )}
