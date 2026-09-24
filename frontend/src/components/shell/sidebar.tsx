@@ -10,16 +10,17 @@ import {
   ClipboardText,
   ClockCounterClockwise,
   Megaphone,
-  GearSix,
   SignOut,
   ArrowSquareOut,
   ShieldCheck,
   Eye,
   X,
+  User,
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
+import { LocalStore } from '@/lib/store';
 import { ClassSwitcher } from './class-switcher';
 
 interface SidebarProps {
@@ -69,6 +70,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     },
   ];
 
+  const schoolSettings = LocalStore.getSchoolSettings();
+
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -85,10 +88,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <div className="px-5 py-4 border-b border-border-strong flex items-center justify-between bg-surface-muted/30">
           <div>
             <span className="text-[14px] font-bold tracking-tight text-text-primary block leading-tight">
-              THCS Nguyễn Tất Thành
+              {schoolSettings.schoolName || 'THCS Nguyễn Tất Thành'}
             </span>
             <span className="text-[11px] text-teal block mt-0.5 font-bold">
-              Năm học 2026 - 2027 · {isHomeroom ? 'GV Chủ nhiệm' : 'GV Bộ môn'}
+              Năm học {schoolSettings.schoolYear} · {isHomeroom ? 'GV Chủ nhiệm' : 'GV Bộ môn'}
             </span>
           </div>
           <button
@@ -179,32 +182,37 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           )}
         </nav>
 
-        {/* Bottom: Settings + User Profile + Sign Out */}
+        {/* Bottom: Hồ sơ cá nhân (chỉ hiển thị cho Giáo viên) + User Info + Sign Out */}
         <div className="px-3 py-3 border-t border-border space-y-2">
-          {isHomeroom && (
+          {/* Hồ sơ cá nhân (Chỉ dành cho GVCN / GVBM, Admin quản lý qua Hồ sơ quản trị) */}
+          {user?.role !== 'ADMIN' && (
             <Link
-              href="/settings"
+              href="/profile"
               onClick={() => onClose?.()}
               className={cn(
                 'flex items-center gap-2.5 h-9 px-3 rounded-sm text-xs font-bold transition-colors group relative',
-                pathname === '/settings'
+                pathname === '/profile'
                   ? 'bg-accent text-text-primary border border-border-strong shadow-[1px_1px_0px_#000]'
                   : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted border border-transparent hover:border-border'
               )}
             >
-              <GearSix size={16} weight={pathname === '/settings' ? 'bold' : 'regular'} />
-              <span>Cài đặt lớp</span>
+              <User size={16} weight={pathname === '/profile' ? 'bold' : 'regular'} />
+              <span>Hồ sơ cá nhân</span>
             </Link>
           )}
 
-          {/* Profile */}
+          {/* User Account Info */}
           <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm bg-surface-muted/60 border border-border">
             <div className="w-8 h-8 rounded-sm bg-accent text-text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 border border-border-strong shadow-[1px_1px_0px_0px_rgba(13,1,41,0.2)]">
-              {user?.name?.charAt(0) || 'G'}
+              {user?.name?.charAt(0) || (user?.role === 'ADMIN' ? 'A' : 'G')}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold text-text-primary truncate">{user?.name}</div>
-              <div className="text-[10px] text-text-muted truncate">{user?.email}</div>
+              <div className="text-xs font-bold text-text-primary truncate">
+                {user?.name}
+              </div>
+              <div className="text-[10px] text-text-muted truncate">
+                {user?.role === 'ADMIN' ? 'Quản trị viên' : isHomeroom ? 'GV Chủ nhiệm' : 'GV Bộ môn'}
+              </div>
             </div>
           </div>
 

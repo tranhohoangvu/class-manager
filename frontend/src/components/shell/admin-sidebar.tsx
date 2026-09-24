@@ -16,9 +16,11 @@ import {
   ArrowSquareOut,
   ShieldCheck,
   X,
+  User,
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
+import { LocalStore } from '@/lib/store';
 
 const adminNavItems = [
   { href: '/admin/dashboard', label: 'Tổng quan hệ thống', icon: SquaresFour },
@@ -40,6 +42,7 @@ interface AdminSidebarProps {
 export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const schoolSettings = LocalStore.getSchoolSettings();
 
   return (
     <>
@@ -61,10 +64,10 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
             </div>
             <div>
               <span className="text-[14px] font-bold tracking-tight text-text-primary block leading-tight">
-                THCS Nguyễn Tất Thành
+                {schoolSettings.schoolName || 'THCS Nguyễn Tất Thành'}
               </span>
               <span className="text-[11px] font-bold text-teal block mt-0.5">
-                Admin Portal · 2026 - 2027
+                Admin Portal · {schoolSettings.schoolYear}
               </span>
             </div>
           </div>
@@ -131,13 +134,33 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
 
       {/* Bottom Profile & Sign Out */}
       <div className="px-3 py-3 border-t border-border space-y-2">
+        {/* Hồ sơ quản trị */}
+        <Link
+          href="/admin/profile"
+          onClick={() => onClose?.()}
+          className={cn(
+            'flex items-center gap-2.5 h-9 px-3 rounded-sm text-xs font-bold transition-colors group relative',
+            pathname === '/admin/profile'
+              ? 'bg-accent text-text-primary border border-border-strong shadow-[1px_1px_0px_#000]'
+              : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted border border-transparent hover:border-border'
+          )}
+        >
+          <User size={16} weight={pathname === '/admin/profile' ? 'bold' : 'regular'} />
+          <span>Hồ sơ quản trị</span>
+        </Link>
+
+        {/* User Account Info */}
         <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm bg-surface-muted/60 border border-border">
           <div className="w-8 h-8 rounded-sm bg-accent text-text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 border border-border-strong shadow-[1px_1px_0px_0px_rgba(13,1,41,0.2)]">
             {user?.name?.charAt(0) || 'A'}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-bold text-text-primary truncate">{user?.name}</div>
-            <div className="text-[10px] text-text-muted truncate">{user?.email}</div>
+            <div className="text-xs font-bold text-text-primary truncate">
+              {user?.name}
+            </div>
+            <div className="text-[10px] text-text-muted truncate">
+              {user?.email}
+            </div>
           </div>
         </div>
 

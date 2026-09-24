@@ -17,6 +17,7 @@ import {
   SubjectAssignmentRow,
   ClassMembershipRole,
   TimetableEntryRow,
+  SchoolSettings,
 } from '@/types';
 import {
   INITIAL_USERS,
@@ -38,6 +39,18 @@ import { getGradeShift } from './constants';
 
 const CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v10';
 
+export const DEFAULT_SCHOOL_SETTINGS: SchoolSettings = {
+  departmentName: 'SỞ GIÁO DỤC VÀ ĐÀO TẠO HÀ NỘI',
+  divisionName: 'PHÒNG GIÁO DỤC VÀ ĐÀO TẠO CẦU GIẤY',
+  schoolName: 'TRƯỜNG THCS NGUYỄN TẤT THÀNH',
+  province: 'Hà Nội',
+  address: 'Số 136 Xuân Thủy, Cầu Giấy, Hà Nội',
+  phone: '(024) 3833 4455',
+  schoolYear: '2026 - 2027',
+  semester: 'Học kỳ I',
+  principalName: 'TS. Lê Thị Quỳnh Mai',
+};
+
 const STORAGE_KEYS = {
   DATA_VERSION: 'cm_data_version',
   USERS: 'cm_thcs_users',
@@ -51,6 +64,7 @@ const STORAGE_KEYS = {
   MEMBERSHIPS: 'cm_thcs_memberships',
   SUBJECT_ASSIGNMENTS: 'cm_thcs_subject_assignments',
   TIMETABLE: 'cm_thcs_timetable',
+  SCHOOL_SETTINGS: 'cm_thcs_school_settings',
 };
 
 const memoryCache: Record<string, unknown> = {};
@@ -113,6 +127,7 @@ function ensureInitialized(): void {
       setStorageItem(STORAGE_KEYS.MEMBERSHIPS, INITIAL_CLASS_MEMBERSHIPS);
       setStorageItem(STORAGE_KEYS.SUBJECT_ASSIGNMENTS, INITIAL_SUBJECT_ASSIGNMENTS);
       setStorageItem(STORAGE_KEYS.TIMETABLE, INITIAL_TIMETABLE);
+      setStorageItem(STORAGE_KEYS.SCHOOL_SETTINGS, DEFAULT_SCHOOL_SETTINGS);
 
       localStorage.setItem(STORAGE_KEYS.DATA_VERSION, CURRENT_DATA_VERSION);
     }
@@ -408,6 +423,20 @@ export const LocalStore = {
     users[idx] = updated;
     setStorageItem(STORAGE_KEYS.USERS, users);
     return updated;
+  },
+
+  updateUser(id: string, updates: Partial<UserRow>): UserRow | null {
+    const users = this.getUsers();
+    const idx = users.findIndex((u) => u.id === id);
+    if (idx === -1) return null;
+
+    users[idx] = {
+      ...users[idx],
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    setStorageItem(STORAGE_KEYS.USERS, users);
+    return users[idx];
   },
 
   toggleTeacherStatus(id: string): UserRow | null {
@@ -1115,6 +1144,24 @@ export const LocalStore = {
   clearAllTimetables(): boolean {
     setStorageItem(STORAGE_KEYS.TIMETABLE, []);
     return true;
+  },
+
+  // =============================================
+  // School & System Settings
+  // =============================================
+
+  getSchoolSettings(): SchoolSettings {
+    return getStorageItem<SchoolSettings>(STORAGE_KEYS.SCHOOL_SETTINGS, DEFAULT_SCHOOL_SETTINGS);
+  },
+
+  updateSchoolSettings(settings: Partial<SchoolSettings>): SchoolSettings {
+    const current = this.getSchoolSettings();
+    const updated: SchoolSettings = { ...current, ...settings };
+    setStorageItem(STORAGE_KEYS.SCHOOL_SETTINGS, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('school-settings-updated', { detail: updated }));
+    }
+    return updated;
   },
 
   // =============================================

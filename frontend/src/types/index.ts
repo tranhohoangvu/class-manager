@@ -317,3 +317,20 @@ export interface SeatingRandomizeResult {
     student_id: string | null;
   }>;
 }
+
+// =============================================
+// School & System Settings Types
+// =============================================
+
+export interface SchoolSettings {
+  departmentName: string; // Sở GD&ĐT (VD: SỞ GIÁO DỤC VÀ ĐÀO TẠO HÀ NỘI)
+  divisionName: string;   // Phòng GD&ĐT (VD: PHÒNG GIÁO DỤC VÀ ĐÀO TẠO CẦU GIẤY)
+  schoolName: string;     // Tên trường (VD: TRƯỜNG THCS NGUYỄN TẤT THÀNH)
+  province: string;       // Tỉnh/Thành phố (VD: Hà Nội)
+  address: string;        // Địa chỉ trường (VD: Số 136 Xuân Thủy, Cầu Giấy, Hà Nội)
+  phone: string;          // Hotline / SĐT liên hệ (VD: (024) 3833 4455)
+  schoolYear: string;     // Năm học (VD: 2026 - 2027)
+  semester: string;       // Học kỳ (VD: Học kỳ I)
+  principalName: string;  // Đại diện BGH phê duyệt (VD: TS. Lê Thị Quỳnh Mai)
+}
+

@@ -3,6 +3,7 @@
 import { List, X, ChalkboardTeacher, ShieldCheck } from '@phosphor-icons/react';
 import { useOptionalCurrentClass } from '@/contexts/class-context';
 import { useAuth } from '@/contexts/auth-context';
+import { LocalStore } from '@/lib/store';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export function MobileNav({ isOpen, onToggle, isAdmin = false }: MobileNavProps)
   const currentClass = classContext?.currentClass ?? null;
   const isHomeroom = classContext?.isHomeroom ?? false;
   const { user } = useAuth();
+  const schoolSettings = LocalStore.getSchoolSettings();
 
   return (
     <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-surface border-b border-border-strong shadow-[0_1px_2px_0_rgba(13,1,41,0.08)]">
@@ -37,7 +39,7 @@ export function MobileNav({ isOpen, onToggle, isAdmin = false }: MobileNavProps)
             )}
           </div>
           <span className="text-[13px] font-bold text-text-primary tracking-tight">
-            THCS Nguyễn Tất Thành
+            {schoolSettings.schoolName || 'THCS Nguyễn Tất Thành'}
           </span>
         </div>
       </div>
