@@ -61,12 +61,16 @@ Class Manager System
 │       └── 2.8.3. Reset Demo Data to Clean State
 │
 └── 3. Administration Portal (School Governance)
-    ├── 3.1. Executive Dashboard
-    │   ├── 3.1.1. School-Wide Attendance KPIs & Today's Attendance Progress Bar
-    │   ├── 3.1.2. Grade-Level Attendance Breakdown (Grades 6, 7, 8, 9)
-    │   ├── 3.1.3. High-Absence Class Alert Feed
-    │   ├── 3.1.4. School-Wide 16-Class Real-Time Attendance Monitoring Table
-    │   └── 3.1.5. 4-Sheet Comprehensive School Report Excel Export
+    ├── 3.1. Executive Management Dashboard (Visual & Information-Dense)
+    │   ├── 3.1.1. Executive KPI Metrics (Faculty, Classes, Student Enrolment, Timetable Completion)
+    │   ├── 3.1.2. Level 1 Diagnostic Alert Hub (Timetable Conflict Detection & High Absence Class Alerts)
+    │   ├── 3.1.3. Timetable Overview & Shift Distribution (Morning/Afternoon split, Top Subject Allocation)
+    │   ├── 3.1.4. Attendance Distribution & Grade Comparison Chart (Grades 6–9 Progress vs 95% Benchmark)
+    │   ├── 3.1.5. Interactive Class Management Overview Table (Filter, Sort, Capacity, Timetable, Roll-call)
+    │   ├── 3.1.6. Faculty Workload & Allocation Overview Table (Teaching Periods/Week, Homeroom, Conflict Health)
+    │   ├── 3.1.7. Recent System Activity & Real-Time Diagnostics Log
+    │   ├── 3.1.8. Quick Administrative Actions Toolbar
+    │   └── 3.1.9. 4-Sheet Comprehensive School Report Excel Export (.xlsx)
     │
     ├── 3.2. Class Management
     │   ├── 3.2.1. 16 Classes Directory & Filtering
