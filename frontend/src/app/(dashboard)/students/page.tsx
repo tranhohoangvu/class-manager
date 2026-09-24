@@ -35,6 +35,7 @@ import { compareVietnameseNames } from '@/lib/constants';
 
 export default function StudentsPage() {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const { currentClassId, currentClass, isHomeroom, isSubjectTeacher, teacherSubjects } = useCurrentClass();
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [desks, setDesks] = useState<DeskWithSeats[]>([]);
@@ -384,7 +385,7 @@ export default function StudentsPage() {
             <span>In danh sách</span>
           </Button>
 
-          {isHomeroom && (
+          {isAdmin && (
             <>
               <Button
                 variant="secondary"
@@ -405,13 +406,20 @@ export default function StudentsPage() {
         </div>
       </div>
 
-      {/* Role Banner for Subject Teachers */}
-      {isSubjectTeacher && (
-        <div className="p-3.5 bg-teal-subtle border border-teal/30 rounded-sm flex items-center justify-between text-sm text-text-primary no-print shadow-xs">
-          <span className="leading-relaxed">
-            Bạn đang xem danh sách học sinh lớp <strong className="font-bold">{currentClass?.name}</strong> với vai trò <strong className="font-bold">Giáo viên Bộ môn ({teacherSubjects.map((s) => s.name).join(', ')})</strong>. Chế độ tra cứu hồ sơ.
+      {/* Admin-Managed Notice for Teachers */}
+      {!isAdmin && (
+        <div className="p-3 bg-surface rounded-xs border border-border flex items-center justify-between text-xs text-text-primary no-print shadow-2xs">
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-5 rounded-xs bg-teal-subtle text-teal border border-teal/30 flex items-center justify-center font-bold text-[11px] flex-shrink-0">
+              ℹ
+            </span>
+            <span>
+              Hồ sơ học sinh được quản lý và chỉnh sửa tập trung bởi Quản trị viên (Admin). Thầy/Cô tra cứu thông tin, sơ đồ chỗ ngồi, xuất báo cáo và in danh sách lớp.
+            </span>
+          </div>
+          <span className="px-2 py-0.5 rounded-xs bg-surface-muted border border-border font-bold text-[11px] text-text-muted flex-shrink-0 ml-3">
+            Tra cứu
           </span>
-          <span className="px-2 py-0.5 rounded-xs bg-surface border border-teal/30 font-bold text-xs text-teal ml-4 flex-shrink-0">Chỉ xem</span>
         </div>
       )}
 
@@ -582,7 +590,7 @@ export default function StudentsPage() {
                               <Eye size={16} />
                             </button>
                           </Link>
-                          {isHomeroom && (
+                          {isAdmin && (
                             <>
                               <button
                                 type="button"

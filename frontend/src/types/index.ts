@@ -112,6 +112,8 @@ export interface StudentRow {
   phone: string | null;
   email: string | null;
   avatar_url: string | null;
+  parent_name?: string | null;
+  address?: string | null;
   status: StudentStatus;
   created_at: string;
   updated_at: string;
@@ -254,6 +256,8 @@ export interface StudentFormData {
   date_of_birth?: string;
   phone?: string;
   email?: string;
+  parent_name?: string;
+  address?: string;
 }
 
 export interface TeacherFormData {

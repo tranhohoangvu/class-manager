@@ -20,7 +20,7 @@ export const StudentService = {
   ): OperationResult<StudentRow> {
     // 1. Authorization check
     if (!AuthGuard.canEditStudent(currentUser, classId)) {
-      return failure('Bạn không có quyền thêm học sinh vào lớp học này. Chỉ GVCN hoặc Quản trị viên mới được phép.');
+      return failure('Bạn không có quyền thêm học sinh. Chỉ Quản trị viên (Admin) mới có quyền quản lý học sinh.');
     }
 
     // 2. Schema validation
@@ -72,7 +72,7 @@ export const StudentService = {
   ): OperationResult<{ count: number; imported: StudentRow[] }> {
     // 1. Authorization check
     if (!AuthGuard.canEditStudent(currentUser, classId)) {
-      return failure('Bạn không có quyền nhập học sinh vào lớp học này. Chỉ GVCN hoặc Quản trị viên mới được phép.');
+      return failure('Bạn không có quyền nhập học sinh vào hệ thống. Chỉ Quản trị viên (Admin) mới có quyền quản lý học sinh.');
     }
 
     if (!studentsData || studentsData.length === 0) {
@@ -145,7 +145,7 @@ export const StudentService = {
 
     // 1. Authorization check
     if (!AuthGuard.canEditStudent(currentUser, student.class_id)) {
-      return failure('Bạn không có quyền chỉnh sửa thông tin học sinh này. Chỉ GVCN hoặc Quản trị viên mới được phép.');
+      return failure('Bạn không có quyền chỉnh sửa thông tin học sinh này. Chỉ Quản trị viên (Admin) mới có quyền chỉnh sửa.');
     }
 
     // 2. Duplicate student_code check if updated
@@ -176,7 +176,7 @@ export const StudentService = {
 
     // 1. Authorization check
     if (!AuthGuard.canEditStudent(currentUser, student.class_id)) {
-      return failure('Bạn không có quyền xoá học sinh này. Chỉ GVCN hoặc Quản trị viên mới có quyền xoá học sinh.');
+      return failure('Bạn không có quyền xoá học sinh này. Chỉ Quản trị viên (Admin) mới có quyền xoá học sinh khỏi hệ thống.');
     }
 
     const deleted = LocalStore.deleteStudent(id);

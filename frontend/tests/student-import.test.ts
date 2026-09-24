@@ -57,11 +57,26 @@ describe('Cải tiến 3: Student Import & Management Tests', () => {
 
     const result = StudentService.importStudents(testClassId, studentsToImport, mockUnauthorizedTeacher);
     expect(result.success).toBe(false);
-    expect(result.error).toContain('Bạn không có quyền nhập học sinh vào lớp học này');
+    expect(result.error).toContain('Bạn không có quyền nhập học sinh');
+  });
+
+  it('chặn Giáo viên chủ nhiệm (GVCN) nhập học sinh vì quyền quản lý học sinh thuộc về Admin', () => {
+    const studentsToImport: StudentFormData[] = [
+      {
+        student_code: 'TEST02',
+        full_name: 'Nguyễn Văn Test 2',
+        gender: 'male',
+        date_of_birth: '2011-01-01',
+      },
+    ];
+
+    const result = StudentService.importStudents(testClassId, studentsToImport, mockGVCN_6A1);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Bạn không có quyền nhập học sinh');
   });
 
   it('chặn danh sách học sinh rỗng', () => {
-    const result = StudentService.importStudents(testClassId, [], mockGVCN_6A1);
+    const result = StudentService.importStudents(testClassId, [], mockAdmin);
     expect(result.success).toBe(false);
     expect(result.error).toContain('trống');
   });
@@ -82,7 +97,7 @@ describe('Cải tiến 3: Student Import & Management Tests', () => {
       },
     ];
 
-    const result = StudentService.importStudents(testClassId, duplicateFileStudents, mockGVCN_6A1);
+    const result = StudentService.importStudents(testClassId, duplicateFileStudents, mockAdmin);
     expect(result.success).toBe(false);
     expect(result.error).toContain('trùng lặp trong file');
   });
@@ -101,7 +116,7 @@ describe('Cải tiến 3: Student Import & Management Tests', () => {
       },
     ];
 
-    const result = StudentService.importStudents(testClassId, conflictStudents, mockGVCN_6A1);
+    const result = StudentService.importStudents(testClassId, conflictStudents, mockAdmin);
     expect(result.success).toBe(false);
     expect(result.error).toContain('đã tồn tại trong lớp');
   });
@@ -141,7 +156,7 @@ describe('Cải tiến 3: Student Import & Management Tests', () => {
       phone: '0912345678',
     };
 
-    const result = StudentService.importStudents(testClassId, [validStudent], mockGVCN_6A1);
+    const result = StudentService.importStudents(testClassId, [validStudent], mockAdmin);
     expect(result.success).toBe(true);
     expect(result.data?.count).toBe(1);
 

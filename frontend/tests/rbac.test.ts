@@ -59,7 +59,8 @@ describe('RBAC & AuthGuard Tests', () => {
 
   it('Homeroom Teacher (GVCN) should have management rights in their own class (excluding unassigned attendance and timetable)', () => {
     expect(AuthGuard.isHomeroomTeacher(mockGVCN_6A1, 'c-6a1')).toBe(true);
-    expect(AuthGuard.canEditStudent(mockGVCN_6A1, 'c-6a1')).toBe(true);
+    // GVCN CANNOT edit/manage student records (Only Admin can)
+    expect(AuthGuard.canEditStudent(mockGVCN_6A1, 'c-6a1')).toBe(false);
     expect(AuthGuard.canManageSeating(mockGVCN_6A1, 'c-6a1')).toBe(true);
     expect(AuthGuard.canManageAnnouncement(mockGVCN_6A1, 'c-6a1')).toBe(true);
     // GVCN CANNOT edit/manage timetable (Only Admin can)
