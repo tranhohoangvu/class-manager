@@ -50,6 +50,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { toast } from 'sonner';
+import { PrintHeader, PrintSignatures } from '@/components/common/printable-paper';
 import { cn } from '@/lib/utils';
 
 export default function TimetablePage() {
@@ -62,6 +63,17 @@ export default function TimetablePage() {
   const [allClasses, setAllClasses] = useState<ClassRow[]>([]);
   const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [schoolSettings, setSchoolSettings] = useState(() => LocalStore.getSchoolSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setSchoolSettings(detail);
+      else setSchoolSettings(LocalStore.getSchoolSettings());
+    };
+    window.addEventListener('school-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('school-settings-updated', handleSettingsUpdate);
+  }, []);
 
   // Class Selection & View State
   const [selectedClassId, setSelectedClassId] = useState<string>(currentClassId || 'c-6a1');
@@ -75,14 +87,16 @@ export default function TimetablePage() {
   // Edit Cell Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSlot, setEditingSlot] = useState<{ day: number; period: number } | null>(null);
+  const [initialSlotData, setInitialSlotData] = useState<{ subjectId: string; teacherId: string } | null>(null);
   const [editSubjectId, setEditSubjectId] = useState<string>('');
   const [editTeacherId, setEditTeacherId] = useState<string>('');
   const [editError, setEditError] = useState<string | null>(null);
 
-  // Copy Modal State
-  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
-  const [sourceClassId, setSourceClassId] = useState<string>('');
-  const [copyError, setCopyError] = useState<string | null>(null);
+  const isSlotDirty = useMemo(() => {
+    if (!initialSlotData) return false;
+    return editSubjectId !== initialSlotData.subjectId || editTeacherId !== initialSlotData.teacherId;
+  }, [initialSlotData, editSubjectId, editTeacherId]);
+
 
   // Mobile selected day tab (2..7)
   const [mobileSelectedDay, setMobileSelectedDay] = useState<number>(2);
@@ -163,7 +177,8 @@ export default function TimetablePage() {
     }
   }, []);
 
-  const canEdit = AuthGuard.canManageTimetable(user, activeClass?.id);
+  // Chỉ Admin mới có quyền chỉnh sửa và chỉ sửa tại giao diện Admin
+  const canEdit = false;
 
   // Handle class switch from page chips
   const handleSelectClass = (clsId: string) => {
@@ -208,13 +223,11 @@ export default function TimetablePage() {
     }
     const entry = timetableMap.get(`${day}-${period}`);
     setEditingSlot({ day, period });
-    if (day === 7 && period === homeroomSlot.period) {
-      setEditSubjectId('sub-shl');
-      setEditTeacherId(activeClass?.teacher_id || '');
-    } else {
-      setEditSubjectId(entry?.subject_id || '');
-      setEditTeacherId(entry?.teacher_id || '');
-    }
+    const initSub = (day === 7 && period === homeroomSlot.period) ? 'sub-shl' : (entry?.subject_id || '');
+    const initTea = (day === 7 && period === homeroomSlot.period) ? (activeClass?.teacher_id || '') : (entry?.teacher_id || '');
+    setEditSubjectId(initSub);
+    setEditTeacherId(initTea);
+    setInitialSlotData({ subjectId: initSub, teacherId: initTea });
     setEditError(null);
     setIsEditModalOpen(true);
   };
@@ -310,23 +323,6 @@ export default function TimetablePage() {
     }
   };
 
-  // Copy from another class
-  const handleCopyFromClass = () => {
-    if (!activeClassId || !sourceClassId) {
-      toast.error('Vui lòng chọn lớp học nguồn để sao chép.');
-      return;
-    }
-    const res = TimetableService.copyFromClass(sourceClassId, activeClassId, user);
-    if (res.success) {
-      toast.success('Đã sao chép Thời khóa biểu thành công!');
-      setCopyError(null);
-      setIsCopyModalOpen(false);
-      loadData();
-    } else {
-      setCopyError(res.error || 'Xung đột khi sao chép Thời khóa biểu.');
-      toast.error(res.error);
-    }
-  };
 
   // Clear all
   const handleClearAll = () => {
@@ -603,15 +599,6 @@ export default function TimetablePage() {
                   <span>Xếp mẫu chuẩn</span>
                 </Button>
 
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsCopyModalOpen(true)}
-                  className="cursor-pointer"
-                >
-                  <Copy size={16} />
-                  <span>Sao chép TKB</span>
-                </Button>
 
                 <Button
                   variant="ghost"
@@ -1245,31 +1232,14 @@ export default function TimetablePage() {
           ============================================= */}
       <div className="hidden print:block p-2 max-w-[100%] mx-auto text-black bg-white printable-card">
         {/* Formal School Header */}
-        <div className="flex justify-between items-start border-b-2 border-black pb-3 mb-4">
-          <div>
-            <p className="text-[11pt] font-semibold uppercase tracking-wider">
-              SỞ GIÁO DỤC VÀ ĐÀO TẠO HÀ NỘI
-            </p>
-            <p className="text-[12pt] font-black uppercase tracking-tight">
-              TRƯỜNG THCS NGUYỄN TẤT THÀNH
-            </p>
-            <p className="text-[9pt] italic mt-0.5 text-gray-700">
-              Địa chỉ: Cầu Giấy, Hà Nội · Hotline: (024) 3833 4455
-            </p>
-          </div>
-
-          <div className="text-right">
-            <h2 className="text-[15pt] font-black tracking-tight uppercase text-black">
-              THỜI KHÓA BIỂU LỚP {activeClass.name}
-            </h2>
-            <p className="text-[10pt] font-medium text-gray-800 mt-0.5">
-              Năm học 2026 - 2027 · Áp dụng từ Học kỳ I
-            </p>
-            <p className="text-[9pt] text-gray-700">
-              Phòng học: {activeClass.room_name || 'Phòng học chính'} · Sĩ số: {activeClass.max_students} học sinh
-            </p>
-          </div>
-        </div>
+        <PrintHeader
+          settings={schoolSettings}
+          title={`THỜI KHÓA BIỂU LỚP ${activeClass.name}`}
+          metaLines={[
+            `Phòng học: ${activeClass.room_name || 'Phòng học chính'} · Sĩ số: ${activeClass.max_students} học sinh`,
+            `Giáo viên chủ nhiệm: ${homeroomTeacher?.name || '—'}`,
+          ]}
+        />
 
         {/* Printable Timetable Grid */}
         <table className="w-full border-collapse border-2 border-black text-center text-[10pt]">
@@ -1345,24 +1315,11 @@ export default function TimetablePage() {
         </table>
 
         {/* Formal Signatures Block */}
-        <div className="grid grid-cols-2 gap-8 mt-6 pt-4 text-center">
-          <div>
-            <p className="font-bold uppercase text-[10pt]">BAN GIÁM HIỆU PHÊ DUYỆT</p>
-            <p className="text-[8.5pt] italic text-gray-600">(Ký và đóng dấu)</p>
-            <div className="h-20" />
-            <p className="font-bold text-[10pt] uppercase">TS. Lê Thị Quỳnh Mai</p>
-          </div>
-
-          <div>
-            <p className="text-[9pt] italic text-gray-700 mb-0.5">Hà Nội, ngày 01 tháng 09 năm 2026</p>
-            <p className="font-bold uppercase text-[10pt]">GIÁO VIÊN CHỦ NHIỆM</p>
-            <p className="text-[8.5pt] italic text-gray-600">(Ký và ghi rõ họ tên)</p>
-            <div className="h-20" />
-            <p className="font-bold text-[10pt] uppercase">
-              {homeroomTeacher?.name || 'Nguyễn Văn An'}
-            </p>
-          </div>
-        </div>
+        <PrintSignatures
+          settings={schoolSettings}
+          creatorRoleTitle="GIÁO VIÊN CHỦ NHIỆM"
+          creatorName={homeroomTeacher?.name || user?.name || 'Nguyễn Văn An'}
+        />
       </div>
 
       {/* =============================================
@@ -1480,6 +1437,8 @@ export default function TimetablePage() {
                   variant="primary"
                   type="button"
                   onClick={handleSaveSlot}
+                  disabled={!isSlotDirty}
+                  className={cn('cursor-pointer', !isSlotDirty && 'opacity-40 cursor-not-allowed')}
                 >
                   <Check size={16} />
                   <span>Lưu thay đổi</span>
@@ -1490,85 +1449,6 @@ export default function TimetablePage() {
         </div>
       </Modal>
 
-      {/* =============================================
-          4. COPY TIMETABLE MODAL
-          ============================================= */}
-      <Modal
-        isOpen={isCopyModalOpen}
-        onClose={() => {
-          setCopyError(null);
-          setIsCopyModalOpen(false);
-        }}
-        title="Sao chép Thời khóa biểu từ lớp khác"
-      >
-        <div className="space-y-4">
-          <p className="text-xs text-text-secondary leading-relaxed">
-            Sao chép toàn bộ 28 tiết học từ một lớp khác sang lớp{' '}
-            <strong className="text-text-primary">{activeClass.name}</strong>. Giáo viên phụ trách sẽ
-            được tự động ánh xạ lại theo đúng danh sách GVBM của lớp{' '}
-            <strong className="text-text-primary">{activeClass.name}</strong>. Tiết Sinh hoạt lớp Thứ Bảy sẽ tự động gán cho Giáo viên chủ nhiệm của lớp.
-          </p>
-
-          {copyError && (
-            <div className="p-3.5 rounded-xs bg-rose-50 border border-border-strong text-rose-800 text-xs flex items-start gap-2.5 max-h-48 overflow-y-auto shadow-xs">
-              <WarningCircle size={18} className="text-rose-600 flex-shrink-0 mt-0.5" />
-              <div className="whitespace-pre-line leading-relaxed font-mono font-medium">{copyError}</div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-primary mb-1.5">
-              Chọn lớp học nguồn
-            </label>
-            <select
-              value={sourceClassId}
-              onChange={(e) => {
-                setSourceClassId(e.target.value);
-                setCopyError(null);
-              }}
-              className="w-full px-3.5 py-2.5 rounded-xs border border-border-strong bg-surface text-text-primary text-sm shadow-xs focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              <option value="">-- Chọn một lớp nguồn --</option>
-              {allClasses
-                .filter((c) => c.id !== activeClassId)
-                .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} (Khối {c.grade})
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div className="p-3 rounded-xs bg-surface-muted border border-border-strong text-text-secondary text-xs flex items-start gap-2 shadow-xs">
-            <Info size={16} className="flex-shrink-0 mt-0.5 text-text-primary" />
-            <span>
-              Lưu ý: Hành động này sẽ thay thế toàn bộ lịch học hiện tại của lớp {activeClass.name}.
-            </span>
-          </div>
-
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-border-strong">
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => {
-                setCopyError(null);
-                setIsCopyModalOpen(false);
-              }}
-            >
-              Hủy
-            </Button>
-            <Button
-              variant="primary"
-              type="button"
-              onClick={handleCopyFromClass}
-              disabled={!sourceClassId}
-            >
-              <Copy size={16} />
-              <span>Xác nhận sao chép</span>
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </>
   );
 }

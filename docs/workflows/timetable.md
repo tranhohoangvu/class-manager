@@ -123,3 +123,26 @@ The audit produces an actionable diagnostic report with itemized violation messa
   - Automatically re-binds Saturday Homeroom period to the target class's designated GVCN.
 * **Hoán đổi / Di chuyển Tiết học (Reorganize Slot):**
   Allows administrators to move a subject slot to an empty target period or swap two existing slots, performing full conflict and consecutive period checks on the resulting schedule before saving.
+
+---
+
+## 6. Access Control, Admin Edit Mode & Intelligent Filters
+
+### 6.1. Dedicated Admin Edit Mode ("Sửa TKB")
+To prevent unintended modifications during timetable inspection and review:
+1. **Default Read-Only State:** Navigating to `/admin/timetable` defaults to a read-only presentation. Add buttons (`+ Thêm`), hover actions (Pencil, Trash, Swap), Template generation, and Clear Timetable actions are disabled and concealed.
+2. **Explicit Activation:** Modifications require administrators to explicitly toggle **"Sửa TKB"**. The button shifts to a persistent active state with an informational top banner alert.
+3. **User Portal Lockdown:** In the teacher/user portal (`/timetable`), editing permissions are completely locked (`canEdit = false`), and the "Sao chép TKB" tool is removed. All schedule structuring is centralized strictly under administrative authority.
+
+### 6.2. Smart Class & Teacher Filter Synergy
+1. **School-Wide Default State:**
+   - Under "Tất cả giáo viên", the "Tất cả các lớp" aggregate option is omitted; the dropdown defaults to `-- Chọn lớp học --`.
+   - The matrix renders blank until an intentional class or teacher filter is applied.
+   - Clicking **"Đặt lại lọc"** restores this clean initial state.
+2. **Teacher-Specific Mode:**
+   - Selecting any specific teacher automatically transitions the class selector to `-- Tất cả các lớp (X lớp của GV) --` and hides the generic `-- Chọn lớp học --`.
+3. **Automatic Shift Detection (Auto-Shift Detection):**
+   - When filtering by a teacher who only teaches afternoon classes (Grades 7 & 8), the system **automatically reveals Ca Chiều (Periods 6–10) and hides Ca Sáng (Periods 1–5)**.
+   - Conversely, teachers with only morning classes display Ca Sáng and hide Ca Chiều.
+   - Teachers with mixed morning and afternoon commitments automatically have both shifts exposed.
+   - A toggle button allows manual expansion/contraction of the opposite shift at will.
