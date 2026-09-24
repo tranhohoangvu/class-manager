@@ -191,7 +191,7 @@ export default function StudentDetailPage() {
         <div className="bg-surface rounded-2xl border border-border p-6 sm:p-7 shadow-xs relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div className="flex items-center gap-4 sm:gap-5">
-              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-accent-subtle text-accent border border-accent/20 flex items-center justify-center font-bold text-2xl sm:text-3xl flex-shrink-0 shadow-2xs">
+              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-amber-100 text-amber-950 border border-amber-300 flex items-center justify-center font-black text-2xl sm:text-3xl flex-shrink-0 shadow-2xs">
                 {student.full_name.trim().split(' ').slice(-1)[0][0]}
               </div>
               <div>
@@ -216,7 +216,7 @@ export default function StudentDetailPage() {
             <div className="flex items-center gap-3">
               <Link href="/seating">
                 <Button variant="secondary" className="gap-2">
-                  <Armchair size={18} weight="duotone" className="text-accent" />
+                  <Armchair size={18} weight="duotone" className="text-teal" />
                   <span>Xem vị trí chỗ ngồi</span>
                 </Button>
               </Link>
@@ -230,7 +230,7 @@ export default function StudentDetailPage() {
         {/* Col 1: Basic Info */}
         <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
           <h2 className="text-sm font-bold uppercase tracking-wider text-text-muted border-b border-border pb-3 flex items-center gap-2">
-            <User size={18} className="text-accent" weight="duotone" />
+            <User size={18} className="text-teal" weight="duotone" />
             Thông tin cá nhân
           </h2>
 
@@ -284,7 +284,7 @@ export default function StudentDetailPage() {
               {student.phone ? (
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2 text-text-primary font-bold text-base bg-surface-subtle p-2.5 rounded-xl border border-border/80">
-                    <Phone size={18} className="text-accent flex-shrink-0" />
+                    <Phone size={18} className="text-teal flex-shrink-0" />
                     <span className="font-mono">{student.phone}</span>
                   </div>
 
@@ -315,7 +315,7 @@ export default function StudentDetailPage() {
                       className="inline-flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-semibold bg-surface hover:bg-surface-subtle border border-border text-text-primary shadow-2xs transition-colors"
                       title="Nhắn tin SMS cho phụ huynh"
                     >
-                      <PaperPlaneTilt size={14} weight="bold" className="text-accent" />
+                      <PaperPlaneTilt size={14} weight="bold" className="text-teal" />
                       <span>SMS</span>
                     </a>
                   </div>
@@ -324,9 +324,9 @@ export default function StudentDetailPage() {
                   <button
                     type="button"
                     onClick={() => setIsMessageModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold bg-accent-subtle hover:bg-accent/15 text-accent border border-accent/25 transition-all cursor-pointer shadow-2xs"
+                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-100/90 hover:bg-amber-200 text-amber-950 border border-amber-300 transition-all cursor-pointer shadow-2xs"
                   >
-                    <ChatText size={16} weight="bold" />
+                    <ChatText size={16} weight="bold" className="text-amber-800" />
                     <span>Mẫu tin nhắn thông báo 1-chạm</span>
                   </button>
                 </div>
@@ -342,7 +342,7 @@ export default function StudentDetailPage() {
         {/* Col 2: Seating Position & Desk Partner */}
         <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
           <h2 className="text-sm font-bold uppercase tracking-wider text-text-muted border-b border-border pb-3 flex items-center gap-2">
-            <Armchair size={18} className="text-accent" weight="duotone" />
+            <Armchair size={18} className="text-teal" weight="duotone" />
             Vị trí lớp & Bạn cùng bàn
           </h2>
 
@@ -362,13 +362,13 @@ export default function StudentDetailPage() {
                 <span className="text-xs font-medium text-text-muted block mb-1.5">Bạn ngồi cùng bàn:</span>
                 {deskPartner ? (
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-subtle border border-border/80">
-                    <div className="w-9 h-9 rounded-full bg-accent-subtle text-accent flex items-center justify-center font-bold text-xs border border-accent/20 flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-amber-100 text-amber-950 flex items-center justify-center font-bold text-xs border border-amber-300 flex-shrink-0">
                       {deskPartner.full_name.trim().split(' ').slice(-1)[0][0]}
                     </div>
                     <div className="min-w-0 flex-1">
                       <Link
                         href={`/students/${deskPartner.id}`}
-                        className="text-sm font-semibold text-text-primary hover:text-accent truncate block"
+                        className="text-sm font-semibold text-text-primary hover:text-teal hover:underline truncate block"
                       >
                         {deskPartner.full_name}
                       </Link>
@@ -410,7 +410,7 @@ export default function StudentDetailPage() {
         {/* Col 3: Attendance Summary */}
         <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
           <h2 className="text-sm font-bold uppercase tracking-wider text-text-muted border-b border-border pb-3 flex items-center gap-2">
-            <CalendarCheck size={18} className="text-accent" weight="duotone" />
+            <CalendarCheck size={18} className="text-teal" weight="duotone" />
             Thống kê chuyên cần
           </h2>
 
@@ -442,7 +442,7 @@ export default function StudentDetailPage() {
 
           <div className="pt-3 border-t border-border text-center">
             <span className="text-xs text-text-muted font-medium">Tỷ lệ tham gia học tập:</span>
-            <div className="text-2xl font-bold text-accent mt-0.5">{attendanceRate}%</div>
+            <div className="text-2xl font-black text-text-primary mt-0.5">{attendanceRate}%</div>
           </div>
         </div>
       </div>
@@ -453,7 +453,7 @@ export default function StudentDetailPage() {
         <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-2xs">
           <div className="flex items-center justify-between border-b border-border pb-3.5">
             <div className="flex items-center gap-2">
-              <NotePencil size={20} className="text-accent" weight="duotone" />
+              <NotePencil size={20} className="text-teal" weight="duotone" />
               <h2 className="text-base font-bold text-text-primary">
                 Sổ ghi chú của giáo viên
               </h2>
@@ -537,7 +537,7 @@ export default function StudentDetailPage() {
               Lịch sử điểm danh gần đây
             </h2>
             <Link href="/history">
-              <Button variant="ghost" size="sm" className="text-xs text-accent font-semibold">
+              <Button variant="ghost" size="sm" className="text-xs text-teal hover:text-teal-hover hover:underline font-bold">
                 Xem toàn bộ lớp →
               </Button>
             </Link>
@@ -591,7 +591,7 @@ export default function StudentDetailPage() {
                     : 'border-border bg-surface hover:bg-surface-subtle text-text-secondary'
                     }`}
                 >
-                  <p className={`text-xs font-bold ${selectedTemplateIndex === idx ? 'text-accent' : 'text-text-primary'}`}>
+                  <p className={`text-xs font-bold ${selectedTemplateIndex === idx ? 'text-amber-950 font-black' : 'text-text-primary'}`}>
                     {tpl.title}
                   </p>
                   <p className="text-[11px] text-text-muted mt-0.5 line-clamp-1">
@@ -624,7 +624,7 @@ export default function StudentDetailPage() {
                 }}
                 className="gap-1.5"
               >
-                <Copy size={15} weight="bold" className="text-accent" />
+                <Copy size={15} weight="bold" className="text-text-muted" />
                 <span>Sao chép tin nhắn</span>
               </Button>
 
@@ -633,7 +633,7 @@ export default function StudentDetailPage() {
                   href={`sms:${student.phone}?body=${encodeURIComponent(templates[selectedTemplateIndex]?.body || '')}`}
                   className="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-semibold bg-surface hover:bg-surface-subtle border border-border text-text-primary shadow-2xs transition-colors"
                 >
-                  <PaperPlaneTilt size={14} weight="bold" className="text-accent" />
+                  <PaperPlaneTilt size={14} weight="bold" className="text-teal" />
                   <span>Gửi qua SMS</span>
                 </a>
 

@@ -725,13 +725,13 @@ export default function StudentsPage() {
               className="gap-2 self-start sm:self-auto text-xs whitespace-nowrap flex-shrink-0"
               title="Tải file mẫu Excel chuẩn"
             >
-              <DownloadSimple size={15} weight="bold" className="text-accent" />
+              <DownloadSimple size={15} weight="bold" className="text-teal" />
               <span>Tải file mẫu Excel</span>
             </Button>
           </div>
 
           {/* Upload Area */}
-          <div className="border-2 border-dashed border-border hover:border-accent rounded-2xl p-6 transition-colors bg-surface-subtle/50 text-center relative group">
+          <div className="border-2 border-dashed border-border hover:border-teal rounded-2xl p-6 transition-colors bg-surface-subtle/50 text-center relative group">
             <input
               type="file"
               accept=".xlsx, .xls, .csv"
@@ -740,13 +740,13 @@ export default function StudentsPage() {
               title="Chọn file Excel"
             />
             <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
-              <div className="w-12 h-12 rounded-2xl bg-surface border border-border shadow-xs flex items-center justify-center text-accent group-hover:scale-105 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-surface border border-border shadow-xs flex items-center justify-center text-teal group-hover:scale-105 transition-transform">
                 <FileArrowUp size={24} weight="duotone" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-text-primary">
                   {importFileName ? (
-                    <span className="text-accent font-bold">{importFileName}</span>
+                    <span className="text-teal font-bold">{importFileName}</span>
                   ) : (
                     'Kéo thả file Excel vào đây hoặc bấm để chọn file'
                   )}

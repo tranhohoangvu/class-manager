@@ -609,7 +609,7 @@ export default function AdminTeachersPage() {
                     onClick={() => toggleClassAssignment(cls.id)}
                     className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium border transition-all ${
                       isSelected
-                        ? 'bg-accent-subtle border-accent text-accent'
+                        ? 'bg-amber-100 border-amber-400 text-amber-950 font-bold shadow-2xs'
                         : 'bg-surface border-border text-text-secondary hover:border-text-muted'
                     }`}
                   >
@@ -648,6 +648,7 @@ export default function AdminTeachersPage() {
         onClose={() => setSelectedTeacherDetail(null)}
         title="Hồ sơ & Phân công Giáo viên"
         description="Thông tin chi tiết giáo viên và các lớp chủ nhiệm, bộ môn được phân công"
+        size="xl"
       >
         {selectedTeacherDetail && (() => {
           const teacherAssignments = subjectAssignments.filter((sa) => sa.teacher_id === selectedTeacherDetail.id);
@@ -665,31 +666,39 @@ export default function AdminTeachersPage() {
           const distinctGrades = Array.from(new Set(allAssignedClasses.map((c) => c.grade))).sort();
 
           return (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {/* Teacher Bio Header */}
-              <div className="p-4 bg-surface-muted rounded-xl flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-accent/20 text-accent font-bold text-base flex items-center justify-center">
+              <div className="p-4 bg-surface-muted border border-border-strong rounded-xs flex items-center justify-between gap-4 shadow-xs">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-13 h-13 rounded-xl bg-amber-100 text-amber-950 font-black text-xl flex items-center justify-center border border-amber-300 shadow-2xs flex-shrink-0">
                     {selectedTeacherDetail.name.charAt(0)}
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-text-primary text-base">
+                  <div className="min-w-0">
+                    <h3 className="font-extrabold text-text-primary text-base truncate">
                       {selectedTeacherDetail.name}
                     </h3>
-                    <div className="flex items-center gap-3 text-xs text-text-muted mt-0.5">
-                      <span>{selectedTeacherDetail.email}</span>
-                      {selectedTeacherDetail.phone && <span>• {selectedTeacherDetail.phone}</span>}
+                    <div className="flex items-center gap-3 text-xs text-text-muted mt-1 flex-wrap">
+                      <span className="flex items-center gap-1 font-mono text-[11px] text-text-secondary">
+                        <EnvelopeSimple size={13} className="text-text-muted flex-shrink-0" />
+                        {selectedTeacherDetail.email}
+                      </span>
+                      {selectedTeacherDetail.phone && (
+                        <span className="flex items-center gap-1 font-mono text-[11px] text-text-secondary">
+                          <Phone size={13} className="text-text-muted flex-shrink-0" />
+                          {selectedTeacherDetail.phone}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                <div>
+                <div className="flex-shrink-0">
                   {selectedTeacherDetail.status === 'active' ? (
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs">
                       Đang hoạt động
                     </span>
                   ) : (
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs">
                       Đã khóa
                     </span>
                   )}
@@ -697,69 +706,79 @@ export default function AdminTeachersPage() {
               </div>
 
               {/* Subject Specialist */}
-              <div className="p-3.5 bg-surface border border-border rounded-xl flex items-center justify-between text-xs">
+              <div className="p-3 bg-surface border border-border-strong rounded-xs shadow-xs flex items-center justify-between text-xs flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <BookOpen size={16} className="text-accent" />
+                  <BookOpen size={16} className="text-teal flex-shrink-0" />
                   <span className="text-text-muted font-medium">Bộ môn chuyên trách:</span>
-                  <span className="font-semibold text-text-primary">
+                  <span className="font-extrabold text-text-primary">
                     {subject ? `${subject.name} (${subject.code})` : 'Chưa phân công'}
                   </span>
                 </div>
                 {distinctGrades.length > 0 && (
-                  <span className="px-2 py-0.5 rounded bg-surface-muted text-text-secondary text-[11px]">
+                  <span className="px-2.5 py-0.5 rounded-xs bg-surface-muted text-text-secondary border border-border text-[11px] font-mono font-semibold">
                     Khối phụ trách: {distinctGrades.map((g) => `Khối ${g}`).join(', ')}
                   </span>
                 )}
               </div>
 
               {/* Homeroom Assignment */}
-              <div className="space-y-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-muted block">
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-text-muted block font-mono">
                   Lớp Chủ nhiệm (GVCN)
                 </span>
                 {homeroomClass ? (
-                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 rounded-xl flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-emerald-800 dark:text-emerald-300 text-sm">
-                        {homeroomClass.name}
-                      </span>
-                      <span className="text-text-muted">
-                        (Phòng: {homeroomClass.room_name || 'Chưa xếp'})
-                      </span>
+                  <div className="p-3.5 bg-violet-50/90 border border-violet-200 rounded-xs flex items-center justify-between text-xs shadow-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xs bg-violet-100 text-violet-950 border border-violet-300 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        GVCN
+                      </div>
+                      <div>
+                        <div className="font-extrabold text-violet-950 text-sm">
+                          {homeroomClass.name}
+                        </div>
+                        <div className="text-[11px] text-violet-800/80 font-mono">
+                          {homeroomClass.room_name || 'Phòng học chính'} · Khối {homeroomClass.grade}
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-emerald-700 dark:text-emerald-300 font-medium">
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-xs bg-violet-200/80 text-violet-950 border border-violet-300">
                       Toàn quyền quản lý lớp
                     </span>
                   </div>
                 ) : (
-                  <p className="text-xs text-text-muted italic p-2.5 bg-surface-muted/50 rounded-lg">
+                  <p className="text-xs text-text-muted italic p-3 bg-surface-muted/50 border border-dashed border-border rounded-xs">
                     Giáo viên này hiện không chủ nhiệm lớp nào.
                   </p>
                 )}
               </div>
 
               {/* Subject Classes Assignments */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                  <span className="text-xs font-bold uppercase tracking-wider text-text-muted font-mono">
                     Các lớp dạy Bộ môn ({subjectClassList.length} lớp)
                   </span>
-                  <span className="text-[11px] text-text-muted">Quyền điểm danh tiết</span>
+                  <span className="text-[11px] text-text-muted font-mono">Quyền điểm danh tiết</span>
                 </div>
 
                 {subjectClassList.length === 0 ? (
-                  <p className="text-xs text-text-muted italic p-2.5 bg-surface-muted/50 rounded-lg">
+                  <p className="text-xs text-text-muted italic p-3 bg-surface-muted/50 border border-dashed border-border rounded-xs">
                     Chưa được phân công dạy bộ môn ở lớp nào.
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1">
                     {subjectClassList.map((cls) => (
                       <div
                         key={cls.id}
-                        className="p-2.5 bg-surface border border-border rounded-lg text-xs flex items-center justify-between"
+                        className="p-2.5 px-3 bg-surface border border-border-strong rounded-xs shadow-2xs hover:border-teal hover:bg-teal-subtle/20 transition-all flex items-center justify-between text-xs"
                       >
-                        <span className="font-medium text-text-primary">{cls.name}</span>
-                        <span className="text-[11px] text-text-muted">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-6 h-6 rounded-xs bg-teal-100 text-teal-950 border border-teal-300 flex items-center justify-center font-bold text-[10px] font-mono flex-shrink-0">
+                            K{cls.grade}
+                          </span>
+                          <span className="font-bold text-text-primary truncate">{cls.name}</span>
+                        </div>
+                        <span className="text-[11px] text-text-muted font-mono truncate ml-2">
                           {cls.room_name || `Khối ${cls.grade}`}
                         </span>
                       </div>

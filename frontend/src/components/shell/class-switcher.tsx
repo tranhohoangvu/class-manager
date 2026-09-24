@@ -58,10 +58,10 @@ export function ClassSwitcher() {
         <div className="flex items-center gap-2.5 min-w-0">
           <div
             className={cn(
-              'w-7.5 h-7.5 rounded-sm flex items-center justify-center font-bold text-xs flex-shrink-0 border',
+              'w-7.5 h-7.5 rounded-sm flex items-center justify-center font-bold text-xs flex-shrink-0 border shadow-2xs',
               isHomeroom
-                ? 'bg-success-bg text-success border-success/35'
-                : 'bg-teal-subtle text-teal border-teal/35'
+                ? 'bg-violet-100 text-violet-950 border-violet-300'
+                : 'bg-teal-100 text-teal-950 border-teal-300'
             )}
           >
             {currentClass ? currentClass.grade : 'L'}
@@ -75,10 +75,10 @@ export function ClassSwitcher() {
             <div className="flex items-center gap-1 mt-0.5">
               <span
                 className={cn(
-                  'text-[10px] px-1 py-0.2 rounded-sm font-bold truncate',
+                  'text-[10px] px-1.5 py-0.2 rounded-sm font-bold truncate border shadow-2xs',
                   isHomeroom
-                    ? 'bg-success-bg text-success'
-                    : 'bg-teal-subtle text-teal'
+                    ? 'bg-violet-100 text-violet-950 border-violet-300'
+                    : 'bg-teal-100 text-teal-950 border-teal-300'
                 )}
               >
                 {currentItem?.roleLabel || 'Giáo viên'}
@@ -115,7 +115,7 @@ export function ClassSwitcher() {
                 className={cn(
                   'w-full flex items-center justify-between px-2.5 py-2 rounded-sm text-xs transition-colors text-left group',
                   isSelected
-                    ? 'bg-accent text-text-primary font-bold border border-border-strong shadow-[1px_1px_0px_#000]'
+                    ? 'bg-accent/40 text-text-primary font-bold border border-border-strong shadow-[1px_1px_0px_#000]'
                     : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted border border-transparent hover:border-border'
                 )}
               >
@@ -124,10 +124,10 @@ export function ClassSwitcher() {
                     <span className="font-bold block truncate">{item.classInfo.name}</span>
                     <span
                       className={cn(
-                        'text-[10px] px-1.5 py-0.2 rounded-sm font-bold flex-shrink-0',
+                        'text-[10px] px-2 py-0.5 rounded-sm font-bold flex-shrink-0 border shadow-2xs tracking-wide',
                         item.isHomeroom
-                          ? 'bg-success-bg text-success border border-success/30'
-                          : 'bg-teal-subtle text-teal border border-teal/30'
+                          ? 'bg-violet-100 text-violet-950 border-violet-300'
+                          : 'bg-teal-100 text-teal-950 border-teal-300'
                       )}
                     >
                       {item.roleLabel}

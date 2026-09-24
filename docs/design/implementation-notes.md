@@ -52,7 +52,7 @@ The backend has been migrated from Supabase to a self-managed Node.js + Express 
 3. **Frontend Integration:**
    - Centralized `api-client.ts` with transparent authentication cookie handling.
    - Next.js rewrites in `next.config.ts` proxying `/api/:path*` and `/health` to `http://localhost:4000` (or `BACKEND_URL`).
-   - Edge middleware in `frontend/src/middleware.ts` verifying session cookies without any third-party SDK dependencies.
+   - Next.js 16 proxy in `frontend/src/proxy.ts` verifying session cookies without any third-party SDK dependencies.
 
 4. **Render Deployment:**
    - Database: Render PostgreSQL instance with standard `DATABASE_URL`.

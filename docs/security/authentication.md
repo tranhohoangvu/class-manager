@@ -91,9 +91,9 @@ The `/login` route exposes 6 pre-configured user scenarios designed to test dist
 
 ---
 
-## 4. Route Protection Middleware (`frontend/src/middleware.ts`)
+## 4. Route Protection Proxy (`frontend/src/proxy.ts`)
 
-The Next.js edge middleware guards route navigation:
+The Next.js 16 network layer proxy guards route navigation:
 1. Inspects the incoming request for session token cookie.
 2. Unauthenticated requests to protected paths (`/dashboard`, `/students`, `/timetable`, etc.) are held or handled by client layout guards.
 3. Authenticated requests attempting to visit `/login` are automatically redirected to `/dashboard`.

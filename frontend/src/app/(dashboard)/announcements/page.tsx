@@ -238,7 +238,7 @@ export default function AnnouncementsPage() {
               type="checkbox"
               checked={isPinned}
               onChange={(e) => setIsPinned(e.target.checked)}
-              className="rounded-xs border-border-strong text-accent focus:ring-accent w-4 h-4 cursor-pointer"
+              className="rounded-xs border-border-strong text-teal focus:ring-teal w-4 h-4 cursor-pointer"
             />
             <span className="text-sm font-medium text-text-primary">
               Ghim thông báo này lên đầu trang

@@ -120,7 +120,7 @@ export function UnauthorizedView({
 export function LoadingStateView({ message = 'Đang tải dữ liệu...' }: { message?: string }) {
   return (
     <div className="p-12 flex flex-col items-center justify-center space-y-3">
-      <CircleNotch size={28} className="animate-spin text-accent" />
+      <CircleNotch size={28} className="animate-spin text-teal" />
       <span className="text-xs text-text-muted font-medium">{message}</span>
     </div>
   );

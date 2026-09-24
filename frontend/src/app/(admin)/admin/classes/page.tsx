@@ -21,6 +21,8 @@ import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
+import { cn } from '@/lib/utils';
+import { SUBJECT_COLOR_MAP, DEFAULT_SUBJECT_COLOR } from '@/lib/constants';
 
 export default function AdminClassesPage() {
   const { user } = useAuth();
@@ -602,31 +604,42 @@ export default function AdminClassesPage() {
       <Modal
         isOpen={!!selectedClassDetail}
         onClose={() => setSelectedClassDetail(null)}
-        title={`Chi tiết & Phân công Giáo viên - ${selectedClassDetail?.name || ''}`}
+        title={`Chi tiết & Phân công Giáo viên — ${selectedClassDetail?.name || ''}`}
         description={`Quản lý Giáo viên Chủ nhiệm (GVCN) và 10 Giáo viên Bộ môn (GVBM) cho ${selectedClassDetail?.name || ''}`}
+        size="xl"
       >
         {selectedClassDetail && (
-          <div className="space-y-5">
+          <div className="space-y-4">
             {/* Quick overview */}
-            <div className="p-3 bg-surface-muted rounded-xl flex items-center justify-between text-xs">
+            <div className="p-3.5 bg-surface-muted border border-border-strong rounded-xs grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs shadow-xs">
               <div>
-                <span className="font-semibold text-text-primary">Khối {selectedClassDetail.grade}</span>
-                <span className="text-text-muted ml-2">Phòng: {selectedClassDetail.room_name || 'Chưa xếp'}</span>
-                <span className="text-text-muted ml-2">Năm học: {selectedClassDetail.school_year}</span>
+                <span className="text-[10px] text-text-muted uppercase font-mono block">Khối lớp</span>
+                <span className="font-extrabold text-text-primary text-sm">Khối {selectedClassDetail.grade}</span>
               </div>
-              <div className="text-text-muted">
-                Sĩ số: <strong className="text-text-primary">{students.filter((s) => s.class_id === selectedClassDetail.id).length}</strong>/{selectedClassDetail.max_students} HS
+              <div>
+                <span className="text-[10px] text-text-muted uppercase font-mono block">Phòng học</span>
+                <span className="font-bold text-text-primary truncate block">{selectedClassDetail.room_name || 'Chưa xếp phòng'}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-text-muted uppercase font-mono block">Năm học</span>
+                <span className="font-mono text-text-secondary font-medium">{selectedClassDetail.school_year}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-text-muted uppercase font-mono block">Sĩ số học sinh</span>
+                <span className="font-bold text-text-primary">
+                  <strong className="text-teal font-extrabold text-sm">{students.filter((s) => s.class_id === selectedClassDetail.id).length}</strong> / {selectedClassDetail.max_students} HS
+                </span>
               </div>
             </div>
 
             {/* Homeroom Teacher Section */}
-            <div className="p-4 rounded-xl border border-border bg-surface space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
-                  <UserSwitch size={14} className="text-emerald-600" />
-                  Giáo viên Chủ nhiệm (GVCN)
+            <div className="p-4 rounded-xs border border-violet-200 bg-violet-50/70 space-y-2.5 shadow-xs">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-violet-950 flex items-center gap-1.5 font-mono">
+                  <UserSwitch size={16} weight="bold" className="text-violet-700" />
+                  <span>Giáo viên Chủ nhiệm (GVCN)</span>
                 </span>
-                <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-xs bg-violet-200/90 text-violet-950 font-bold border border-violet-300">
                   Toàn quyền quản lý lớp
                 </span>
               </div>
@@ -634,7 +647,7 @@ export default function AdminClassesPage() {
               <select
                 value={selectedClassDetail.teacher_id || ''}
                 onChange={(e) => handleReassignHomeroom(e.target.value)}
-                className="w-full px-3 py-2 bg-surface-subtle border border-border rounded-lg text-xs font-medium focus:outline-none focus:border-accent"
+                className="w-full px-3 py-2 bg-surface border border-violet-300 rounded-xs text-xs font-semibold text-text-primary focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-2xs cursor-pointer"
               >
                 <option value="">-- Chưa phân công GVCN --</option>
                 {teachers
@@ -650,55 +663,59 @@ export default function AdminClassesPage() {
             {/* 10 Subject Teachers Table */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
-                  <BookOpen size={14} className="text-accent" />
-                  10 Giáo viên Bộ môn (GVBM)
+                <span className="text-xs font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5 font-mono">
+                  <BookOpen size={16} className="text-teal flex-shrink-0" />
+                  <span>10 Giáo viên Bộ môn (GVBM)</span>
                 </span>
-                <span className="text-[11px] text-text-muted">
+                <span className="text-[11px] text-text-muted font-mono">
                   Quyền điểm danh & tra cứu sơ đồ
                 </span>
               </div>
 
-              <div className="border border-border rounded-xl overflow-hidden divide-y divide-border text-xs max-h-80 overflow-y-auto">
-                {subjects.map((sub) => {
-                  const currentAssignment = subjectAssignments.find(
-                    (sa) => sa.class_id === selectedClassDetail.id && sa.subject_id === sub.id
-                  );
-                  const assignedTeacher = currentAssignment
-                    ? teachers.find((t) => t.id === currentAssignment.teacher_id)
-                    : null;
+              <div className="border border-border-strong rounded-xs bg-surface shadow-xs divide-y divide-border overflow-hidden">
+                <div className="max-h-72 overflow-y-auto divide-y divide-border pr-0.5">
+                  {subjects.map((sub) => {
+                    const currentAssignment = subjectAssignments.find(
+                      (sa) => sa.class_id === selectedClassDetail.id && sa.subject_id === sub.id
+                    );
+                    const colorStyle = SUBJECT_COLOR_MAP[sub.code] || DEFAULT_SUBJECT_COLOR;
 
-                  return (
-                    <div
-                      key={sub.id}
-                      className="p-2.5 flex items-center justify-between gap-3 hover:bg-surface-subtle/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 min-w-32">
-                        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-muted text-text-secondary font-semibold">
-                          {sub.code}
-                        </span>
-                        <span className="font-medium text-text-primary">{sub.name}</span>
-                      </div>
+                    return (
+                      <div
+                        key={sub.id}
+                        className="p-2.5 px-3.5 flex items-center justify-between gap-4 hover:bg-surface-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-[150px]">
+                          <span className={cn(
+                            'font-mono text-[10px] font-bold px-2 py-0.5 rounded-xs border shadow-2xs flex-shrink-0',
+                            colorStyle.badgeBg,
+                            colorStyle.border
+                          )}>
+                            {sub.code}
+                          </span>
+                          <span className="font-extrabold text-text-primary text-xs">{sub.name}</span>
+                        </div>
 
-                      <div className="flex-1 max-w-xs">
-                        <select
-                          value={currentAssignment?.teacher_id || ''}
-                          onChange={(e) => handleAssignSubjectTeacher(sub.id, e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-surface border border-border rounded-md text-xs text-text-secondary focus:outline-none focus:border-accent"
-                        >
-                          <option value="">-- Chưa gán GVBM --</option>
-                          {teachers
-                            .filter((t) => t.status === 'active')
-                            .map((t) => (
-                              <option key={t.id} value={t.id}>
-                                {t.name}
-                              </option>
-                            ))}
-                        </select>
+                        <div className="flex-1 max-w-[280px]">
+                          <select
+                            value={currentAssignment?.teacher_id || ''}
+                            onChange={(e) => handleAssignSubjectTeacher(sub.id, e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-surface border border-border-strong hover:border-text-secondary rounded-xs text-xs font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-teal cursor-pointer shadow-2xs"
+                          >
+                            <option value="">-- Chưa gán GVBM --</option>
+                            {teachers
+                              .filter((t) => t.status === 'active')
+                              .map((t) => (
+                                <option key={t.id} value={t.id}>
+                                  {t.name}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
 

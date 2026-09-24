@@ -72,7 +72,7 @@ frontend/
 │   │   └── timetable.service.ts
 │   │
 │   ├── types/                    # Canonical TypeScript interfaces & domain models
-│   └── middleware.ts             # Next.js route protection & redirect middleware
+│   └── proxy.ts                  # Next.js 16 route protection & redirect proxy (migrated from middleware)
 │
 ├── tests/                        # Vitest automated test suite (105 unit tests)
 ├── next.config.ts                # Next.js configuration & API proxy rewrites to Backend (:4000)

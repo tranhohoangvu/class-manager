@@ -45,7 +45,7 @@ Hiện tại, ứng dụng đang vận hành theo mô hình Client-Side State v�
   - `(dashboard)`: Dành cho hoạt động giảng dạy của Giáo viên (GVCN / GVBM).
   - `(admin)`: Dành cho Ban Giám hiệu / Quản trị viên trường học.
   - `(auth)`: Màn hình đăng nhập mock (1-Click demo accounts theo vai trò).
-- **Middleware (`frontend/src/middleware.ts`):** Kiểm tra token / session cookie (`token`, `cm_auth_session`). Phân quyền route groups giữa `(dashboard)` và `(admin)` được kiểm tra tại edge middleware và context guards.
+- **Proxy / Route Guard (`frontend/src/proxy.ts`):** Kiểm tra token / session cookie (`token`, `cm_auth_session`). Phân quyền route groups giữa `(dashboard)` và `(admin)` được kiểm tra tại network layer proxy và context guards theo chuẩn Next.js 16.
 
 ---
 
