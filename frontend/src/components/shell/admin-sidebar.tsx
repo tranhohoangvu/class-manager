@@ -8,6 +8,9 @@ import {
   CalendarDots,
   ChalkboardTeacher,
   Chalkboard,
+  Student,
+  Armchair,
+  Megaphone,
   GearSix,
   SignOut,
   ArrowSquareOut,
@@ -21,8 +24,11 @@ const adminNavItems = [
   { href: '/admin/dashboard', label: 'Tổng quan hệ thống', icon: SquaresFour },
   { href: '/admin/attendance', label: 'Quản lý Chuyên cần', icon: CalendarCheck },
   { href: '/admin/timetable', label: 'Quản lý Thời khóa biểu', icon: CalendarDots },
+  { href: '/admin/seating', label: 'Quản lý Sơ đồ Lớp', icon: Armchair },
   { href: '/admin/teachers', label: 'Quản lý Giáo viên', icon: ChalkboardTeacher },
   { href: '/admin/classes', label: 'Quản lý Lớp học', icon: Chalkboard },
+  { href: '/admin/students', label: 'Quản lý Học sinh', icon: Student },
+  { href: '/admin/announcements', label: 'Quản lý Thông báo', icon: Megaphone },
   { href: '/admin/settings', label: 'Cài đặt hệ thống', icon: GearSix },
 ];
 
@@ -116,7 +122,7 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Chalkboard size={15} weight="bold" className="text-text-muted group-hover:text-text-primary flex-shrink-0" />
-                <span className="truncate">Xem giao diện Lớp học</span>
+                <span className="truncate">Chuyển sang Giao diện User</span>
               </div>
               <ArrowSquareOut size={13} className="text-text-muted group-hover:text-text-primary transition-transform flex-shrink-0 ml-1" />
             </Link>
