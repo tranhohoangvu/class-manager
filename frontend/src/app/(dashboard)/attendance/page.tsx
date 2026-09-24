@@ -48,6 +48,7 @@ export default function AttendancePage() {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(getTodayISO());
   const [attendanceData, setAttendanceData] = useState<Record<string, StudentAttendanceState>>({});
+  const [initialAttendanceData, setInitialAttendanceData] = useState<Record<string, StudentAttendanceState>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'not_present' | 'present' | 'absent' | 'late' | 'excused'>('all');
   const [sortBy, setSortBy] = useState<'code_asc' | 'name_asc' | 'name_desc' | 'status'>('code_asc');
@@ -69,6 +70,19 @@ export default function AttendancePage() {
   const canTakeAttendance = useMemo(() => {
     return AuthGuard.canManageAttendance(user, currentClassId, selectedSubjectId);
   }, [user, currentClassId, selectedSubjectId]);
+
+  // Check if attendance state has been modified
+  const isAttendanceDirty = useMemo(() => {
+    const currentKeys = Object.keys(attendanceData);
+    const initialKeys = Object.keys(initialAttendanceData);
+    if (currentKeys.length === 0 || initialKeys.length === 0) return false;
+    return currentKeys.some((id) => {
+      const cur = attendanceData[id];
+      const init = initialAttendanceData[id];
+      if (!init) return true;
+      return cur.status !== init.status || (cur.note || '').trim() !== (init.note || '').trim();
+    });
+  }, [attendanceData, initialAttendanceData]);
 
   // Compute if user has permission to VIEW attendance for current subject selection
   const canViewCurrentSubject = useMemo(() => {
@@ -152,6 +166,7 @@ export default function AttendancePage() {
     });
 
     setAttendanceData(stateMap);
+    setInitialAttendanceData(JSON.parse(JSON.stringify(stateMap)));
     setIsLoaded(true);
   };
 
@@ -195,6 +210,8 @@ export default function AttendancePage() {
 
   // Save attendance batch
   const handleSave = () => {
+    if (!canTakeAttendance || !isAttendanceDirty) return;
+
     const entries = Object.values(attendanceData).map((item) => ({
       student_id: item.student_id,
       status: item.status,
@@ -214,6 +231,7 @@ export default function AttendancePage() {
       return;
     }
 
+    setInitialAttendanceData(JSON.parse(JSON.stringify(attendanceData)));
     const subName = allSubjects.find((s) => s.id === selectedSubjectId)?.name;
     const scopeLabel = subName ? `tiết môn ${subName}` : 'buổi học';
     toast.success(`Đã lưu điểm danh ${scopeLabel} ngày ${formatDateVietnamese(selectedDate)}`);
@@ -389,8 +407,11 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
             variant="primary"
             size="md"
             onClick={handleSave}
-            disabled={!canTakeAttendance}
-            className={cn('cursor-pointer', !canTakeAttendance && 'opacity-40 cursor-not-allowed')}
+            disabled={!canTakeAttendance || !isAttendanceDirty}
+            className={cn(
+              'cursor-pointer',
+              (!canTakeAttendance || !isAttendanceDirty) && 'opacity-40 cursor-not-allowed'
+            )}
           >
             <FloppyDisk size={18} weight="bold" />
             <span>{canTakeAttendance ? 'Lưu điểm danh' : 'Chỉ xem chuyên cần'}</span>
@@ -944,8 +965,11 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
             variant="primary"
             size="md"
             onClick={handleSave}
-            disabled={!canTakeAttendance}
-            className={cn('cursor-pointer', !canTakeAttendance && 'opacity-40 cursor-not-allowed')}
+            disabled={!canTakeAttendance || !isAttendanceDirty}
+            className={cn(
+              'cursor-pointer',
+              (!canTakeAttendance || !isAttendanceDirty) && 'opacity-40 cursor-not-allowed'
+            )}
           >
             <FloppyDisk size={18} weight="bold" />
             <span>{canTakeAttendance ? 'Lưu kết quả điểm danh' : 'Chỉ xem chuyên cần'}</span>

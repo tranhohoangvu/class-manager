@@ -21,8 +21,10 @@ import {
   UserCheck,
   CaretUp,
   CaretDown,
+  Printer,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
+import { PrintHeader, PrintSignatures } from '@/components/common/printable-paper';
 import {
   ClassRow,
   StudentRow,
@@ -88,6 +90,17 @@ export default function AdminAttendanceManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [schoolSettings, setSchoolSettings] = useState(() => LocalStore.getSchoolSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setSchoolSettings(detail);
+      else setSchoolSettings(LocalStore.getSchoolSettings());
+    };
+    window.addEventListener('school-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('school-settings-updated', handleSettingsUpdate);
+  }, []);
 
   // Modals
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -270,9 +283,191 @@ export default function AdminAttendanceManagementPage() {
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6 w-full mx-auto">
       {/* =============================================
-          1. HEADER & ACTIONS
+          PRINT VIEW ONLY (A4 Formal Attendance Report)
           ============================================= */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-border">
+      <div className="hidden print:block p-2 max-w-[100%] mx-auto text-black bg-white printable-card space-y-5">
+        <PrintHeader
+          settings={schoolSettings}
+          title="BÁO CÁO NỀ NẾP CHUYÊN CẦN TOÀN TRƯỜNG"
+          subtitle={`Ngày khảo sát: ${attendanceOverview.dateFormatted} (${selectedDate ? selectedDate.split('-').reverse().join('/') : ''})`}
+          rightMeta={
+            <div className="space-y-0.5">
+              <div>Quy mô: <strong>16 Lớp THCS · 480 Học sinh</strong></div>
+              <div>Tỷ lệ chuyên cần chung: <strong>{attendanceOverview.attendanceRate}%</strong></div>
+            </div>
+          }
+        />
+
+        {/* ============================================================== */}
+        {/* I. NỀ NẾP CHUYÊN CẦN PHÂN RÃ THEO 4 KHỐI LỚP (4 BẢNG RIÊNG BIỆT) */}
+        {/* ============================================================== */}
+        <div>
+          <div className="font-bold uppercase text-[10pt] mb-2 tracking-wide text-black border-b border-black pb-1 flex justify-between items-center">
+            <span>I. NỀ NẾP CHUYÊN CẦN PHÂN RÃ THEO 4 KHỐI LỚP</span>
+            <span className="text-[8.5pt] font-mono normal-case">
+              4 lớp / khối · 120 học sinh / khối
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3.5">
+            {[6, 7, 8, 9].map((gradeNum) => {
+              const stat = gradeStats.find((g) => g.grade === gradeNum);
+              const classItems = classList.filter((c) => c.grade === gradeNum);
+              const shiftLabel = getGradeShift(gradeNum) === 'morning' ? 'Ca Sáng (07:15 - 11:35)' : 'Ca Chiều (12:45 - 17:05)';
+              const rate = stat?.attendanceRate || 100;
+              const absentTotal = stat?.absentCount || 0;
+              const lateTotal = stat?.lateCount || 0;
+              const presentTotal = stat?.presentCount || 120;
+              const totalStudents = stat?.totalStudents || 120;
+
+              return (
+                <div key={gradeNum} className="border-2 border-black p-2 space-y-1.5">
+                  <div className="flex justify-between items-center pb-1 border-b border-black font-bold text-[8.5pt]">
+                    <span className="uppercase text-[9pt]">KHỐI {gradeNum} · {shiftLabel}</span>
+                    <span className="font-mono">Tỷ lệ: {rate}% ({presentTotal}/{totalStudents})</span>
+                  </div>
+
+                  <table className="w-full border-collapse border border-black text-center text-[8pt]">
+                    <thead>
+                      <tr className="bg-gray-100 border-b border-black font-bold uppercase text-[7.5pt]">
+                        <th className="border border-black py-1 px-1 w-7">STT</th>
+                        <th className="border border-black py-1 px-1.5 w-14">Lớp</th>
+                        <th className="border border-black py-1 px-1 w-11">Sĩ số</th>
+                        <th className="border border-black py-1 px-1 w-11">Có mặt</th>
+                        <th className="border border-black py-1 px-1 w-10">Vắng</th>
+                        <th className="border border-black py-1 px-1 w-10">Muộn</th>
+                        <th className="border border-black py-1 px-1 w-12">Tỷ lệ</th>
+                        <th className="border border-black py-1 px-2 text-left">GVCN</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {classItems.map((cls, idx) => (
+                        <tr key={cls.classId} className="border-b border-black">
+                          <td className="border border-black py-1 px-0.5 font-mono">{idx + 1}</td>
+                          <td className="border border-black py-1 px-1 font-bold">{cls.className}</td>
+                          <td className="border border-black py-1 px-1 font-mono">{cls.totalStudents}</td>
+                          <td className="border border-black py-1 px-1 font-mono">{cls.presentCount}</td>
+                          <td className="border border-black py-1 px-1 font-mono font-bold">{cls.absentCount}</td>
+                          <td className="border border-black py-1 px-1 font-mono">{cls.lateCount}</td>
+                          <td className="border border-black py-1 px-1 font-mono font-bold">{cls.attendanceRate}%</td>
+                          <td className="border border-black py-1 px-2 text-left truncate">{cls.teacherName || '—'}</td>
+                        </tr>
+                      ))}
+                      {/* Dòng tổng khối */}
+                      <tr className="bg-gray-50 font-bold border-t border-black text-[8pt]">
+                        <td colSpan={2} className="border border-black py-1 px-1 uppercase text-center font-bold">
+                          TỔNG KHỐI {gradeNum}
+                        </td>
+                        <td className="border border-black py-1 px-1 font-mono">{totalStudents}</td>
+                        <td className="border border-black py-1 px-1 font-mono">{presentTotal}</td>
+                        <td className="border border-black py-1 px-1 font-mono font-bold">{absentTotal}</td>
+                        <td className="border border-black py-1 px-1 font-mono">{lateTotal}</td>
+                        <td className="border border-black py-1 px-1 font-mono font-bold">{rate}%</td>
+                        <td className="border border-black py-1 px-2 text-left italic font-normal text-[7.5pt]">
+                          {absentTotal === 0 ? '✓ Đủ 100%' : `Vắng ${absentTotal} HS`}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* DÒNG TỔNG CỘNG TOÀN TRƯỜNG */}
+          <div className="mt-3 p-2 border-2 border-black bg-gray-50 flex justify-between items-center text-[9pt] font-bold">
+            <span className="uppercase">TỔNG CỘNG TOÀN TRƯỜNG (16 LỚP THCS):</span>
+            <div className="flex gap-4 font-mono">
+              <span>Sĩ số: <strong>{attendanceOverview.totalStudents}</strong></span>
+              <span>Có mặt: <strong>{attendanceOverview.presentCount}</strong></span>
+              <span>Vắng: <strong className="text-black">{attendanceOverview.absentCount}</strong></span>
+              <span>Muộn: <strong>{attendanceOverview.lateCount}</strong></span>
+              <span>Tỷ lệ chung: <strong>{attendanceOverview.attendanceRate}%</strong></span>
+            </div>
+          </div>
+        </div>
+
+        {/* BẢNG 2: DANH SÁCH HỌC SINH NGOẠI LỆ TOÀN TRƯỜNG (VẮNG / ĐI MUỘN) */}
+        <div className="pt-2">
+          <div className="font-bold uppercase text-[10pt] mb-2 tracking-wide text-black flex justify-between items-center">
+            <span>II. DANH SÁCH HỌC SINH VẮNG / ĐI MUỘN TRONG NGÀY</span>
+            <span className="text-[9pt] font-mono normal-case">
+              (Tổng cộng: {schoolWideExceptions.length} trường hợp)
+            </span>
+          </div>
+          {schoolWideExceptions.length > 0 ? (
+            <table className="w-full border-collapse border-2 border-black text-left text-[9pt]">
+              <thead>
+                <tr className="bg-gray-100 border-b-2 border-black font-bold uppercase text-center">
+                  <th className="border border-black py-2 px-1 w-10">STT</th>
+                  <th className="border border-black py-2 px-2 w-24">Mã học sinh</th>
+                  <th className="border border-black py-2 px-3 text-left">Họ và tên</th>
+                  <th className="border border-black py-2 px-2 w-28 text-center">Lớp (Khối)</th>
+                  <th className="border border-black py-2 px-2 w-16 text-center">Giới tính</th>
+                  <th className="border border-black py-2 px-2 w-32 text-center">Trạng thái</th>
+                  <th className="border border-black py-2 px-3">Ghi chú / Lý do</th>
+                </tr>
+              </thead>
+              <tbody>
+                {schoolWideExceptions.map((item, idx) => {
+                  const isAbsent = item.record.status === 'absent';
+                  const isLate = item.record.status === 'late';
+                  const isExcused = item.record.status === 'excused' || (item.record.note && item.record.note.toLowerCase().includes('phép'));
+
+                  const statusText = isExcused
+                    ? 'Vắng có phép'
+                    : isAbsent
+                    ? 'Vắng không phép'
+                    : isLate
+                    ? 'Đi muộn'
+                    : '---';
+
+                  return (
+                    <tr key={`${item.record.student_id}-${idx}`} className="border-b border-black">
+                      <td className="border border-black py-1.5 px-1 text-center font-mono">{idx + 1}</td>
+                      <td className="border border-black py-1.5 px-2 text-center font-mono">{item.student?.student_code || '---'}</td>
+                      <td className="border border-black py-1.5 px-3 font-bold text-left">{item.student?.full_name || 'Học sinh'}</td>
+                      <td className="border border-black py-1.5 px-2 text-center font-medium">
+                        {item.classObj?.name || '---'} (Khối {item.classObj?.grade})
+                      </td>
+                      <td className="border border-black py-1.5 px-2 text-center">
+                        {item.student?.gender === 'female' ? 'Nữ' : 'Nam'}
+                      </td>
+                      <td className="border border-black py-1.5 px-2 text-center font-bold">
+                        {statusText}
+                      </td>
+                      <td className="border border-black py-1.5 px-3 text-left italic">
+                        {item.record.note || 'Không có ghi chú'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className="p-3 border-2 border-black text-center font-medium italic text-[9.5pt]">
+              Toàn trường đạt chuyên cần 100% vào ngày {attendanceOverview.dateFormatted}. Không có học sinh nào vắng hoặc đi muộn.
+            </div>
+          )}
+        </div>
+
+        {/* CHỮ KÝ PHÊ DUYỆT */}
+        <PrintSignatures
+          settings={schoolSettings}
+          principalTitle="Ban Giám Hiệu phê duyệt"
+          creatorRoleTitle="Cán bộ Quản trị hệ thống"
+          creatorName={user?.name || 'Ban Giám Hiệu'}
+        />
+      </div>
+
+      {/* ============================================================== */}
+      {/* SCREEN VIEW CONTAINER (Strictly hidden during print: no-print)  */}
+      {/* ============================================================== */}
+      <div className="no-print space-y-6">
+        {/* =============================================
+            1. HEADER & ACTIONS
+            ============================================= */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-border">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
@@ -325,6 +520,18 @@ export default function AdminAttendanceManagementPage() {
             <span>{isExporting ? 'Đang xuất...' : 'Xuất Excel'}</span>
           </Button>
 
+          {/* Print Report Button */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => window.print()}
+            className="cursor-pointer bg-surface hover:bg-surface-muted text-text-primary border-border font-semibold shadow-2xs gap-1.5 whitespace-nowrap flex-shrink-0 h-8 px-3"
+            title="In báo cáo chuyên cần toàn trường khổ A4"
+          >
+            <Printer size={15} weight="bold" />
+            <span>In báo cáo</span>
+          </Button>
+
           {/* Refresh Button */}
           <Button
             variant="secondary"
@@ -344,7 +551,7 @@ export default function AdminAttendanceManagementPage() {
       {/* =============================================
           2. SCHOOL ATTENDANCE OVERVIEW KPI TILES (4 CARDS)
           ============================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch no-print">
         {/* KPI 1: Tỷ lệ Chuyên cần */}
         <div className="bg-surface rounded-sm border border-border p-4 shadow-xs flex flex-col justify-between">
           <div>
@@ -599,7 +806,7 @@ export default function AdminAttendanceManagementPage() {
       {/* =============================================
           4. 16-CLASS ATTENDANCE MANAGEMENT TABLE
           ============================================= */}
-      <div className="bg-surface rounded-sm border border-border p-4 md:p-5 shadow-xs space-y-4">
+      <div className="bg-surface rounded-sm border border-border p-4 md:p-5 shadow-xs space-y-4 no-print">
         {/* Table Title & Filter Controls */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 pb-3 border-b border-border">
           <div>
@@ -977,6 +1184,7 @@ export default function AdminAttendanceManagementPage() {
           </div>
         )}
       </div>
+      </div> {/* End of no-print screen container */}
 
       {/* =============================================
           MODAL: RESET ATTENDANCE TO PRESENT

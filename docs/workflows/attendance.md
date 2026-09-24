@@ -92,3 +92,9 @@ To guard against erroneous batch submissions or accidental overrides:
 - **Access Control:** Restricted strictly to `ADMIN` (and Homeroom Teachers for their own class).
 - **Execution:** Clears all absence/tardy exception records for the selected date and restores all students to 100% Present.
 - **Auditing:** Accessible via the Executive Action bar and the Grade Attendance feed on the Admin Dashboard (`/admin/dashboard`).
+
+### 2.6. Grade-Level Attendance Breakdown Report (Báo cáo Phân rã theo 4 Khối Lớp)
+In the administrative attendance reporting center (`/admin/attendance`), when administrators generate or print the official daily attendance report for School Leadership (BGH):
+- **4 Dedicated Grade Breakdown Tables:** System generates four itemized tables corresponding to **Khối 6, Khối 7, Khối 8, and Khối 9**.
+- **Detailed Class Roster:** Each table lists all classes in that grade with metrics: Total Enrollment (Sĩ số), Present (Có mặt), Excused Absences (Có phép), Unexcused Absences (Không phép), Tardy (Muộn), and exact names of absent/tardy students.
+- **Grade Totals & A4 Print Formatting:** Includes subtotal summary rows per grade and standard ministry print header/footer signatures for official archiving.
