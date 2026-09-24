@@ -95,7 +95,8 @@ backend/
 │   ├── 003_indexes.sql         # Query acceleration indexes on frequent lookups
 │   ├── 004_functions.sql       # PostgreSQL stored procedures & utility functions
 │   ├── 005_triggers.sql        # Automated timestamp update triggers
-│   └── 006_seed.sql            # Deterministic baseline data (16 classes, 24 teachers, 480 students)
+│   ├── 006_seed.sql            # Deterministic baseline data (16 classes, 24 teachers, 480 students)
+│   └── 007_timetable_rules.sql # max_consecutive_periods in subjects, room in timetable_entries, conflict index
 │
 ├── scripts/                  # Administrative database scripts
 │   └── migrate.ts            # Migration runner applying SQL files in sequence

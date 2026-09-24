@@ -811,4 +811,285 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
       expect(conflict?.teacherId).toBe(t7!.teacher_id);
     });
   });
+
+  // =========================================================================
+  // Section 13 - Scheduling Business Rules & Audit Suite
+  // =========================================================================
+
+  describe('Section 13: Timetable Business Rules & Scheduling Constraints', () => {
+    beforeEach(() => {
+      // Clear all timetables for clean test scenarios so other classes don't cause interference
+      LocalStore.clearAllTimetables();
+    });
+
+    // 1. Valid cases
+    describe('1.1. Valid cases', () => {
+      it('Mathematics with 2 consecutive periods -> VALID', () => {
+        // Save Period 1 Math
+        const res1 = TimetableService.saveEntry('c-6a1', 2, 1, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res1.success).toBe(true);
+
+        // Save Period 2 Math (consecutive: 1 + 2)
+        const res2 = TimetableService.saveEntry('c-6a1', 2, 2, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res2.success).toBe(true);
+      });
+
+      it('Literature with 2 consecutive periods -> VALID', () => {
+        // Save Period 3 Literature
+        const res1 = TimetableService.saveEntry('c-6a1', 2, 3, 'sub-lit', 'u-tea-02', adminUser);
+        expect(res1.success).toBe(true);
+
+        // Save Period 4 Literature (consecutive: 3 + 4)
+        const res2 = TimetableService.saveEntry('c-6a1', 2, 4, 'sub-lit', 'u-tea-02', adminUser);
+        expect(res2.success).toBe(true);
+      });
+
+      it('Different subjects in different periods -> VALID', () => {
+        // Math on Period 1, English on Period 2, Physics on Period 3
+        const res1 = TimetableService.saveEntry('c-6a1', 3, 1, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res1.success).toBe(true);
+
+        const res2 = TimetableService.saveEntry('c-6a1', 3, 2, 'sub-eng', 'u-tea-03', adminUser);
+        expect(res2.success).toBe(true);
+
+        const res3 = TimetableService.saveEntry('c-6a1', 3, 3, 'sub-phy', null, adminUser);
+        expect(res3.success).toBe(true);
+      });
+
+      it('Different teachers teaching different classes simultaneously -> VALID', () => {
+        // Teacher 1 teaches 6A1 at Monday Period 1
+        const res1 = TimetableService.saveEntry('c-6a1', 2, 1, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res1.success).toBe(true);
+
+        // Teacher 2 teaches 6A2 at Monday Period 1
+        const res2 = TimetableService.saveEntry('c-6a2', 2, 1, 'sub-lit', 'u-tea-02', adminUser);
+        expect(res2.success).toBe(true);
+      });
+
+      it('Same teacher teaching different periods -> VALID', () => {
+        // Teacher 1 teaches 6A1 at Monday Period 1
+        const res1 = TimetableService.saveEntry('c-6a1', 2, 1, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res1.success).toBe(true);
+
+        // Teacher 1 teaches 6A2 at Monday Period 2 (different period)
+        const res2 = TimetableService.saveEntry('c-6a2', 2, 2, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res2.success).toBe(true);
+      });
+    });
+
+    // 2. Invalid cases
+    describe('1.2. Invalid cases', () => {
+      it('Same class, same period, different subjects -> REJECTED (Class conflict)', () => {
+        // 6A1 has Math on Monday Period 2
+        const res1 = TimetableService.saveEntry('c-6a1', 2, 2, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res1.success).toBe(true);
+
+        // Trying to create a new entry for 6A1 on Monday Period 2 with Literature
+        const res2 = TimetableService.createEntry(
+          {
+            class_id: 'c-6a1',
+            day_of_week: 2,
+            period: 2,
+            subject_id: 'sub-lit',
+          },
+          adminUser
+        );
+        expect(res2.success).toBe(false);
+        expect(res2.error).toContain('Lớp Lớp 6A1 đã có tiết học môn Toán');
+      });
+
+      it('Same teacher, same period, different classes -> REJECTED (Teacher conflict)', () => {
+        // Teacher 1 teaches 6A1 on Monday Period 3
+        const res1 = TimetableService.saveEntry('c-6a1', 2, 3, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res1.success).toBe(true);
+
+        // Trying to assign Teacher 1 to 6A2 on Monday Period 3
+        const res2 = TimetableService.saveEntry('c-6a2', 2, 3, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res2.success).toBe(false);
+        expect(res2.error).toContain('Thầy Nguyễn Văn An');
+        expect(res2.error).toContain('đã được xếp dạy lớp Lớp 6A1');
+      });
+
+      it('Same room, same period, different classes -> REJECTED (Room conflict)', () => {
+        // 6A1 (room: "Phòng 101 — Nhà A") on Tuesday Period 1
+        const res1 = TimetableService.saveEntry(
+          'c-6a1',
+          3,
+          1,
+          'sub-mat',
+          'u-tea-01',
+          adminUser,
+          'Phòng 101 — Nhà A'
+        );
+        expect(res1.success).toBe(true);
+
+        // 6A2 tries to book "Phòng 101 — Nhà A" at the same Tuesday Period 1
+        const res2 = TimetableService.saveEntry(
+          'c-6a2',
+          3,
+          1,
+          'sub-lit',
+          'u-tea-02',
+          adminUser,
+          'Phòng 101 — Nhà A'
+        );
+        expect(res2.success).toBe(false);
+        expect(res2.error).toContain('Xung đột phòng học');
+        expect(res2.error).toContain('Phòng 101 — Nhà A');
+        expect(res2.error).toContain('Lớp 6A1');
+      });
+
+      it('Mathematics with 3 consecutive periods -> REJECTED (Max 2 rule)', () => {
+        // Periods 1 and 2
+        TimetableService.saveEntry('c-6a1', 2, 1, 'sub-mat', 'u-tea-01', adminUser);
+        TimetableService.saveEntry('c-6a1', 2, 2, 'sub-mat', 'u-tea-01', adminUser);
+
+        // Try adding Period 3 for Math (1 + 2 + 3 = 3 consecutive)
+        const res3 = TimetableService.saveEntry('c-6a1', 2, 3, 'sub-mat', 'u-tea-01', adminUser);
+        expect(res3.success).toBe(false);
+        expect(res3.error?.toLowerCase()).toContain('không được xếp quá 2 tiết liên tiếp');
+      });
+
+      it('Literature with 3 consecutive periods -> REJECTED (Max 2 rule)', () => {
+        // Periods 2 and 3
+        TimetableService.saveEntry('c-6a1', 3, 2, 'sub-lit', 'u-tea-02', adminUser);
+        TimetableService.saveEntry('c-6a1', 3, 3, 'sub-lit', 'u-tea-02', adminUser);
+
+        // Try adding Period 4 for Literature (2 + 3 + 4 = 3 consecutive)
+        const res3 = TimetableService.saveEntry('c-6a1', 3, 4, 'sub-lit', 'u-tea-02', adminUser);
+        expect(res3.success).toBe(false);
+        expect(res3.error?.toLowerCase()).toContain('không được xếp quá 2 tiết liên tiếp');
+      });
+
+      it('Other subject (e.g., English) with 2 consecutive periods -> REJECTED (English max = 1)', () => {
+        // English on Period 2
+        const res1 = TimetableService.saveEntry('c-6a1', 4, 2, 'sub-eng', 'u-tea-03', adminUser);
+        expect(res1.success).toBe(true);
+
+        // Try adding English on Period 3 (2 consecutive)
+        const res2 = TimetableService.saveEntry('c-6a1', 4, 3, 'sub-eng', 'u-tea-03', adminUser);
+        expect(res2.success).toBe(false);
+        expect(res2.error).toContain('Tiếng Anh chỉ cho phép tối đa 1 tiết liên tiếp');
+      });
+
+      it('Any subject exceeding its configured maximum consecutive periods -> REJECTED', () => {
+        // Physics on Period 1
+        const res1 = TimetableService.saveEntry('c-6a1', 5, 1, 'sub-phy', null, adminUser);
+        expect(res1.success).toBe(true);
+
+        // Physics on Period 2 (2 consecutive, Physics max = 1)
+        const res2 = TimetableService.saveEntry('c-6a1', 5, 2, 'sub-phy', null, adminUser);
+        expect(res2.success).toBe(false);
+        expect(res2.error).toContain('Vật lý chỉ cho phép tối đa 1 tiết liên tiếp');
+      });
+    });
+
+    // 3. Self-conflict exclusion on edit
+    describe('1.3. Editing existing entry does not self-conflict', () => {
+      it('Editing an existing entry preserves validity without detecting itself as conflict', () => {
+        const saved = TimetableService.saveEntry(
+          'c-6a1',
+          2,
+          1,
+          'sub-mat',
+          'u-tea-01',
+          adminUser,
+          'Phòng 101 — Nhà A'
+        );
+        expect(saved.success).toBe(true);
+        const entryId = saved.data!.id;
+
+        // Update room of the exact same entry
+        const updateRes = TimetableService.updateEntry(
+          entryId,
+          {
+            room: 'Phòng 101 — Nhà A',
+          },
+          adminUser
+        );
+
+        expect(updateRes.success).toBe(true);
+        expect(updateRes.data?.room).toBe('Phòng 101 — Nhà A');
+      });
+    });
+
+    // 4. Timetable Audit Suite
+    describe('1.4. Dedicated Timetable Audit Suite', () => {
+      it('TimetableService.auditTimetable detects room conflict, teacher conflict, and consecutive period violations', () => {
+        LocalStore.clearTimetable('c-6a1');
+        LocalStore.clearTimetable('c-6a2');
+
+        // Create a teacher conflict: u-tea-01 at Monday Period 1 in both 6A1 and 6A2
+        LocalStore.saveTimetableEntry({
+          class_id: 'c-6a1',
+          day_of_week: 2,
+          period: 1,
+          subject_id: 'sub-mat',
+          teacher_id: 'u-tea-01',
+          room: 'Phòng 101',
+        });
+        LocalStore.saveTimetableEntry({
+          class_id: 'c-6a2',
+          day_of_week: 2,
+          period: 1,
+          subject_id: 'sub-mat',
+          teacher_id: 'u-tea-01',
+          room: 'Phòng 102',
+        });
+
+        // Create a room conflict: Phòng Thí nghiệm at Monday Period 2 in both 6A1 and 6A2
+        LocalStore.saveTimetableEntry({
+          class_id: 'c-6a1',
+          day_of_week: 2,
+          period: 2,
+          subject_id: 'sub-che',
+          teacher_id: 'u-tea-02',
+          room: 'Phòng Thí nghiệm',
+        });
+        LocalStore.saveTimetableEntry({
+          class_id: 'c-6a2',
+          day_of_week: 2,
+          period: 2,
+          subject_id: 'sub-bio',
+          teacher_id: 'u-tea-03',
+          room: 'Phòng Thí nghiệm',
+        });
+
+        // Create a consecutive period violation: 3 consecutive periods of Math (Periods 3, 4, 5) in 6A1
+        LocalStore.saveTimetableEntry({
+          class_id: 'c-6a1',
+          day_of_week: 2,
+          period: 3,
+          subject_id: 'sub-mat',
+          teacher_id: 'u-tea-01',
+        });
+        LocalStore.saveTimetableEntry({
+          class_id: 'c-6a1',
+          day_of_week: 2,
+          period: 4,
+          subject_id: 'sub-mat',
+          teacher_id: 'u-tea-01',
+        });
+        LocalStore.saveTimetableEntry({
+          class_id: 'c-6a1',
+          day_of_week: 2,
+          period: 5,
+          subject_id: 'sub-mat',
+          teacher_id: 'u-tea-01',
+        });
+
+        // Run audit on 6A1
+        const audit = TimetableService.auditTimetable('c-6a1');
+        expect(audit.isValid).toBe(false);
+        expect(audit.teacherConflicts.length).toBeGreaterThan(0);
+        expect(audit.roomConflicts.length).toBeGreaterThan(0);
+        expect(audit.ruleViolations.length).toBeGreaterThan(0);
+
+        // Verify violation descriptions
+        const ruleV = audit.ruleViolations.find((v) => v.classId === 'c-6a1');
+        expect(ruleV).toBeDefined();
+        expect(ruleV?.violation).toContain('Không được xếp quá 2 tiết liên tiếp');
+      });
+    });
+  });
 });

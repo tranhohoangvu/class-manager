@@ -144,3 +144,51 @@ This document catalogues all auditable business rules, constraints, and invarian
 * **Enforced By:**
   - `frontend/src/lib/store.ts` (`saveAttendanceBatch`)
   - `backend/migrations/001_initial_schema.sql` (`attendance: UNIQUE(student_id, date)`)
+
+---
+
+## 5. Timetable Conflict Detection & Scheduling Invariants
+
+### BR-020: Room Conflict Prevention (Trùng Phòng Học Toàn Trường)
+* **Rule:** If a room is assigned to a timetable entry (or falls back to the class's default room), that same room cannot be assigned to any other class at the same day of the week and period across the entire school.
+  - Example: `Phòng 101 - Lớp 6A1 - Thứ Hai - Tiết 4` and `Phòng 101 - Lớp 6A2 - Thứ Hai - Tiết 4` must be rejected.
+* **Enforced By:**
+  - `backend/src/repositories/timetable.repo.ts` (`findRoomConflict`)
+  - `backend/src/services/timetable.service.ts` (`validateEntry`)
+  - `frontend/src/services/timetable.service.ts` (`checkRoomConflict`, `validateTimetableEntry`)
+  - `backend/migrations/007_timetable_rules.sql` (column `timetable_entries.room` & conflict index)
+
+### BR-021: Global Maximum Consecutive Period Limit (Tối Đa 2 Tiết Liên Tiếp Toàn Trường)
+* **Rule:** Under no circumstance may any subject be scheduled for **more than 2 consecutive periods** on the same day for a class.
+  - Periods 1 + 2: **VALID**
+  - Periods 2 + 3: **VALID**
+  - Periods 1 + 2 + 3 (3 or more consecutive periods): **STRICTLY INVALID & REJECTED**
+* **Enforced By:**
+  - `backend/src/services/timetable.service.ts` (`validateConsecutivePeriods`)
+  - `frontend/src/services/timetable.service.ts` (`checkConsecutivePeriods`, `validateTimetableEntry`)
+  - Section 13 automated test suite (`frontend/tests/timetable.test.ts`)
+
+### BR-022: Configurable Subject Consecutive Periods (Cấu Hình Tiết Liên Tiếp Theo Môn Học)
+* **Rule:** Each subject defines its allowed consecutive period limit via the configurable data property `max_consecutive_periods` (1 or 2):
+  - **Mathematics (Toán):** `max_consecutive_periods = 2` (Allows up to 2 consecutive periods: e.g. Tiết 1-2 or Tiết 2-3).
+  - **Literature (Ngữ văn):** `max_consecutive_periods = 2` (Allows up to 2 consecutive periods: e.g. Tiết 3-4 or Tiết 4-5).
+  - **Other subjects (Tiếng Anh, Vật lý, Hóa học, Sinh học, v.v.):** Default `max_consecutive_periods = 1` (Single-period subjects; 2 consecutive periods are rejected unless explicitly configured higher up to global limit 2).
+  - Subject names must never be hard-coded in business logic; validation reads the subject's `max_consecutive_periods` property dynamically from the data model.
+* **Enforced By:**
+  - `backend/src/repositories/subject.repo.ts` (`subjects.max_consecutive_periods`)
+  - `backend/migrations/007_timetable_rules.sql` (`ALTER TABLE subjects ADD COLUMN max_consecutive_periods integer NOT NULL DEFAULT 1 CHECK (max_consecutive_periods BETWEEN 1 AND 2)`)
+  - `backend/src/services/timetable.service.ts` (`validateConsecutivePeriods`)
+  - `frontend/src/services/timetable.service.ts` (`checkConsecutivePeriods`)
+
+### BR-023: Comprehensive Timetable Audit & Diagnostics (Kiểm Toán & Chẩn Đoán Lịch Toàn Trường)
+* **Rule:** System provides a dedicated audit capability accessible exclusively to Administrators (`ADMIN`) that systematically checks the entire school timetable (or an individual class) for:
+  1. Class conflicts (trùng tiết trong cùng lớp).
+  2. Teacher conflicts (trùng giáo viên giữa các lớp).
+  3. Room conflicts (trùng phòng học giữa các lớp).
+  4. Global consecutive period violations (> 2 consecutive periods).
+  5. Subject-specific consecutive period violations (> `subject.max_consecutive_periods`).
+* **Enforced By:**
+  - `backend/src/services/timetable.service.ts` (`auditTimetable`)
+  - `backend/src/controllers/timetable.controller.ts` (`auditTimetable`)
+  - `frontend/src/services/timetable.service.ts` (`auditTimetable`)
+  - `frontend/src/app/(admin)/admin/timetable/page.tsx` (Interactive Audit Modal, Stat Cards, and Violation Badges)

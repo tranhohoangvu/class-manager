@@ -6,6 +6,7 @@ import {
   SquaresFour,
   ChalkboardTeacher,
   Chalkboard,
+  CalendarDots,
   GearSix,
   SignOut,
   ArrowSquareOut,
@@ -17,6 +18,7 @@ import { useAuth } from '@/contexts/auth-context';
 
 const adminNavItems = [
   { href: '/admin/dashboard', label: 'Tổng quan hệ thống', icon: SquaresFour },
+  { href: '/admin/timetable', label: 'Quản lý Thời khóa biểu', icon: CalendarDots },
   { href: '/admin/teachers', label: 'Quản lý Giáo viên', icon: ChalkboardTeacher },
   { href: '/admin/classes', label: 'Quản lý Lớp học', icon: Chalkboard },
   { href: '/admin/settings', label: 'Cài đặt hệ thống', icon: GearSix },

@@ -39,6 +39,7 @@ export interface SubjectRow {
   id: string;
   code: string;
   name: string;
+  max_consecutive_periods: number;
   created_at: string;
 }
 
@@ -79,6 +80,7 @@ export interface TimetableEntryRow {
   period: number;
   subject_id: string;
   teacher_id: string | null;
+  room?: string | null;
   created_at: string;
   updated_at: string;
 }

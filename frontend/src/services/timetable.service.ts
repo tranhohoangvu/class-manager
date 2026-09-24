@@ -2,6 +2,7 @@ import {
   TimetableEntryRow,
   UserRow,
   SubjectRow,
+  ClassRow,
 } from '@/types';
 import { LocalStore } from '@/lib/store';
 import { AuthGuard } from './auth-guard';
@@ -39,9 +40,11 @@ export interface CurrentSessionInfo {
 }
 
 export interface TimetableConflict {
-  type: 'CLASS_CONFLICT' | 'TEACHER_CONFLICT';
+  type: 'CLASS_CONFLICT' | 'TEACHER_CONFLICT' | 'ROOM_CONFLICT';
   classId: string;
   className: string;
+  otherClassId?: string;
+  otherClassName?: string;
   dayOfWeek: number;
   dayName: string;
   period: number;
@@ -50,7 +53,20 @@ export interface TimetableConflict {
   subjectName: string;
   teacherId?: string;
   teacherName?: string;
+  room?: string;
   message: string;
+}
+
+export interface TimetableRuleViolation {
+  classId: string;
+  className: string;
+  subjectId: string;
+  subjectName: string;
+  dayOfWeek: number;
+  dayName: string;
+  periods: number[];
+  periodLabels: string;
+  violation: string;
 }
 
 export interface TimetableValidationResult {
@@ -58,6 +74,32 @@ export interface TimetableValidationResult {
   conflict?: TimetableConflict;
   conflicts?: TimetableConflict[];
   error?: string;
+}
+
+export interface TimetableAuditReport {
+  scannedClasses: number;
+  scannedEntries: number;
+  isValid: boolean;
+  summary: {
+    classConflictsCount: number;
+    teacherConflictsCount: number;
+    roomConflictsCount: number;
+    ruleViolationsCount: number;
+    totalIssuesCount: number;
+  };
+  classConflicts: TimetableConflict[];
+  teacherConflicts: TimetableConflict[];
+  roomConflicts: TimetableConflict[];
+  ruleViolations: TimetableRuleViolation[];
+}
+
+export interface EnrichedTimetableEntry extends TimetableEntryRow {
+  className: string;
+  grade: number;
+  subjectName: string;
+  subjectCode: string;
+  teacherName: string;
+  effectiveRoom: string;
 }
 
 function timeToMinutes(timeStr: string): number {
@@ -381,6 +423,141 @@ export const TimetableService = {
   },
 
   /**
+   * Kiểm tra xung đột phòng học giữa các lớp:
+   * Một phòng học không thể được xếp cho nhiều hơn một lớp tại cùng một ngày và cùng một tiết.
+   */
+  checkRoomConflict(
+    room: string | null | undefined,
+    classId: string,
+    dayOfWeek: number,
+    period: number,
+    excludeEntryId?: string
+  ): TimetableConflict | null {
+    if (!room || !room.trim()) return null;
+    const targetRoomNorm = room.trim().toLowerCase();
+
+    const all = LocalStore.getAllTimetables();
+    const conflict = all.find((t) => {
+      if (t.day_of_week !== dayOfWeek || t.period !== period) return false;
+      if (t.class_id === classId) return false;
+      if (excludeEntryId && t.id === excludeEntryId) return false;
+
+      const otherCls = LocalStore.getClassById(t.class_id);
+      const otherRoom = (t.room && t.room.trim()) || (otherCls?.room_name && otherCls.room_name.trim()) || null;
+      return otherRoom && otherRoom.toLowerCase() === targetRoomNorm;
+    });
+
+    if (!conflict) return null;
+
+    const conflictClass = LocalStore.getClassById(conflict.class_id);
+    const subj = LocalStore.getSubjectById(conflict.subject_id);
+    const dayObj = TIMETABLE_DAYS.find((d) => d.day === dayOfWeek);
+    const periodObj = TIMETABLE_PERIODS.find((p) => p.period === period);
+    const dayName = dayObj?.name || `Thứ ${dayOfWeek}`;
+    const periodLabel = periodObj?.label || `Tiết ${period}`;
+    const conflictClassName = conflictClass?.name || conflict.class_id;
+    const subjectName = subj?.name || conflict.subject_id;
+
+    return {
+      type: 'ROOM_CONFLICT',
+      classId: conflict.class_id,
+      className: conflictClassName,
+      dayOfWeek,
+      dayName,
+      period,
+      periodLabel,
+      subjectId: conflict.subject_id,
+      subjectName,
+      room: room.trim(),
+      message: `Xung đột phòng học: Phòng ${room.trim()} đã được xếp cho lớp ${conflictClassName} (môn ${subjectName}) vào ${dayName}, ${periodLabel}.`,
+    };
+  },
+
+  /**
+   * Kiểm tra quy tắc tiết học liên tiếp:
+   * - Giới hạn toàn trường: Không bao giờ được vượt quá 2 tiết liên tiếp (3+ bị cấm tuyệt đối).
+   * - Giới hạn theo môn: Toán và Ngữ văn được tối đa 2 tiết liên tiếp; các môn khác tối đa 1 tiết liên tiếp (cấu hình qua subject.max_consecutive_periods).
+   */
+  checkConsecutivePeriods(
+    classId: string,
+    dayOfWeek: number,
+    candidatePeriod: number,
+    candidateSubjectId: string,
+    excludeEntryId?: string
+  ): { valid: boolean; error?: string } {
+    const classEntries = LocalStore.getTimetable(classId);
+    const subject = LocalStore.getSubjectById(candidateSubjectId);
+    const maxConsecutive = subject?.max_consecutive_periods ?? 1;
+    const subjectName = subject?.name || candidateSubjectId;
+
+    // Lọc các tiết cùng ngày, loại trừ tiết đang sửa đổi
+    const dayEntries = classEntries.filter((e) => {
+      if (e.day_of_week !== dayOfWeek) return false;
+      if (excludeEntryId && e.id === excludeEntryId) return false;
+      if (e.period === candidatePeriod) return false;
+      return true;
+    });
+
+    // Thêm tiết đang dự kiến xếp
+    dayEntries.push({
+      id: excludeEntryId || 'temp-id',
+      class_id: classId,
+      day_of_week: dayOfWeek,
+      period: candidatePeriod,
+      subject_id: candidateSubjectId,
+      teacher_id: null,
+      created_at: '',
+      updated_at: '',
+    });
+
+    const periods = dayEntries
+      .filter((e) => e.subject_id === candidateSubjectId)
+      .map((e) => e.period)
+      .sort((a, b) => a - b);
+
+    let currentSequence: number[] = [];
+    for (let i = 0; i < periods.length; i++) {
+      if (currentSequence.length === 0) {
+        currentSequence.push(periods[i]);
+      } else {
+        const last = currentSequence[currentSequence.length - 1];
+        if (periods[i] === last + 1) {
+          currentSequence.push(periods[i]);
+        } else {
+          if (currentSequence.length > 2) {
+            return {
+              valid: false,
+              error: `Quy tắc thời khóa biểu: Môn ${subjectName} không được xếp quá 2 tiết liên tiếp (hiện có ${currentSequence.length} tiết liên tiếp: Tiết ${currentSequence.join(', ')}).`,
+            };
+          }
+          if (currentSequence.length > maxConsecutive) {
+            return {
+              valid: false,
+              error: `Quy tắc thời khóa biểu: Môn ${subjectName} chỉ cho phép tối đa ${maxConsecutive} tiết liên tiếp (hiện có ${currentSequence.length} tiết liên tiếp: Tiết ${currentSequence.join(', ')}).`,
+            };
+          }
+          currentSequence = [periods[i]];
+        }
+      }
+    }
+
+    if (currentSequence.length > 2) {
+      return {
+        valid: false,
+        error: `Quy tắc thời khóa biểu: Môn ${subjectName} không được xếp quá 2 tiết liên tiếp (hiện có ${currentSequence.length} tiết liên tiếp: Tiết ${currentSequence.join(', ')}).`,
+      };
+    }
+    if (currentSequence.length > maxConsecutive) {
+      return {
+        valid: false,
+        error: `Quy tắc thời khóa biểu: Môn ${subjectName} chỉ cho phép tối đa ${maxConsecutive} tiết liên tiếp (hiện có ${currentSequence.length} tiết liên tiếp: Tiết ${currentSequence.join(', ')}).`,
+      };
+    }
+
+    return { valid: true };
+  },
+
+  /**
    * Validate toàn diện một entry trước khi persist.
    */
   validateTimetableEntry(
@@ -390,6 +567,7 @@ export const TimetableService = {
       period: number;
       subject_id: string;
       teacher_id?: string | null;
+      room?: string | null;
       id?: string;
     },
     excludeEntryId?: string
@@ -483,7 +661,7 @@ export const TimetableService = {
       }
     }
 
-    // 1. Check teacher conflict across ALL classes in the school (bao gồm cả GVCN trong tiết Sinh hoạt lớp)
+    // 1. Check teacher conflict across ALL classes in the school
     const teacherConflict = this.checkTeacherConflict(
       effectiveTeacherId,
       entry.day_of_week,
@@ -499,7 +677,24 @@ export const TimetableService = {
       };
     }
 
-    // 2. Check class conflict within same class (different entry occupying this slot)
+    // 2. Check room conflict across ALL classes in the school
+    const effectiveRoom = (entry.room && entry.room.trim()) || (cls?.room_name && cls.room_name.trim()) || null;
+    const roomConflict = this.checkRoomConflict(
+      effectiveRoom,
+      entry.class_id,
+      entry.day_of_week,
+      entry.period,
+      effectiveExcludeId
+    );
+    if (roomConflict) {
+      return {
+        valid: false,
+        conflict: roomConflict,
+        error: roomConflict.message,
+      };
+    }
+
+    // 3. Check class conflict within same class (different entry occupying this slot)
     const classConflict = this.checkClassConflict(
       entry.class_id,
       entry.day_of_week,
@@ -511,6 +706,21 @@ export const TimetableService = {
         valid: false,
         conflict: classConflict,
         error: classConflict.message,
+      };
+    }
+
+    // 4. Check consecutive periods rules
+    const consecutiveCheck = this.checkConsecutivePeriods(
+      entry.class_id,
+      entry.day_of_week,
+      entry.period,
+      entry.subject_id,
+      effectiveExcludeId
+    );
+    if (!consecutiveCheck.valid) {
+      return {
+        valid: false,
+        error: consecutiveCheck.error,
       };
     }
 
@@ -526,7 +736,8 @@ export const TimetableService = {
     period: number,
     subjectId: string,
     teacherId: string | null,
-    currentUser: UserRow | null
+    currentUser: UserRow | null,
+    room?: string | null
   ): OperationResult<TimetableEntryRow> {
     if (!AuthGuard.canManageTimetable(currentUser, classId)) {
       return failure('Chỉ Quản trị viên mới có quyền xếp Thời khóa biểu. Giáo viên không được phép tự ý thay đổi Thời khóa biểu.');
@@ -608,6 +819,7 @@ export const TimetableService = {
         period,
         subject_id: effectiveSubjectId,
         teacher_id: effectiveTeacherId,
+        room: room !== undefined ? room : existingEntry?.room,
         id: existingEntry?.id,
       },
       existingEntry?.id
@@ -623,6 +835,7 @@ export const TimetableService = {
       period,
       subject_id: effectiveSubjectId,
       teacher_id: effectiveTeacherId,
+      room: room !== undefined ? room : existingEntry?.room,
     });
 
     return success(saved);
@@ -638,6 +851,7 @@ export const TimetableService = {
       period: number;
       subject_id: string;
       teacher_id?: string | null;
+      room?: string | null;
     },
     currentUser: UserRow | null
   ): OperationResult<TimetableEntryRow> {
@@ -653,20 +867,23 @@ export const TimetableService = {
       entry.period,
       entry.subject_id,
       entry.teacher_id || null,
-      currentUser
+      currentUser,
+      entry.room
     );
   },
 
   /**
-   * Cập nhật một timetable entry hiện có (hỗ trợ đổi slot, đổi giáo viên, đổi môn)
+   * Cập nhật một timetable entry hiện có (hỗ trợ đổi slot, đổi giáo viên, đổi môn, đổi phòng)
    */
   updateEntry(
     entryId: string,
     changes: {
+      class_id?: string;
       day_of_week?: number;
       period?: number;
       subject_id?: string;
       teacher_id?: string | null;
+      room?: string | null;
     },
     currentUser: UserRow | null
   ): OperationResult<TimetableEntryRow> {
@@ -680,11 +897,13 @@ export const TimetableService = {
       return failure('Chỉ Quản trị viên mới có quyền cập nhật Thời khóa biểu. Giáo viên không được phép tự ý thay đổi Thời khóa biểu.');
     }
 
-    const cls = LocalStore.getClassById(currentEntry.class_id);
+    const targetClassId = changes.class_id || currentEntry.class_id;
+    const cls = LocalStore.getClassById(targetClassId);
     const targetDay = changes.day_of_week ?? currentEntry.day_of_week;
     const targetPeriod = changes.period ?? currentEntry.period;
     let targetSubjectId = changes.subject_id ?? currentEntry.subject_id;
     let targetTeacherId = changes.teacher_id !== undefined ? changes.teacher_id : currentEntry.teacher_id;
+    const targetRoom = changes.room !== undefined ? changes.room : currentEntry.room;
 
     if (targetDay === 7 && (targetPeriod === 3 || targetPeriod === 8)) {
       targetSubjectId = 'sub-shl';
@@ -692,7 +911,7 @@ export const TimetableService = {
     }
 
     if (!targetTeacherId && !(targetDay === 7 && (targetPeriod === 3 || targetPeriod === 8))) {
-      const assignments = LocalStore.getSubjectAssignmentsForClass(currentEntry.class_id);
+      const assignments = LocalStore.getSubjectAssignmentsForClass(targetClassId);
       const match = assignments.find((a) => a.subject_id === targetSubjectId);
       if (match) {
         targetTeacherId = match.teacher_id;
@@ -703,11 +922,12 @@ export const TimetableService = {
     const validation = this.validateTimetableEntry(
       {
         id: entryId,
-        class_id: currentEntry.class_id,
+        class_id: targetClassId,
         day_of_week: targetDay,
         period: targetPeriod,
         subject_id: targetSubjectId,
         teacher_id: targetTeacherId,
+        room: targetRoom,
       },
       entryId
     );
@@ -717,16 +937,17 @@ export const TimetableService = {
     }
 
     // If slot changed (e.g. day or period moved), remove old slot from class
-    if (targetDay !== currentEntry.day_of_week || targetPeriod !== currentEntry.period) {
+    if (targetDay !== currentEntry.day_of_week || targetPeriod !== currentEntry.period || targetClassId !== currentEntry.class_id) {
       LocalStore.deleteTimetableEntry(currentEntry.class_id, currentEntry.day_of_week, currentEntry.period);
     }
 
     const saved = LocalStore.saveTimetableEntry({
-      class_id: currentEntry.class_id,
+      class_id: targetClassId,
       day_of_week: targetDay,
       period: targetPeriod,
       subject_id: targetSubjectId,
       teacher_id: targetTeacherId,
+      room: targetRoom,
     });
 
     return success(saved);
@@ -758,6 +979,105 @@ export const TimetableService = {
   },
 
   /**
+   * Hoán đổi hoặc di chuyển tiết học giữa hai slot trong cùng một lớp
+   */
+  reorganizeSlot(
+    classId: string,
+    sourceSlot: { day: number; period: number },
+    targetSlot: { day: number; period: number },
+    currentUser: UserRow | null
+  ): OperationResult<boolean> {
+    if (!AuthGuard.canManageTimetable(currentUser, classId)) {
+      return failure('Chỉ Quản trị viên mới có quyền sắp xếp lại Thời khóa biểu.');
+    }
+
+    const sourceEntry = LocalStore.getTimetableEntry(classId, sourceSlot.day, sourceSlot.period);
+    if (!sourceEntry) {
+      return failure('Không tìm thấy tiết học nguồn để di chuyển.');
+    }
+
+    const targetEntry = LocalStore.getTimetableEntry(classId, targetSlot.day, targetSlot.period);
+
+    // If target has an entry -> SWAP
+    if (targetEntry) {
+      // Validate source entry in target slot
+      const val1 = this.validateTimetableEntry(
+        {
+          class_id: classId,
+          day_of_week: targetSlot.day,
+          period: targetSlot.period,
+          subject_id: sourceEntry.subject_id,
+          teacher_id: sourceEntry.teacher_id,
+          room: sourceEntry.room,
+        },
+        targetEntry.id
+      );
+      if (!val1.valid) return failure(`Không thể hoán đổi: ${val1.error}`);
+
+      // Validate target entry in source slot
+      const val2 = this.validateTimetableEntry(
+        {
+          class_id: classId,
+          day_of_week: sourceSlot.day,
+          period: sourceSlot.period,
+          subject_id: targetEntry.subject_id,
+          teacher_id: targetEntry.teacher_id,
+          room: targetEntry.room,
+        },
+        sourceEntry.id
+      );
+      if (!val2.valid) return failure(`Không thể hoán đổi: ${val2.error}`);
+
+      // Swap
+      LocalStore.saveTimetableEntry({
+        class_id: classId,
+        day_of_week: targetSlot.day,
+        period: targetSlot.period,
+        subject_id: sourceEntry.subject_id,
+        teacher_id: sourceEntry.teacher_id,
+        room: sourceEntry.room,
+      });
+
+      LocalStore.saveTimetableEntry({
+        class_id: classId,
+        day_of_week: sourceSlot.day,
+        period: sourceSlot.period,
+        subject_id: targetEntry.subject_id,
+        teacher_id: targetEntry.teacher_id,
+        room: targetEntry.room,
+      });
+
+      return success(true);
+    } else {
+      // Target is empty -> MOVE
+      const val = this.validateTimetableEntry(
+        {
+          class_id: classId,
+          day_of_week: targetSlot.day,
+          period: targetSlot.period,
+          subject_id: sourceEntry.subject_id,
+          teacher_id: sourceEntry.teacher_id,
+          room: sourceEntry.room,
+        },
+        sourceEntry.id
+      );
+      if (!val.valid) return failure(val.error || 'Xung đột khi di chuyển tiết.');
+
+      LocalStore.deleteTimetableEntry(classId, sourceSlot.day, sourceSlot.period);
+      LocalStore.saveTimetableEntry({
+        class_id: classId,
+        day_of_week: targetSlot.day,
+        period: targetSlot.period,
+        subject_id: sourceEntry.subject_id,
+        teacher_id: sourceEntry.teacher_id,
+        room: sourceEntry.room,
+      });
+
+      return success(true);
+    }
+  },
+
+  /**
    * Áp dụng mẫu chuẩn THCS cho lớp (Validate conflict trước khi commit)
    */
   applyStandardTemplate(
@@ -768,7 +1088,6 @@ export const TimetableService = {
       return failure('Chỉ Quản trị viên mới có quyền thiết lập mẫu Thời khóa biểu.');
     }
 
-    // Sinh các entries mẫu cho classId
     const templateEntries = generateTimetableForClass(classId);
 
     // Validate conflict đối với các lớp khác
@@ -856,6 +1175,7 @@ export const TimetableService = {
         period: targetPeriod,
         subject_id: isSHL ? 'sub-shl' : item.subject_id,
         teacher_id: teacherId,
+        room: item.room || null,
       };
     });
 
@@ -907,5 +1227,307 @@ export const TimetableService = {
 
     const ok = LocalStore.clearTimetable(classId);
     return success(ok);
+  },
+
+  /**
+   * Thực hiện kiểm toán toàn diện hệ thống Thời khóa biểu (Auditing)
+   * Kiểm tra:
+   * 1. Trùng lịch lớp học (Class conflict)
+   * 2. Trùng lịch giáo viên (Teacher conflict)
+   * 3. Trùng lịch phòng học (Room conflict)
+   * 4. Vi phạm quy tắc tiết học liên tiếp:
+   *    - Vượt quá 2 tiết liên tiếp (Toàn cục)
+   *    - Vượt quá giới hạn cấu hình của môn (VD: Tiếng Anh > 1)
+   */
+  auditTimetable(filterClassId?: string): TimetableAuditReport {
+    const allClasses = LocalStore.getClasses().filter((c) => c.status === 'active');
+    const classesToScan = filterClassId
+      ? allClasses.filter((c) => c.id === filterClassId)
+      : allClasses;
+
+    const allEntries = LocalStore.getAllTimetables();
+    const relevantEntries = filterClassId
+      ? allEntries.filter((t) => t.class_id === filterClassId)
+      : allEntries;
+
+    const classConflicts: TimetableConflict[] = [];
+    const teacherConflicts: TimetableConflict[] = [];
+    const roomConflicts: TimetableConflict[] = [];
+    const ruleViolations: TimetableRuleViolation[] = [];
+
+    // 1. Trùng lịch trong cùng lớp tại (day, period)
+    const slotMap = new Map<string, TimetableEntryRow[]>();
+    for (const entry of relevantEntries) {
+      const key = `${entry.class_id}_${entry.day_of_week}_${entry.period}`;
+      if (!slotMap.has(key)) slotMap.set(key, []);
+      slotMap.get(key)!.push(entry);
+    }
+    for (const [, entries] of slotMap.entries()) {
+      if (entries.length > 1) {
+        const e = entries[0];
+        const cls = LocalStore.getClassById(e.class_id);
+        const dayObj = TIMETABLE_DAYS.find((d) => d.day === e.day_of_week);
+        const periodObj = TIMETABLE_PERIODS.find((p) => p.period === e.period);
+        classConflicts.push({
+          type: 'CLASS_CONFLICT',
+          classId: e.class_id,
+          className: cls?.name || e.class_id,
+          dayOfWeek: e.day_of_week,
+          dayName: dayObj?.name || `Thứ ${e.day_of_week}`,
+          period: e.period,
+          periodLabel: periodObj?.label || `Tiết ${e.period}`,
+          subjectId: e.subject_id,
+          subjectName: LocalStore.getSubjectById(e.subject_id)?.name || e.subject_id,
+          message: `Lớp ${cls?.name || e.class_id} có ${entries.length} môn học cùng được xếp vào ${dayObj?.name || `Thứ ${e.day_of_week}`}, ${periodObj?.label || `Tiết ${e.period}`}.`,
+        });
+      }
+    }
+
+    // 2. Trùng lịch giáo viên toàn trường tại (day, period)
+    const teacherSlotMap = new Map<string, TimetableEntryRow[]>();
+    for (const entry of allEntries) {
+      if (!entry.teacher_id) continue;
+      const key = `${entry.teacher_id}_${entry.day_of_week}_${entry.period}`;
+      if (!teacherSlotMap.has(key)) teacherSlotMap.set(key, []);
+      teacherSlotMap.get(key)!.push(entry);
+    }
+    for (const [, entries] of teacherSlotMap.entries()) {
+      if (entries.length > 1) {
+        const distinctClasses = Array.from(new Set(entries.map((e) => e.class_id)));
+        if (distinctClasses.length > 1) {
+          if (!filterClassId || distinctClasses.includes(filterClassId)) {
+            const first = entries[0];
+            const teacher = LocalStore.getUserById(first.teacher_id!);
+            const dayObj = TIMETABLE_DAYS.find((d) => d.day === first.day_of_week);
+            const periodObj = TIMETABLE_PERIODS.find((p) => p.period === first.period);
+            const classNames = distinctClasses
+              .map((cid) => LocalStore.getClassById(cid)?.name || cid)
+              .join(', ');
+            const otherCid = distinctClasses.find((cid) => cid !== first.class_id);
+            teacherConflicts.push({
+              type: 'TEACHER_CONFLICT',
+              classId: first.class_id,
+              className: LocalStore.getClassById(first.class_id)?.name || first.class_id,
+              otherClassId: otherCid,
+              otherClassName: otherCid ? (LocalStore.getClassById(otherCid)?.name || otherCid) : undefined,
+              dayOfWeek: first.day_of_week,
+              dayName: dayObj?.name || `Thứ ${first.day_of_week}`,
+              period: first.period,
+              periodLabel: periodObj?.label || `Tiết ${first.period}`,
+              subjectId: first.subject_id,
+              subjectName: LocalStore.getSubjectById(first.subject_id)?.name || first.subject_id,
+              teacherId: first.teacher_id!,
+              teacherName: teacher?.name || 'Giáo viên',
+              message: `Giáo viên ${teacher?.name || 'phụ trách'} bị xếp trùng lịch dạy tại các lớp: ${classNames} vào ${dayObj?.name || `Thứ ${first.day_of_week}`}, ${periodObj?.label || `Tiết ${first.period}`}.`,
+            });
+          }
+        }
+      }
+    }
+
+    // 3. Trùng phòng học toàn trường tại (day, period)
+    const roomSlotMap = new Map<string, Array<{ entry: TimetableEntryRow; effectiveRoom: string }>>();
+    for (const entry of allEntries) {
+      const cls = LocalStore.getClassById(entry.class_id);
+      const effectiveRoom = (entry.room && entry.room.trim()) || (cls?.room_name && cls.room_name.trim()) || null;
+      if (!effectiveRoom) continue;
+      const key = `${effectiveRoom.trim().toLowerCase()}_${entry.day_of_week}_${entry.period}`;
+      if (!roomSlotMap.has(key)) roomSlotMap.set(key, []);
+      roomSlotMap.get(key)!.push({ entry, effectiveRoom: effectiveRoom.trim() });
+    }
+    for (const [, items] of roomSlotMap.entries()) {
+      if (items.length > 1) {
+        const distinctClasses = Array.from(new Set(items.map((i) => i.entry.class_id)));
+        if (distinctClasses.length > 1) {
+          if (!filterClassId || distinctClasses.includes(filterClassId)) {
+            const first = items[0];
+            const dayObj = TIMETABLE_DAYS.find((d) => d.day === first.entry.day_of_week);
+            const periodObj = TIMETABLE_PERIODS.find((p) => p.period === first.entry.period);
+            const classNames = distinctClasses
+              .map((cid) => LocalStore.getClassById(cid)?.name || cid)
+              .join(', ');
+            const otherCid = distinctClasses.find((cid) => cid !== first.entry.class_id);
+            roomConflicts.push({
+              type: 'ROOM_CONFLICT',
+              classId: first.entry.class_id,
+              className: LocalStore.getClassById(first.entry.class_id)?.name || first.entry.class_id,
+              otherClassId: otherCid,
+              otherClassName: otherCid ? (LocalStore.getClassById(otherCid)?.name || otherCid) : undefined,
+              dayOfWeek: first.entry.day_of_week,
+              dayName: dayObj?.name || `Thứ ${first.entry.day_of_week}`,
+              period: first.entry.period,
+              periodLabel: periodObj?.label || `Tiết ${first.entry.period}`,
+              subjectId: first.entry.subject_id,
+              subjectName: LocalStore.getSubjectById(first.entry.subject_id)?.name || first.entry.subject_id,
+              room: first.effectiveRoom,
+              message: `Phòng học ${first.effectiveRoom} bị xếp trùng cho các lớp: ${classNames} vào ${dayObj?.name || `Thứ ${first.entry.day_of_week}`}, ${periodObj?.label || `Tiết ${first.entry.period}`}.`,
+            });
+          }
+        }
+      }
+    }
+
+    // 4. Vi phạm quy tắc tiết học liên tiếp
+    for (const cls of classesToScan) {
+      const classEntries = LocalStore.getTimetable(cls.id);
+      for (let day = 2; day <= 7; day++) {
+        const dayEntries = classEntries.filter((e) => e.day_of_week === day);
+        const dayObj = TIMETABLE_DAYS.find((d) => d.day === day);
+        const dayName = dayObj?.name || `Thứ ${day}`;
+
+        // Nhóm theo môn học
+        const subMap = new Map<string, number[]>();
+        for (const e of dayEntries) {
+          if (!subMap.has(e.subject_id)) subMap.set(e.subject_id, []);
+          subMap.get(e.subject_id)!.push(e.period);
+        }
+
+        for (const [subId, periods] of subMap.entries()) {
+          periods.sort((a, b) => a - b);
+          const subj = LocalStore.getSubjectById(subId);
+          const maxAllowed = subj?.max_consecutive_periods ?? 1;
+          const subjectName = subj?.name || subId;
+
+          let currentSeq: number[] = [];
+          for (let i = 0; i < periods.length; i++) {
+            if (currentSeq.length === 0) {
+              currentSeq.push(periods[i]);
+            } else {
+              const last = currentSeq[currentSeq.length - 1];
+              if (periods[i] === last + 1) {
+                currentSeq.push(periods[i]);
+              } else {
+                if (currentSeq.length > 2) {
+                  ruleViolations.push({
+                    classId: cls.id,
+                    className: cls.name,
+                    subjectId: subId,
+                    subjectName,
+                    dayOfWeek: day,
+                    dayName,
+                    periods: [...currentSeq],
+                    periodLabels: `Tiết ${currentSeq.join(', ')}`,
+                    violation: `Vượt quá giới hạn tối đa toàn trường: Không được xếp quá 2 tiết liên tiếp (hiện có ${currentSeq.length} tiết liên tiếp).`,
+                  });
+                } else if (currentSeq.length > maxAllowed) {
+                  ruleViolations.push({
+                    classId: cls.id,
+                    className: cls.name,
+                    subjectId: subId,
+                    subjectName,
+                    dayOfWeek: day,
+                    dayName,
+                    periods: [...currentSeq],
+                    periodLabels: `Tiết ${currentSeq.join(', ')}`,
+                    violation: `Môn ${subjectName} chỉ cho phép tối đa ${maxAllowed} tiết liên tiếp (hiện có ${currentSeq.length} tiết liên tiếp).`,
+                  });
+                }
+                currentSeq = [periods[i]];
+              }
+            }
+          }
+
+          if (currentSeq.length > 2) {
+            ruleViolations.push({
+              classId: cls.id,
+              className: cls.name,
+              subjectId: subId,
+              subjectName,
+              dayOfWeek: day,
+              dayName,
+              periods: [...currentSeq],
+              periodLabels: `Tiết ${currentSeq.join(', ')}`,
+              violation: `Vượt quá giới hạn tối đa toàn trường: Không được xếp quá 2 tiết liên tiếp (hiện có ${currentSeq.length} tiết liên tiếp).`,
+            });
+          } else if (currentSeq.length > maxAllowed) {
+            ruleViolations.push({
+              classId: cls.id,
+              className: cls.name,
+              subjectId: subId,
+              subjectName,
+              dayOfWeek: day,
+              dayName,
+              periods: [...currentSeq],
+              periodLabels: `Tiết ${currentSeq.join(', ')}`,
+              violation: `Môn ${subjectName} chỉ cho phép tối đa ${maxAllowed} tiết liên tiếp (hiện có ${currentSeq.length} tiết liên tiếp).`,
+            });
+          }
+        }
+      }
+    }
+
+    const totalIssuesCount =
+      classConflicts.length + teacherConflicts.length + roomConflicts.length + ruleViolations.length;
+
+    return {
+      scannedClasses: classesToScan.length,
+      scannedEntries: relevantEntries.length,
+      isValid: totalIssuesCount === 0,
+      summary: {
+        classConflictsCount: classConflicts.length,
+        teacherConflictsCount: teacherConflicts.length,
+        roomConflictsCount: roomConflicts.length,
+        ruleViolationsCount: ruleViolations.length,
+        totalIssuesCount,
+      },
+      classConflicts,
+      teacherConflicts,
+      roomConflicts,
+      ruleViolations,
+    };
+  },
+
+  /**
+   * Lọc danh sách tiết học theo nhiều tiêu chí (Admin Timetable Filter)
+   */
+  filterTimetableEntries(filters: {
+    classId?: string;
+    teacherId?: string;
+    subjectId?: string;
+    room?: string;
+    dayOfWeek?: number;
+  }): EnrichedTimetableEntry[] {
+    const all = LocalStore.getAllTimetables();
+    const classes = LocalStore.getClasses();
+    const subjects = LocalStore.getSubjects();
+    const users = LocalStore.getUsers();
+
+    const classMap = new Map(classes.map((c) => [c.id, c]));
+    const subjectMap = new Map(subjects.map((s) => [s.id, s]));
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const filtered = all.filter((entry) => {
+      if (filters.classId && entry.class_id !== filters.classId) return false;
+      if (filters.teacherId && entry.teacher_id !== filters.teacherId) return false;
+      if (filters.subjectId && entry.subject_id !== filters.subjectId) return false;
+      if (filters.dayOfWeek && entry.day_of_week !== filters.dayOfWeek) return false;
+
+      if (filters.room && filters.room.trim()) {
+        const cls = classMap.get(entry.class_id);
+        const effectiveRoom = (entry.room && entry.room.trim()) || (cls?.room_name && cls.room_name.trim()) || '';
+        if (!effectiveRoom.toLowerCase().includes(filters.room.trim().toLowerCase())) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    return filtered.map((entry) => {
+      const cls = classMap.get(entry.class_id);
+      const sub = subjectMap.get(entry.subject_id);
+      const teacher = entry.teacher_id ? userMap.get(entry.teacher_id) : null;
+      const effectiveRoom = (entry.room && entry.room.trim()) || (cls?.room_name && cls.room_name.trim()) || 'Chưa xếp phòng';
+
+      return {
+        ...entry,
+        className: cls?.name || entry.class_id,
+        grade: cls?.grade || 6,
+        subjectName: sub?.name || entry.subject_id,
+        subjectCode: sub?.code || '',
+        teacherName: teacher?.name || 'Chưa phân công',
+        effectiveRoom,
+      };
+    });
   },
 };

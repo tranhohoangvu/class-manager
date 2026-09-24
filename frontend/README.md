@@ -11,7 +11,7 @@ A modern web application engineered for secondary school management (Trường T
 * **Styling:** TailwindCSS v4 (@tailwindcss/postcss), Phosphor Icons (`@phosphor-icons/react`)
 * **State Management:** React Context (`AuthContext`, `ClassContext`) + Layered Domain Service Architecture
 * **Validation & Forms:** Zod 3.25
-* **Testing:** Vitest 5.0 (8 test suites, 91 passing unit tests)
+* **Testing:** Vitest 5.0 (8 test suites, 105 passing unit tests)
 * **Data Processing & Export:** SheetJS (`xlsx`) for bidirectional Excel import and export
 * **UI Feedback:** Sonner (Toast notifications)
 
@@ -23,7 +23,8 @@ A modern web application engineered for secondary school management (Trường T
 frontend/
 ├── src/
 │   ├── app/                      # Next.js App Router (Pages, Layouts, Route Groups)
-│   │   ├── (admin)/admin/        # Administrative governance (Classes, Teachers, School-wide Reports)
+│   │   ├── (admin)/admin/        # Administrative governance (Classes, Teachers, Timetable Management, Reports)
+│   │   │   └── timetable/        # School-wide Admin Timetable matrix, filtering, editor & audit engine
 │   │   ├── (auth)/login/         # Authentication view & 1-click test personas
 │   │   ├── (dashboard)/          # Operational views (Seating, Attendance, Timetable, Students)
 │   │   │   ├── announcements/    # Class announcements board
@@ -73,7 +74,7 @@ frontend/
 │   ├── types/                    # Canonical TypeScript interfaces & domain models
 │   └── middleware.ts             # Next.js route protection & redirect middleware
 │
-├── tests/                        # Vitest automated test suite (91 unit tests)
+├── tests/                        # Vitest automated test suite (105 unit tests)
 ├── next.config.ts                # Next.js configuration & API proxy rewrites to Backend (:4000)
 ├── postcss.config.mjs            # Tailwind PostCSS configuration
 ├── tsconfig.json                 # TypeScript compiler configuration with @/* alias

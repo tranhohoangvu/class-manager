@@ -10,7 +10,7 @@
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%2016-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript%205-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![TailwindCSS v4](https://img.shields.io/badge/Styling-TailwindCSS%20v4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-91%2F91%20Passed-brightgreen?style=for-the-badge&logo=vitest)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-105%2F105%20Passed-brightgreen?style=for-the-badge&logo=vitest)](https://vitest.dev/)
 
 </div>
 
@@ -42,7 +42,7 @@ The repository is structured as a clean, standardized **Monorepo**:
 class-manager/
 ├── frontend/                 # Next.js 16 Web Application (App Router)
 │   ├── src/                  # Application source code (UI, components, contexts, services, lib)
-│   ├── tests/                # Automated Vitest test suite (8 files, 91 unit tests)
+│   ├── tests/                # Automated Vitest test suite (8 files, 105 unit tests)
 │   ├── next.config.ts        # Next.js config & API proxy rewrites (/api/* -> :4000)
 │   ├── tsconfig.json         # TypeScript compiler config (@/* path alias)
 │   ├── package.json          # Frontend dependencies (package: "class-manager-frontend")
@@ -50,7 +50,7 @@ class-manager/
 │
 ├── backend/                  # Dedicated REST API Service (Express + TypeScript + PostgreSQL)
 │   ├── src/                  # Controllers, services, repositories, routes, middleware
-│   ├── migrations/           # 6 sequenced PostgreSQL SQL migration files (001 -> 006)
+│   ├── migrations/           # 7 sequenced PostgreSQL SQL migration files (001 -> 007)
 │   ├── scripts/              # Migration runner script (migrate.ts)
 │   ├── package.json          # Backend dependencies (package: "class-manager-backend")
 │   └── README.md             # 📖 Detailed Backend Documentation
@@ -79,7 +79,7 @@ class-manager/
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                 Frontend: Next.js 16 (Port 3000)            │
-│  - App Router (18 static and dynamic routes)                │
+│  - App Router (19 static and dynamic routes)                │
 │  - Centralized API Client (frontend/src/lib/api-client.ts)  │
 │  - Client Layouts & Dynamic RBAC Route Guards               │
 └──────────────────────────────┬──────────────────────────────┘
@@ -100,7 +100,7 @@ class-manager/
 ┌─────────────────────────────────────────────────────────────┐
 │                     PostgreSQL Database                     │
 │  - 12 Relational Tables with constraints, triggers, indexes │
-│  - Migrations: backend/migrations/ (001 -> 006)             │
+│  - Migrations: backend/migrations/ (001 -> 007)             │
 │  - Deployment Targets: Native PostgreSQL / Render Postgres  │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -117,7 +117,7 @@ Permissions adapt automatically based on the teacher's active assignment in each
 | **Student Management** | Full CRUD & Excel Import | Read-Only Profile View | Full School-Wide Governance |
 | **Seating Arrangement** | Swap, Randomize, Assign, Clear | Read-Only Layout | Read-Only Layout |
 | **Attendance Recording** | Mark Assigned Subject; View All Records | Mark & View Assigned Subject Only | Full School-Wide Attendance Access |
-| **Timetable Management** | View Assigned Classes | View Assigned Classes | Full 16-Class Timetable Mutation |
+| **Timetable Management** | View Assigned Classes | View Assigned Classes | Full 16-Class Mutation, Audit & Rules |
 | **Student Notes** | Create & Delete Notes | Access Denied | Read-Only View |
 | **Class Announcements** | Create, Pin, Delete | Read-Only View | Full System Management |
 | **Class Settings** | Rename, Room Name, Max Capacity | Access Denied | Manage All Classes |

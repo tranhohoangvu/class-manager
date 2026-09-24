@@ -31,6 +31,7 @@ Secondary school core curriculum subjects (11 subjects).
 * **Columns:**
   - `code`: `VARCHAR(20) NOT NULL UNIQUE` (`MAT`, `LIT`, `ENG`, `PHY`, `CHE`, `BIO`, `HIS`, `GEO`, `INF`, `TEC`, `SHL`)
   - `name`: `VARCHAR(100) NOT NULL`
+  - `max_consecutive_periods`: `INTEGER NOT NULL DEFAULT 1 CHECK (max_consecutive_periods BETWEEN 1 AND 2)` (Mathematics: 2, Literature: 2, Others: 1)
   - `created_at`: `TIMESTAMPTZ DEFAULT now() NOT NULL`
 
 ### 2.3. `classes`
@@ -77,7 +78,11 @@ Weekly period schedule entries (28 periods/week per class).
 * **Columns:**
   - `day_of_week`: `INTEGER NOT NULL CHECK (day_of_week BETWEEN 2 AND 7)`
   - `period`: `INTEGER NOT NULL CHECK (period BETWEEN 1 AND 10)`
-* **Constraints:** `UNIQUE(class_id, day_of_week, period)`
+  - `room`: `VARCHAR(100)` (Specific room assigned to slot, nullable)
+* **Constraints:**
+  - `UNIQUE(class_id, day_of_week, period)`
+* **Indexes:**
+  - `idx_timetable_room_slot`: `(room, day_of_week, period) WHERE room IS NOT NULL`
 
 ### 2.7. `students`
 Student roster per class.

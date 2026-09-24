@@ -36,7 +36,7 @@ import {
 } from './mock-data';
 import { getGradeShift } from './constants';
 
-const CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v8';
+const CURRENT_DATA_VERSION = '2026_thcs_ntt_4x5_20desks_v10';
 
 const STORAGE_KEYS = {
   DATA_VERSION: 'cm_data_version',
@@ -146,6 +146,15 @@ export const LocalStore = {
 
   getSubjectById(id: string): SubjectRow | null {
     return this.getSubjects().find((s) => s.id === id) || null;
+  },
+
+  updateSubject(id: string, updates: Partial<SubjectRow>): SubjectRow | null {
+    const subjects = this.getSubjects();
+    const idx = subjects.findIndex((s) => s.id === id);
+    if (idx === -1) return null;
+    subjects[idx] = { ...subjects[idx], ...updates };
+    setStorageItem(STORAGE_KEYS.SUBJECTS, subjects);
+    return subjects[idx];
   },
 
   // =============================================
@@ -946,6 +955,7 @@ export const LocalStore = {
     period: number;
     subject_id: string;
     teacher_id: string | null;
+    room?: string | null;
   }): TimetableEntryRow {
     const all = this.getAllTimetables();
     const existingIndex = all.findIndex(
@@ -963,6 +973,7 @@ export const LocalStore = {
         ...all[existingIndex],
         subject_id: entry.subject_id,
         teacher_id: entry.teacher_id,
+        room: entry.room !== undefined ? entry.room : all[existingIndex].room,
         updated_at: now,
       };
       all[existingIndex] = updatedEntry;
@@ -974,6 +985,7 @@ export const LocalStore = {
         period: entry.period,
         subject_id: entry.subject_id,
         teacher_id: entry.teacher_id,
+        room: entry.room || null,
         created_at: now,
         updated_at: now,
       };
@@ -1045,6 +1057,7 @@ export const LocalStore = {
         period: targetPeriod,
         subject_id: isSHL ? 'sub-shl' : item.subject_id,
         teacher_id: teacherId,
+        room: item.room || null,
         created_at: now,
         updated_at: now,
       };
@@ -1056,6 +1069,11 @@ export const LocalStore = {
   clearTimetable(classId: string): boolean {
     const all = this.getAllTimetables().filter((t) => t.class_id !== classId);
     setStorageItem(STORAGE_KEYS.TIMETABLE, all);
+    return true;
+  },
+
+  clearAllTimetables(): boolean {
+    setStorageItem(STORAGE_KEYS.TIMETABLE, []);
     return true;
   },
 

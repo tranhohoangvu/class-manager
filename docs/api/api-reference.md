@@ -193,14 +193,40 @@ The **Class Manager REST API** is an Express + TypeScript service deployed on Re
 
 ---
 
-### 2.6. Timetable (`/api/classes/:classId/timetable`)
+### 2.6. Timetable (`/api/classes/:classId/timetable` & `/api/classes/timetable`)
 
 #### `GET /api/classes/:classId/timetable`
-* **Description**: Retrieves the weekly schedule for the class.
-* **Auth**: Required (Class access or ADMIN)
+* **Description**: Retrieves the weekly schedule for the specified class.
+* **Auth**: Required (Class access or `ADMIN`)
+
+#### `GET /api/classes/timetable/all?classId=...&teacherId=...&subjectId=...&room=...&dayOfWeek=...`
+* **Description**: Retrieves all enriched timetable entries across the entire school with flexible multi-criteria filtering (by class, teacher, subject, room, day).
+* **Auth**: Required (`ADMIN` only)
+
+#### `GET /api/classes/timetable/audit?classId=...`
+* **Description**: Runs comprehensive automated audit scanning for:
+  1. Class conflicts (`classConflicts`).
+  2. Teacher conflicts (`teacherConflicts`).
+  3. Room conflicts (`roomConflicts`).
+  4. Consecutive period rule violations (`ruleViolations`): > 2 consecutive periods or exceeding `subject.max_consecutive_periods`.
+* **Auth**: Required (`ADMIN` only)
 
 #### `POST /api/classes/:classId/timetable/entries`
-* **Description**: Sets or updates a single period entry with school-wide conflict check.
+* **Description**: Sets or creates a single period entry with full validation (class conflict, teacher conflict, room conflict, and consecutive period rules).
+* **Auth**: Required (`ADMIN` only)
+* **Request Body**:
+  ```json
+  {
+    "day_of_week": 2,
+    "period": 1,
+    "subject_id": "sub-mat",
+    "teacher_id": "u-tea-01",
+    "room": "Phòng 101 — Nhà A"
+  }
+  ```
+
+#### `PUT /api/classes/timetable/entries/:id`
+* **Description**: Updates an existing timetable entry (subject, teacher, room, day, period) with full conflict and consecutive period validation, safely excluding the entry itself from false-positive conflict detection.
 * **Auth**: Required (`ADMIN` only)
 
 #### `DELETE /api/classes/timetable/entries/:id`
@@ -208,7 +234,7 @@ The **Class Manager REST API** is an Express + TypeScript service deployed on Re
 * **Auth**: Required (`ADMIN` only)
 
 #### `POST /api/classes/:classId/timetable/copy`
-* **Description**: Copies timetable from source class with SHL homeroom teacher remapping.
+* **Description**: Copies timetable from source class with atomic validation against teacher conflicts, room conflicts, and SHL homeroom teacher remapping.
 * **Auth**: Required (`ADMIN` only)
 
 #### `POST /api/classes/:classId/timetable/clear`

@@ -77,10 +77,21 @@ export const saveAttendanceBatchSchema = z.object({
 });
 
 export const saveTimetableEntrySchema = z.object({
+  id: z.string().optional(),
   day_of_week: z.number().int().min(2).max(7),
   period: z.number().int().min(1).max(10),
   subject_id: z.string().min(1, 'Môn học không được để trống'),
   teacher_id: z.string().nullable().optional(),
+  room: z.string().nullable().optional(),
+});
+
+export const updateTimetableEntrySchema = z.object({
+  class_id: z.string().optional(),
+  day_of_week: z.number().int().min(2).max(7).optional(),
+  period: z.number().int().min(1).max(10).optional(),
+  subject_id: z.string().min(1).optional(),
+  teacher_id: z.string().nullable().optional(),
+  room: z.string().nullable().optional(),
 });
 
 export const copyTimetableSchema = z.object({

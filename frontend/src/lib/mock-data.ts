@@ -23,57 +23,68 @@ export const INITIAL_SUBJECTS: SubjectRow[] = [
   {
     "id": "sub-mat",
     "code": "MAT",
-    "name": "Toán"
+    "name": "Toán",
+    "max_consecutive_periods": 2
   },
   {
     "id": "sub-lit",
     "code": "LIT",
-    "name": "Ngữ văn"
+    "name": "Ngữ văn",
+    "max_consecutive_periods": 2
   },
   {
     "id": "sub-eng",
     "code": "ENG",
-    "name": "Tiếng Anh"
+    "name": "Tiếng Anh",
+    "max_consecutive_periods": 1
   },
   {
     "id": "sub-phy",
     "code": "PHY",
-    "name": "Vật lý"
+    "name": "Vật lý",
+    "max_consecutive_periods": 1
   },
   {
     "id": "sub-che",
     "code": "CHE",
-    "name": "Hóa học"
+    "name": "Hóa học",
+    "max_consecutive_periods": 1
   },
   {
     "id": "sub-bio",
     "code": "BIO",
-    "name": "Sinh học"
+    "name": "Sinh học",
+    "max_consecutive_periods": 1
   },
   {
     "id": "sub-his",
     "code": "HIS",
-    "name": "Lịch sử"
+    "name": "Lịch sử",
+    "max_consecutive_periods": 1
   },
   {
     "id": "sub-geo",
     "code": "GEO",
-    "name": "Địa lý"
+    "name": "Địa lý",
+    "max_consecutive_periods": 1
   },
   {
     "id": "sub-inf",
     "code": "INF",
-    "name": "Tin học"
+    "name": "Tin học",
+    "max_consecutive_periods": 1
   },
   {
     "id": "sub-tec",
     "code": "TEC",
-    "name": "Công nghệ"
+    "name": "Công nghệ",
+    "max_consecutive_periods": 1
   },
   {
     "id": "sub-shl",
     "code": "SHL",
-    "name": "Sinh hoạt lớp"
+    "name": "Sinh hoạt lớp",
+    "max_consecutive_periods": 1
   }
 ];
 
@@ -44532,15 +44543,15 @@ export const MORNING_SCHEDULE_TEMPLATE: Array<{ day: number; period: number; sub
   // Thứ Tư (day 4): 5 tiết sáng
   { day: 4, period: 1, subject_id: 'sub-mat' },
   { day: 4, period: 2, subject_id: 'sub-eng' },
-  { day: 4, period: 3, subject_id: 'sub-eng' },
-  { day: 4, period: 4, subject_id: 'sub-bio' },
+  { day: 4, period: 3, subject_id: 'sub-bio' },
+  { day: 4, period: 4, subject_id: 'sub-eng' },
   { day: 4, period: 5, subject_id: 'sub-geo' },
   // Thứ Năm (day 5): 5 tiết sáng
   { day: 5, period: 1, subject_id: 'sub-lit' },
   { day: 5, period: 2, subject_id: 'sub-lit' },
   { day: 5, period: 3, subject_id: 'sub-inf' },
-  { day: 5, period: 4, subject_id: 'sub-inf' },
-  { day: 5, period: 5, subject_id: 'sub-tec' },
+  { day: 5, period: 4, subject_id: 'sub-tec' },
+  { day: 5, period: 5, subject_id: 'sub-inf' },
   // Thứ Sáu (day 6): 5 tiết sáng
   { day: 6, period: 1, subject_id: 'sub-mat' },
   { day: 6, period: 2, subject_id: 'sub-mat' },
@@ -44569,15 +44580,15 @@ export const AFTERNOON_SCHEDULE_TEMPLATE: Array<{ day: number; period: number; s
   // Thứ Tư (day 4): 5 tiết chiều
   { day: 4, period: 6, subject_id: 'sub-mat' },
   { day: 4, period: 7, subject_id: 'sub-eng' },
-  { day: 4, period: 8, subject_id: 'sub-eng' },
-  { day: 4, period: 9, subject_id: 'sub-bio' },
+  { day: 4, period: 8, subject_id: 'sub-bio' },
+  { day: 4, period: 9, subject_id: 'sub-eng' },
   { day: 4, period: 10, subject_id: 'sub-geo' },
   // Thứ Năm (day 5): 5 tiết chiều
   { day: 5, period: 6, subject_id: 'sub-lit' },
   { day: 5, period: 7, subject_id: 'sub-lit' },
   { day: 5, period: 8, subject_id: 'sub-inf' },
-  { day: 5, period: 9, subject_id: 'sub-inf' },
-  { day: 5, period: 10, subject_id: 'sub-tec' },
+  { day: 5, period: 9, subject_id: 'sub-tec' },
+  { day: 5, period: 10, subject_id: 'sub-inf' },
   // Thứ Sáu (day 6): 5 tiết chiều
   { day: 6, period: 6, subject_id: 'sub-mat' },
   { day: 6, period: 7, subject_id: 'sub-mat' },
@@ -44658,6 +44669,31 @@ function solveShiftForClasses(
           continue;
         }
         if (teacherId && teacherBusy.get(teacherId)?.has(slotKey)) {
+          continue;
+        }
+
+        // Check consecutive periods constraint
+        const maxAllowed = (subj === 'sub-mat' || subj === 'sub-lit') ? 2 : 1;
+        const currentPeriods = assignedSlots
+          .filter((a) => a.day_of_week === slot.day && a.subject_id === subj)
+          .map((a) => a.period)
+          .concat(slot.period)
+          .sort((a, b) => a - b);
+
+        let streak = 1;
+        let violatesConsecutive = false;
+        for (let k = 1; k < currentPeriods.length; k++) {
+          if (currentPeriods[k] === currentPeriods[k - 1] + 1) {
+            streak++;
+            if (streak > maxAllowed || streak > 2) {
+              violatesConsecutive = true;
+              break;
+            }
+          } else {
+            streak = 1;
+          }
+        }
+        if (violatesConsecutive) {
           continue;
         }
 

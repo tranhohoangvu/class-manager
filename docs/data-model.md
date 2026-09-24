@@ -62,13 +62,17 @@ Mô tả tài khoản người dùng trong hệ thống trường học (Admin h
 ---
 
 ### 2.2. Subject (Môn học)
-Danh mục môn học chính khóa cấp THCS (10 môn).
-- **ID:** `string` (e.g. `sub-mat`, `sub-lit`)
+Danh mục môn học chính khóa cấp THCS (10 môn) và tiết sinh hoạt.
+- **ID:** `string` (e.g. `sub-mat`, `sub-lit`, `sub-shl`)
 - **Required fields:**
-  - `code`: `string` (Mã môn viết tắt: `MAT`, `LIT`, `ENG`, `PHY`, `CHE`, `BIO`, `HIS`, `GEO`, `INF`, `TEC`)
+  - `code`: `string` (Mã môn viết tắt: `MAT`, `LIT`, `ENG`, `PHY`, `CHE`, `BIO`, `HIS`, `GEO`, `INF`, `TEC`, `SHL`)
   - `name`: `string` (Tên môn học tiếng Việt: Toán, Ngữ văn, Tiếng Anh,...)
+  - `max_consecutive_periods`: `number` (1..2, CHECK between 1 and 2):
+    - `MAT` (Toán): 2 tiết liên tiếp.
+    - `LIT` (Ngữ văn): 2 tiết liên tiếp.
+    - Tất cả môn khác: 1 tiết (mặc định).
 - **Unique Constraints:** `UNIQUE(code)`
-- **Lifecycle:** Cố định theo chương trình GDPT của Bộ Giáo dục & Đào tạo.
+- **Lifecycle:** Cố định theo chương trình GDPT của Bộ Giáo dục & Đào tạo với giới hạn tiết liên tiếp cấu hình linh hoạt.
 
 ---
 
@@ -224,22 +228,25 @@ Hai thực thể cốt lõi xác lập quyền hạn của giáo viên theo ng�
 ---
 
 ### 2.10. TimetableEntry (Thời khóa biểu lớp học)
-Mô tả một tiết học cụ thể trong tuần của lớp học (Khung chuẩn 6 ngày x 5 tiết = 30 tiết/tuần).
+Mô tả một tiết học cụ thể trong tuần của lớp học (Khung chuẩn 2 ca: Khối 6 & 9 ca Sáng Tiết 1-5; Khối 7 & 8 ca Chiều Tiết 6-10; Thứ Bảy 3 tiết).
 - **ID:** `string` (e.g. `tt-c-6a1-d2-p1`)
 - **Required fields:**
   - `class_id`: `string` (FK `classes.id`)
   - `day_of_week`: `number` (2..7: Thứ Hai đến Thứ Bảy)
-  - `period`: `number` (1..5: Tiết 1 đến Tiết 5 buổi sáng)
+  - `period`: `number` (1..10: Tiết 1–5 ca Sáng, Tiết 6–10 ca Chiều)
   - `subject_id`: `string` (FK `subjects.id`)
   - `created_at`, `updated_at`: ISO 8601 string
 - **Optional fields:**
   - `teacher_id`: `string | null` (FK `users.id`, giáo viên trực tiếp giảng dạy)
-- **Ràng buộc toàn vẹn & Ngăn xung đột (Conflict Invariants):**
-  - `UNIQUE(class_id, day_of_week, period)`: Mỗi lớp học tại cùng một ngày và cùng một tiết chỉ có tối đa 1 entry.
-  - `UNIQUE(teacher_id, day_of_week, period)` WHERE `teacher_id IS NOT NULL`: Một giáo viên không được phép dạy 2 lớp khác nhau tại cùng một ngày và cùng một tiết trên toàn trường.
+  - `room`: `string | null` (Phòng học chỉ định cụ thể cho tiết học nếu khác phòng mặc định của lớp)
+- **Ràng buộc toàn vẹn & Quy tắc xếp lịch (Scheduling Invariants):**
+  - `UNIQUE(class_id, day_of_week, period)`: Mỗi lớp tại cùng một ngày và tiết chỉ có tối đa 1 entry (chống Class Conflict).
+  - `UNIQUE(teacher_id, day_of_week, period)` WHERE `teacher_id IS NOT NULL`: Một giáo viên không được phép dạy 2 lớp khác nhau tại cùng một ngày và tiết trên toàn trường (chống Teacher Conflict).
+  - **Room Conflict:** Phòng học (chỉ định hoặc kế thừa từ `classes.room_name`) không được trùng giữa các lớp khác nhau tại cùng `(day_of_week, period)`.
+  - **Consecutive Periods:** Môn học không được xếp quá 2 tiết liên tiếp toàn trường; tuân thủ giới hạn `subjects.max_consecutive_periods` (Toán: 2, Ngữ văn: 2, các môn khác: 1).
 - **Role Access:**
-  - `ADMIN` & `GVCN`: Xem, thêm, sửa, xóa, áp dụng mẫu chuẩn 30 tiết, sao chép TKB giữa các lớp (có kiểm tra xung đột tự động).
-  - `GVBM`: Chỉ xem (Read-only view).
+  - `ADMIN`: Toàn quyền quản trị thời khóa biểu (xem ma trận, lọc theo lớp/giáo viên/môn/phòng/thứ, thêm, sửa, xóa, hoán đổi vị trí, áp dụng mẫu, sao chép, chạy kiểm toán toàn trường).
+  - `TEACHER` (cả GVCN và GVBM): Chỉ xem (Read-only view).
 
 ---
 
@@ -264,5 +271,9 @@ Hệ thống backend sử dụng bộ migration SQL độc lập tại thư mụ
    - `update_updated_at_column()`: Tự động cập nhật timestamp `updated_at`.
 5. **`006_seed.sql`**:
    - Nạp dữ liệu trường THCS chuẩn (16 lớp, 480 học sinh, 20 bàn/lớp, 40 chỗ ngồi, 24 giáo viên với mật khẩu bcrypt, thời khóa biểu 2 ca).
-6. **Migration Runner**:
+6. **`007_timetable_rules.sql`**:
+   - Bổ sung cột `max_consecutive_periods` vào bảng `subjects` (default 1, Toán & Ngữ văn = 2, CHECK between 1 and 2).
+   - Bổ sung cột `room` vào bảng `timetable_entries` (nullable).
+   - Tạo chỉ mục `idx_timetable_room_slot` (`room, day_of_week, period`) để tăng tốc phát hiện xung đột phòng học.
+7. **Migration Runner**:
    - Script `backend/scripts/migrate.ts` tự động theo dõi bảng `_migrations` và chạy tuần tự các tệp SQL theo transaction.

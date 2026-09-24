@@ -3,12 +3,12 @@ import { SubjectRow, SubjectAssignmentRow } from '../types/index.js';
 
 export const SubjectRepo = {
   async getAll(): Promise<SubjectRow[]> {
-    const res = await query<SubjectRow>('SELECT id, code, name, created_at FROM subjects ORDER BY code ASC');
+    const res = await query<SubjectRow>('SELECT id, code, name, max_consecutive_periods, created_at FROM subjects ORDER BY code ASC');
     return res.rows;
   },
 
   async getById(id: string): Promise<SubjectRow | null> {
-    const res = await query<SubjectRow>('SELECT id, code, name, created_at FROM subjects WHERE id = $1', [id]);
+    const res = await query<SubjectRow>('SELECT id, code, name, max_consecutive_periods, created_at FROM subjects WHERE id = $1', [id]);
     return res.rows[0] || null;
   },
 

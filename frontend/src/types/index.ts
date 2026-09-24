@@ -53,6 +53,7 @@ export interface SubjectRow {
   id: string;
   code: string; // MAT, LIT, ENG, PHY, CHE, BIO, HIS, GEO, INF, TEC
   name: string; // Toán, Ngữ văn, Tiếng Anh,...
+  max_consecutive_periods?: number; // Configurable max consecutive periods (default: 1, MAT/LIT: 2)
 }
 
 export interface ClassMembershipRow {
@@ -75,9 +76,10 @@ export interface TimetableEntryRow {
   id: string;
   class_id: string;
   day_of_week: number; // 2 = Thứ Hai, ..., 7 = Thứ Bảy
-  period: number;      // 1..5 (Tiết 1 đến Tiết 5)
+  period: number;      // 1..10 (Tiết 1 đến Tiết 10)
   subject_id: string;
   teacher_id: string | null;
+  room?: string | null;
   created_at: string;
   updated_at: string;
 }
