@@ -157,6 +157,11 @@ export default function AnnouncementsPage() {
                         Ghim ưu tiên
                       </span>
                     )}
+                    {(!ann.class_id || ann.class_id === 'all') && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs text-[10px] font-bold bg-teal-subtle text-teal border border-teal/30">
+                        ⚡ Toàn trường
+                      </span>
+                    )}
                     <h2 className="text-lg font-bold text-text-primary tracking-tight">
                       {ann.title}
                     </h2>

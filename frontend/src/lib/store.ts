@@ -764,8 +764,9 @@ export const LocalStore = {
       STORAGE_KEYS.ANNOUNCEMENTS,
       INITIAL_ANNOUNCEMENTS
     );
-    if (classId) {
-      return all.filter((a) => a.class_id === classId);
+    if (classId && classId !== 'all') {
+      // Return announcements for this specific class PLUS school-wide announcements ('all' or empty)
+      return all.filter((a) => a.class_id === classId || a.class_id === 'all' || !a.class_id);
     }
     return all;
   },
@@ -780,7 +781,7 @@ export const LocalStore = {
       STORAGE_KEYS.ANNOUNCEMENTS,
       INITIAL_ANNOUNCEMENTS
     );
-    const effectiveClassId = classId || INITIAL_CLASS.id;
+    const effectiveClassId = classId || 'all';
     const newItem: AnnouncementRow = {
       id: `ann-${Date.now().toString(36)}`,
       class_id: effectiveClassId,
