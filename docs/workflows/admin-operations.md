@@ -70,6 +70,13 @@ Displays all 16 classes with columns:
 - Present / Absent / Late breakdown
 - Action button to view roster or attendance
 
+### 2.4. School-Wide Attendance Reset Tool (Đặt lại điểm danh về Có mặt)
+Under the **Default-Present Attendance** paradigm, when a new day arrives, all 480 students across 16 classes are automatically regarded as 100% Present with no manual action needed.
+Administrators are equipped with an emergency and reconciliation tool:
+- **Button:** Located in both the Executive Header and the Grade-Level Attendance section.
+- **Confirmation Modal:** Allows specifying date and target scope (Whole school or specific class).
+- **Functionality:** Wipes out all mistaken absence/tardy records and restores the cohort to 100% Present immediately.
+
 ---
 
 ## 3. Comprehensive Master Excel Workbook (4 Sheets)

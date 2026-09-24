@@ -927,6 +927,45 @@ export const LocalStore = {
     setStorageItem(STORAGE_KEYS.ATTENDANCE, allRecords);
   },
 
+  resetAttendanceForDate(dateStr: string, classId?: string): number {
+    let allRecords = getStorageItem<AttendanceRow[]>(
+      STORAGE_KEYS.ATTENDANCE,
+      INITIAL_ATTENDANCE_RECORDS
+    );
+
+    // Filter out existing records for this date (whole school or specific class)
+    allRecords = allRecords.filter((r) => {
+      if (r.date !== dateStr) return true;
+      if (classId) {
+        return r.class_id !== classId;
+      }
+      return false;
+    });
+
+    // Get active students in scope
+    const students = this.getStudents(classId).filter((s) => s.status === 'active');
+    const now = new Date().toISOString();
+
+    // Create default present records
+    const resetRecords: AttendanceRow[] = students.map((s) => ({
+      id: `att-${s.id}-general-${dateStr}`,
+      student_id: s.id,
+      class_id: s.class_id,
+      subject_id: null,
+      teacher_id: null,
+      date: dateStr,
+      status: 'present',
+      note: null,
+      created_at: now,
+      updated_at: now,
+    }));
+
+    allRecords.push(...resetRecords);
+    setStorageItem(STORAGE_KEYS.ATTENDANCE, allRecords);
+
+    return students.length;
+  },
+
   // =============================================
   // Timetable (6 days x 5 periods)
   // =============================================

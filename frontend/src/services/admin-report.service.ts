@@ -102,26 +102,25 @@ export interface SchoolReportWorkbookData {
 
 export const AdminReportService = {
   /**
-   * Lấy ngày có dữ liệu điểm danh gần nhất trong hệ thống
+   * Lấy ngày có dữ liệu điểm danh gần nhất trong hệ thống hoặc ngày hôm nay
    */
   getEffectiveAttendanceDate(preferredDate?: string): string {
     if (preferredDate) return preferredDate;
 
+    // Mặc định luôn là ngày hôm nay. Sang ngày mới mặc định tất cả đều có mặt
+    const todayStr = new Date().toISOString().split('T')[0];
     const allRecords = LocalStore.getAttendanceRecords();
     if (allRecords.length === 0) {
-      return new Date().toISOString().split('T')[0];
+      return todayStr;
     }
 
-    // Tìm ngày lớn nhất có dữ liệu
+    // Nếu trong store có bản ghi ngày hôm nay hoặc chưa chọn ngày, lấy ngày hôm nay
     const dates = Array.from(new Set(allRecords.map((r) => r.date))).sort().reverse();
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    // Nếu hôm nay có dữ liệu thì ưu tiên hôm nay, ngược lại lấy ngày gần nhất
     return dates.includes(todayStr) ? todayStr : dates[0] || todayStr;
   },
 
   /**
-   * Tính toán bức tranh chuyên cần toàn trường tại một ngày cụ thể
+   * Tính toán bức tranh chuyên cần toàn trường tại một ngày cụ thể (mặc định tất cả Có mặt)
    */
   getSchoolAttendanceOverview(targetDate?: string): SchoolAttendanceOverview {
     const effectiveDate = this.getEffectiveAttendanceDate(targetDate);
@@ -129,10 +128,9 @@ export const AdminReportService = {
     const classes = LocalStore.getClasses().filter((c) => c.status === 'active');
     const records = LocalStore.getAttendanceForDate(effectiveDate);
 
-    // Map studentId -> status (ưu tiên bản ghi của ngày đó)
+    // Map studentId -> status (ngoại lệ vắng/muộn hoặc bản ghi điểm danh cụ thể)
     const studentStatusMap = new Map<string, string>();
     records.forEach((r) => {
-      // Nếu có nhiều bản ghi (nhiều môn), lấy bản ghi cuối cùng hoặc bản ghi vắng/muộn để cảnh báo
       if (!studentStatusMap.has(r.student_id) || r.status === 'absent' || r.status === 'late') {
         studentStatusMap.set(r.student_id, r.status);
       }
@@ -146,24 +144,25 @@ export const AdminReportService = {
 
     students.forEach((s) => {
       const status = studentStatusMap.get(s.id);
-      if (status === 'present') presentCount++;
-      else if (status === 'absent') {
+      if (status === 'absent') {
         const note = records.find((r) => r.student_id === s.id && r.status === 'absent')?.note;
         if (note && note.toLowerCase().includes('phép')) {
           excusedCount++;
         } else {
           absentCount++;
         }
-      } else if (status === 'late') lateCount++;
-      else if (status === 'excused') excusedCount++;
-      else unrecordedCount++;
+      } else if (status === 'late') {
+        lateCount++;
+      } else if (status === 'excused') {
+        excusedCount++;
+      } else {
+        // Mặc định toàn bộ học sinh Có mặt (Default-Present Attendance)
+        presentCount++;
+      }
     });
 
-    const recordedTotal = presentCount + absentCount + lateCount + excusedCount;
     const attendanceRate =
-      recordedTotal > 0
-        ? Math.round((presentCount / recordedTotal) * 1000) / 10
-        : students.length > 0
+      students.length > 0
         ? Math.round((presentCount / students.length) * 1000) / 10
         : 100;
 
@@ -214,17 +213,14 @@ export const AdminReportService = {
 
       gradeStudents.forEach((s) => {
         const status = studentStatusMap.get(s.id);
-        if (status === 'present') presentCount++;
-        else if (status === 'absent') absentCount++;
+        if (status === 'absent') absentCount++;
         else if (status === 'late') lateCount++;
         else if (status === 'excused') excusedCount++;
+        else presentCount++; // Mặc định Có mặt
       });
 
-      const totalRecorded = presentCount + absentCount + lateCount + excusedCount;
       const attendanceRate =
-        totalRecorded > 0
-          ? Math.round((presentCount / totalRecorded) * 1000) / 10
-          : gradeStudents.length > 0
+        gradeStudents.length > 0
           ? Math.round((presentCount / gradeStudents.length) * 1000) / 10
           : 100;
 
@@ -273,18 +269,14 @@ export const AdminReportService = {
 
         classStudents.forEach((s) => {
           const status = studentStatusMap.get(s.id);
-          if (status === 'present') presentCount++;
-          else if (status === 'absent') absentCount++;
+          if (status === 'absent') absentCount++;
           else if (status === 'late') lateCount++;
           else if (status === 'excused') excusedCount++;
-          else unrecordedCount++;
+          else presentCount++; // Mặc định Có mặt
         });
 
-        const totalRecorded = presentCount + absentCount + lateCount + excusedCount;
         const attendanceRate =
-          totalRecorded > 0
-            ? Math.round((presentCount / totalRecorded) * 1000) / 10
-            : classStudents.length > 0
+          classStudents.length > 0
             ? Math.round((presentCount / classStudents.length) * 1000) / 10
             : 100;
 

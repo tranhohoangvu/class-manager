@@ -32,13 +32,14 @@
 
 ---
 
-### UC-02: Record Subject Attendance
+### UC-02: Record Subject Attendance (Attendance-by-Exception)
 * **Primary Actor:** Subject Teacher (GVBM) or Homeroom Teacher (GVCN)
 * **Preconditions:** Teacher is authenticated and has selected a class where they teach.
+* **Default State (Default-Present):** All students automatically default to `Có mặt` (Present) at the start of each day. No initialization clicks required.
 * **Main Success Scenario:**
   1. Teacher navigates to `/attendance`.
   2. System detects the ongoing period via `TimetableService.getCurrentPeriodInfo()` and pre-selects the corresponding subject.
-  3. Teacher adjusts status for students using quick status toggles (`✓ Có mặt`, `✕ Vắng`, `⏱ Muộn`, `📋 Phép`) or quick filters.
+  3. All students appear as `Có mặt` by default. Teacher only updates exceptions (e.g., marks absent `✕ Vắng`, late `⏱ Muộn`, or excused `📋 Phép`).
   4. Teacher clicks **"Lưu điểm danh"**.
   5. `AttendanceService.saveAttendanceBatch` validates:
      - User is logged in and not disabled.
@@ -50,6 +51,22 @@
 * **Extensions / Error Paths:**
   * **Teacher Not Assigned to Subject:** `AuthGuard` rejects mutation with *"Bạn không được phân công giảng dạy môn học này tại lớp đã chọn."*
   * **Read-Only Homeroom Observation:** If GVCN views attendance for another teacher's subject, mutation controls are disabled.
+
+---
+
+### UC-02B: Admin Reset Attendance to 100% Present
+* **Primary Actor:** Administrator (Admin) or Homeroom Teacher (for own class)
+* **Preconditions:** User is logged in with Admin or GVCN privileges.
+* **Main Success Scenario:**
+  1. Admin navigates to `/admin/dashboard` and clicks **"Đặt lại về Có mặt"**.
+  2. Confirmation modal prompts for:
+     - Target Date (default: today).
+     - Target Scope (`Toàn bộ 16 lớp (480 học sinh)` or specific class).
+  3. Admin confirms the reset action.
+  4. `AttendanceService.resetAttendanceForDate` validates authority and date format.
+  5. System removes all absence/late exceptions for that date and restores all students to `present`.
+  6. UI re-renders with 100% attendance rate and a success notification appears.
+
 
 ---
 

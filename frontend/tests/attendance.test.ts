@@ -292,5 +292,56 @@ describe('Attendance System & Calculations Tests', () => {
       );
       expect(unauthorizedRecords).toHaveLength(0);
     });
+
+    it('14. resetAttendanceForDate RBAC: Rejects unauthenticated and non-admin whole-school reset', () => {
+      // Unauthenticated
+      const resNoUser = AttendanceService.resetAttendanceForDate('2026-09-25', undefined, null);
+      expect(resNoUser.success).toBe(false);
+      expect(resNoUser.error).toContain('yêu cầu đăng nhập');
+
+      // Teacher attempting whole school reset
+      const resTeacher = AttendanceService.resetAttendanceForDate('2026-09-25', undefined, mockGVCN_6A1);
+      expect(resTeacher.success).toBe(false);
+      expect(resTeacher.error).toContain('Chỉ Quản trị viên (Admin)');
+
+      // Other teacher attempting class reset
+      const resOtherTeacher = AttendanceService.resetAttendanceForDate('2026-09-25', 'c-6a1', mockGVBM_Other);
+      expect(resOtherTeacher.success).toBe(false);
+      expect(resOtherTeacher.error).toContain('Giáo viên chủ nhiệm');
+    });
+
+    it('15. resetAttendanceForDate: GVCN can reset their own class attendance', () => {
+      const res = AttendanceService.resetAttendanceForDate('2026-09-25', 'c-6a1', mockGVCN_6A1);
+      expect(res.success).toBe(true);
+      expect(res.data?.resetCount).toBe(30);
+    });
+
+    it('16. resetAttendanceForDate: Admin can reset whole school attendance to 100% present', () => {
+      // First, simulate some absentees on a test date
+      AttendanceService.saveAttendanceBatch(
+        '2026-09-26',
+        [
+          { student_id: 'stu-c-6a1-01', status: 'absent', note: 'Ốm' },
+          { student_id: 'stu-c-6a1-02', status: 'late', note: 'Tắc đường' },
+        ],
+        'c-6a1',
+        undefined,
+        mockAdmin
+      );
+
+      // Verify that records exist
+      const beforeReset = LocalStore.getAttendanceForDate('2026-09-26', 'c-6a1');
+      expect(beforeReset.some((r) => r.status === 'absent')).toBe(true);
+
+      // Perform whole school reset by Admin
+      const resetRes = AttendanceService.resetAttendanceForDate('2026-09-26', undefined, mockAdmin);
+      expect(resetRes.success).toBe(true);
+      expect(resetRes.data?.resetCount).toBe(480);
+
+      // Verify that all 480 students are now present, no absentees remain
+      const afterReset = LocalStore.getAttendanceForDate('2026-09-26');
+      expect(afterReset.length).toBe(480);
+      expect(afterReset.every((r) => r.status === 'present')).toBe(true);
+    });
   });
 });

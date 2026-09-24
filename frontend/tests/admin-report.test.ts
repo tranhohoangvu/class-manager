@@ -34,6 +34,20 @@ describe('AdminReportService — School-Wide Executive Analytics & Multi-Sheet R
       expect(overview.presentCount).toBeGreaterThan(0);
       expect(overview.attendanceRate).toBeGreaterThan(80);
     });
+
+    it('vào ngày mới chưa có bản ghi ngoại lệ, mặc định toàn bộ 480 học sinh Có mặt (100%)', () => {
+      const freshDate = '2026-10-01'; // Ngày mới hoàn toàn chưa có ai bị báo vắng/muộn
+      const overview = AdminReportService.getSchoolAttendanceOverview(freshDate);
+
+      expect(overview.date).toBe(freshDate);
+      expect(overview.totalStudents).toBe(480);
+      expect(overview.presentCount).toBe(480);
+      expect(overview.absentCount).toBe(0);
+      expect(overview.lateCount).toBe(0);
+      expect(overview.excusedCount).toBe(0);
+      expect(overview.unrecordedCount).toBe(0);
+      expect(overview.attendanceRate).toBe(100);
+    });
   });
 
   describe('2. Phân rã chuyên cần theo 4 Khối lớp (getGradeAttendanceStats)', () => {
