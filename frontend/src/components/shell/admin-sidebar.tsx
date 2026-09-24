@@ -24,12 +24,12 @@ import { LocalStore } from '@/lib/store';
 
 const adminNavItems = [
   { href: '/admin/dashboard', label: 'Tổng quan hệ thống', icon: SquaresFour },
-  { href: '/admin/attendance', label: 'Quản lý Chuyên cần', icon: CalendarCheck },
-  { href: '/admin/timetable', label: 'Quản lý Thời khóa biểu', icon: CalendarDots },
-  { href: '/admin/seating', label: 'Quản lý Sơ đồ Lớp', icon: Armchair },
-  { href: '/admin/teachers', label: 'Quản lý Giáo viên', icon: ChalkboardTeacher },
   { href: '/admin/classes', label: 'Quản lý Lớp học', icon: Chalkboard },
   { href: '/admin/students', label: 'Quản lý Học sinh', icon: Student },
+  { href: '/admin/teachers', label: 'Quản lý Giáo viên', icon: ChalkboardTeacher },
+  { href: '/admin/seating', label: 'Quản lý Sơ đồ Lớp', icon: Armchair },
+  { href: '/admin/timetable', label: 'Quản lý Thời khóa biểu', icon: CalendarDots },
+  { href: '/admin/attendance', label: 'Quản lý Chuyên cần', icon: CalendarCheck },
   { href: '/admin/announcements', label: 'Quản lý Thông báo', icon: Megaphone },
   { href: '/admin/settings', label: 'Cài đặt hệ thống', icon: GearSix },
 ];
