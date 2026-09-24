@@ -81,23 +81,23 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                     href={href}
                     onClick={() => onClose?.()}
                     className={cn(
-                      'flex items-center gap-3.5 h-11 px-3.5 rounded-xl text-[14px] font-medium transition-all group relative',
+                      'flex items-center gap-3.5 h-10 px-3 rounded-lg text-[13px] font-medium transition-all group relative',
                       isActive
-                        ? 'bg-indigo-50/90 text-indigo-900 font-semibold shadow-2xs'
+                        ? 'bg-accent-subtle text-accent font-semibold'
                         : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted'
                     )}
                   >
                     <Icon
-                      size={20}
+                      size={18}
                       weight={isActive ? 'duotone' : 'regular'}
                       className={cn(
-                        'transition-transform group-hover:scale-110 flex-shrink-0',
-                        isActive ? 'text-indigo-600' : 'text-text-muted group-hover:text-text-primary'
+                        'transition-transform flex-shrink-0',
+                        isActive ? 'text-accent' : 'text-text-muted group-hover:text-text-primary'
                       )}
                     />
                     <span className="truncate">{label}</span>
                     {isActive && (
-                      <span className="absolute right-3 w-1.5 h-5 rounded-full bg-indigo-600" />
+                      <span className="absolute right-2 w-1.5 h-4 rounded-full bg-accent" />
                     )}
                   </Link>
                 </li>
@@ -113,13 +113,13 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
             <Link
               href="/dashboard"
               onClick={() => onClose?.()}
-              className="flex items-center justify-between h-10 px-3.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-50 to-blue-50/90 border border-indigo-200/90 text-indigo-900 hover:from-indigo-100 hover:to-blue-100 shadow-2xs hover:shadow-xs transition-all mt-1.5 group"
+              className="flex items-center justify-between h-9 px-3 rounded-lg text-xs font-semibold bg-surface-muted hover:bg-surface border border-border hover:border-accent/30 text-text-primary hover:text-accent transition-all mt-1 group"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <Chalkboard size={17} weight="duotone" className="text-indigo-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                <Chalkboard size={16} weight="duotone" className="text-text-muted group-hover:text-accent flex-shrink-0" />
                 <span className="truncate">Xem giao diện Lớp học</span>
               </div>
-              <ArrowSquareOut size={15} className="text-indigo-600 group-hover:translate-x-0.5 transition-transform flex-shrink-0 ml-1" />
+              <ArrowSquareOut size={14} className="text-text-muted group-hover:text-accent transition-transform flex-shrink-0 ml-1" />
             </Link>
           </div>
         </nav>
