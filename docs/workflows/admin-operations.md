@@ -85,6 +85,36 @@ To separate school-level executive governance from individual subject rolls, a d
 - **School-Wide Daily Exceptions Register:** Comprehensive roster of every student absent or late today across all 16 classes, including reasons/notes.
 - **Integrated Reset Tool:** Central hub for executing whole-school or per-class attendance resets.
 
+### 2.6. Dedicated Student Management Portal (`/admin/students` & `/admin/students/[id]`)
+To enforce strict data integrity and authoritative record keeping, **all student roster mutations (create, edit, delete, import, class transfer) are restricted exclusively to Administrators**:
+- **Authoritative Central Control:** Teachers (both Homeroom GVCN and Subject GVBM) have read-only access to view student profiles and seat positions, eliminating accidental edits or unauthorized changes.
+- **Dedicated Admin Routes:** 
+  - List & Batch Management: `/admin/students`
+  - Individual Student Profile & Direct Management: `/admin/students/[id]` (separate from the User/Teacher `/students/[id]` view, maintaining Admin layout and direct back navigation).
+- **Default Grade & Class Ordering with On-Demand A-Z Sorting:** The registry defaults to strict pedagogical ordering by Grade (Khối 6 -> 7 -> 8 -> 9) and class section, with fast dropdown sorting for Vietnamese Alphabetical A-Z (`compareVietnameseNames`), Z-A, Student Code, and Age.
+- **School-Wide 480-Student Registry:** Filterable by grade (Khối 6, 7, 8, 9), class (16 classes), gender, and status.
+- **Student CRUD & Detail Modals:** Admin interface for adding, modifying personal info, reassigning classes, and logging administrative notes.
+- **Class Transfer Capability:** Admin can easily reassign students between classes while strictly enforcing the 30-student class capacity.
+- **Bulk Excel/CSV Import:** Batch enrollment tool with pre-flight file validation and error reporting.
+- **Single-Click Export:** Export filtered or whole-school student registries to Excel with Vietnamese font support.
+- **Workspace Separation:** Clear demarcation between **Admin Portal** (Giao diện Quản trị) and **User Portal** (Giao diện Người dùng / Giáo viên) in navigation sidebars.
+
+### 2.7. Admin Seating Management Portal (`/admin/seating`)
+Administrators have comprehensive oversight and management rights over classroom seating arrangements across all 16 THCS classes:
+- **Full 16-Class Selection:** Quick-switch tabs for Grades 6, 7, 8, 9 with direct access to any class roster without leaving the Admin Portal.
+- **Interactive 16-Desk Matrix (32 Seats):** 4 columns x 4 rows visual grid, clearly indicating front of classroom, podium, teacher's desk, and entrance door.
+- **Seat Mutation & Reassignment:** Two-click seat swapping, empty-seat assignment for unseated students, and single-click removal.
+- **Automated Seating Algorithms:** Smart Fisher-Yates randomization and alternating male-female seating arrangement.
+- **Attendance Overlay Integration:** Toggle real-time visualization of today's attendance directly on the desks (highlighting absent and late students).
+- **Dual Perspective:** Switch between "Looking from Back of Class to Board" and "Looking from Podium to Class".
+- **Print & PDF Export:** One-click clean print layout for physical classroom posting.
+
+### 2.8. Admin School-Wide Announcements Portal (`/admin/announcements`)
+As the central school authority, Administrators issue directives, official schedules, and school-wide announcements:
+- **Scope-Targeted Broadcasts:** Issue announcements to all 16 classes (entire school · 480 students & 24 teachers) or target specific grades/classes.
+- **High-Priority Pinning:** Pin crucial circulars (exam schedules, holidays, emergency alerts) to the top of noticeboards.
+- **Full Life-Cycle Management:** Create, filter by scope, unpin, and delete announcements.
+
 ---
 
 ## 3. Comprehensive Master Excel Workbook (4 Sheets)

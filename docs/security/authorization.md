@@ -37,14 +37,15 @@ Unlike traditional systems where permissions are static user attributes, permiss
 
 | Operational Feature | Homeroom Teacher (GVCN) | Subject Teacher (GVBM) | Administrator (Admin) |
 | :--- | :---: | :---: | :---: |
-| **Student Roster** | Full CRUD | Read-Only Profile View | Full System Access |
-| **Bulk Excel Import** | Allowed | Denied | Allowed |
-| **Seating Arrangement** | Swap, Randomize, Assign, Clear | View-Only | View-Only |
-| **Record Attendance** | Assigned Subject Only | Assigned Subject Only | All Classes & Subjects |
-| **View Attendance** | Full View (All Subjects in class) | Assigned Subject Only | All Classes & Subjects |
-| **Timetable Management**| Read-Only View | Read-Only View | Full Edit & Management |
+| **Student Roster Management** | Read-Only View | Read-Only View | Full CRUD (Admin Only) |
+| **Bulk Student Excel Import** | Denied | Denied | Allowed (Admin Only) |
+| **Seating Arrangement** | Swap, Randomize, Gender Alt | View-Only | Full Management (All 16 Classes) |
+| **Record Attendance** | Assigned Subject Only | Assigned Subject Only | Full Management (All Classes & Subjects) |
+| **View Attendance** | Full View (All Subjects in class) | Assigned Subject Only | Full View & Executive Rollup |
+| **Reset Attendance to Present** | Denied | Denied | Full Management (Admin Tool) |
+| **Timetable Management** | Read-Only View | Read-Only View | Full Edit & Conflict Audit |
 | **Class Settings** | Full Configuration | Denied | Full Configuration |
-| **Announcements** | Create, Pin, Delete | Read-Only View | Full Management |
+| **Announcements** | Class-Scope Create & Pin | Read-Only View | Full Management (School-wide & Class) |
 | **Student Notes** | Create & Delete | Denied | View Only |
 | **Teacher Allocation** | View Team | View Team | Full Management |
 
@@ -71,8 +72,10 @@ const teacherId = req.user.id;
   2. Or has a membership (`class_memberships`).
   3. Or has a subject assignment (`subject_assignments`).
   Denied requests yield `403 Forbidden: "Bạn không được phân công giảng dạy hoặc quản lý lớp này."`.
+* **`requireAdmin` for Student Roster Management**:
+  Restricts student creation, modification, class transfer, and deletion strictly to Administrators (`role === 'ADMIN'`). Teachers (including Homeroom GVCN and Subject GVBM) have read-only access to student profiles.
 * **`requireHomeroomOrAdmin`**:
-  Restricts seating management, roster mutations, and class settings strictly to the assigned homeroom teacher or administrator.
+  Restricts seating management, announcements, and class settings strictly to the assigned homeroom teacher or administrator.
 
 ---
 
@@ -82,15 +85,15 @@ A common flaw in web applications is hiding buttons on the frontend without serv
 
 1. **UI Layer Hiding:**
    ```tsx
-   {isHomeroom && (
+   {isAdmin && (
      <Button onClick={handleDeleteStudent}>Xóa học sinh</Button>
    )}
    ```
 2. **Authoritative Backend Assertion:**
    ```typescript
    // Inside backend/src/services/student.service.ts
-   if (currentUser.role !== 'ADMIN' && cls.teacher_id !== currentUser.id) {
-     throw new ForbiddenError('Chỉ GVCN hoặc Quản trị viên mới có quyền xoá học sinh.');
+   if (currentUser.role !== 'ADMIN') {
+     throw new ForbiddenError('Chỉ Quản trị viên (Admin) mới có quyền xoá học sinh.');
    }
    ```
    Even if a user bypasses the UI or invokes the REST endpoint directly via curl or DevTools console, the backend halts execution, rolls back any transaction, and responds with `403 Forbidden`.
