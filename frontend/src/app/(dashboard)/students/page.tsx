@@ -32,6 +32,9 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
 import { compareVietnameseNames } from '@/lib/constants';
+import { LocalStore } from '@/lib/store';
+import { PrintHeader, PrintSignatures } from '@/components/common/printable-paper';
+import { cn } from '@/lib/utils';
 
 export default function StudentsPage() {
   const { user } = useAuth();
@@ -43,6 +46,17 @@ export default function StudentsPage() {
   const [genderFilter, setGenderFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'code_asc' | 'name_asc' | 'name_desc' | 'dob_asc' | 'gender'>('code_asc');
+  const [schoolSettings, setSchoolSettings] = useState(() => LocalStore.getSchoolSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setSchoolSettings(detail);
+      else setSchoolSettings(LocalStore.getSchoolSettings());
+    };
+    window.addEventListener('school-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('school-settings-updated', handleSettingsUpdate);
+  }, []);
 
   // Modal states
   const [isAddEditOpen, setIsAddEditOpen] = useState(false);
@@ -76,6 +90,18 @@ export default function StudentsPage() {
     phone: '',
     email: '',
   });
+
+  const isStudentFormDirty = useMemo(() => {
+    if (!editingStudent) return true;
+    return (
+      formData.student_code.trim() !== (editingStudent.student_code || '').trim() ||
+      formData.full_name.trim() !== (editingStudent.full_name || '').trim() ||
+      formData.gender !== editingStudent.gender ||
+      (formData.date_of_birth || '').trim() !== (editingStudent.date_of_birth || '').trim() ||
+      (formData.phone || '').trim() !== (editingStudent.phone || '').trim() ||
+      (formData.email || '').trim() !== (editingStudent.email || '').trim()
+    );
+  }, [editingStudent, formData]);
 
   const loadData = () => {
     if (!currentClassId) return;
@@ -356,10 +382,76 @@ export default function StudentsPage() {
     window.print();
   };
 
+  const homeroomTeacher = currentClass?.teacher_id
+    ? LocalStore.getUserById(currentClass.teacher_id)
+    : null;
+
   return (
     <div className="p-6 md:p-8 space-y-6 w-full mx-auto">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
+      {/* =============================================
+          1. FORMAL PRINT VIEW (A4 Portrait Student List)
+          ============================================= */}
+      <div className="hidden print:block p-2 max-w-[100%] mx-auto text-black bg-white printable-card">
+        <PrintHeader
+          settings={schoolSettings}
+          title={`DANH SÁCH HỌC SINH LỚP ${currentClass?.name || ''}`}
+          metaLines={[
+            `Phòng học: ${currentClass?.room_name || 'Phòng học chính'} · Sĩ số: ${students.length} học sinh`,
+            `Giáo viên chủ nhiệm: ${homeroomTeacher?.name || user?.name || '—'}`,
+          ]}
+        />
+
+        <table className="w-full border-collapse border-2 border-black text-center text-[9pt]">
+          <thead>
+            <tr className="bg-gray-100 border-b-2 border-black font-bold uppercase">
+              <th className="border border-black py-2 px-1 w-10">STT</th>
+              <th className="border border-black py-2 px-2 w-20">Mã HS</th>
+              <th className="border border-black py-2 px-3 text-left">Họ và tên</th>
+              <th className="border border-black py-2 px-2 w-24">Ngày sinh</th>
+              <th className="border border-black py-2 px-2 w-16">Giới tính</th>
+              <th className="border border-black py-2 px-2 w-28">Chỗ ngồi</th>
+              <th className="border border-black py-2 px-2 text-left">Phụ huynh</th>
+              <th className="border border-black py-2 px-2 w-24">SĐT Liên hệ</th>
+              <th className="border border-black py-2 px-2 w-20">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredStudents.map((stu, idx) => {
+              const seatInfo = seatMap.get(stu.id);
+              return (
+                <tr key={stu.id} className="border-b border-black">
+                  <td className="border border-black py-1.5 px-1 font-mono">{idx + 1}</td>
+                  <td className="border border-black py-1.5 px-2 font-mono font-bold">{stu.student_code}</td>
+                  <td className="border border-black py-1.5 px-3 text-left font-bold">{stu.full_name}</td>
+                  <td className="border border-black py-1.5 px-2 font-mono">
+                    {stu.date_of_birth ? stu.date_of_birth.split('-').reverse().join('/') : '—'}
+                  </td>
+                  <td className="border border-black py-1.5 px-2">{stu.gender === 'male' ? 'Nam' : 'Nữ'}</td>
+                  <td className="border border-black py-1.5 px-2 font-mono text-[8pt]">
+                    {seatInfo ? seatInfo.replace('Dãy ', 'D').replace('Bàn ', 'B') : 'Chưa xếp'}
+                  </td>
+                  <td className="border border-black py-1.5 px-2 text-left text-[8.5pt]">{stu.parent_name || '—'}</td>
+                  <td className="border border-black py-1.5 px-2 font-mono text-[8.5pt]">{stu.phone || '—'}</td>
+                  <td className="border border-black py-1.5 px-2 text-[8.5pt]">
+                    {stu.status === 'active' ? 'Đang học' : 'Nghỉ học'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        <PrintSignatures
+          settings={schoolSettings}
+          creatorRoleTitle="GIÁO VIÊN CHỦ NHIỆM"
+          creatorName={homeroomTeacher?.name || user?.name || 'Nguyễn Văn An'}
+        />
+      </div>
+
+      {/* Screen View Container: Hidden on Print */}
+      <div className="no-print space-y-6">
+        {/* Top Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
@@ -476,7 +568,7 @@ export default function StudentsPage() {
       </div>
 
       {/* Student Table */}
-      <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs printable-card">
+      <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs no-print">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead className="bg-surface-muted text-xs font-bold text-text-primary uppercase border-b border-border tracking-wider font-mono">
@@ -620,6 +712,7 @@ export default function StudentsPage() {
           </table>
         </div>
       </div>
+      </div> {/* End no-print container */}
 
       {/* Add / Edit Student Modal */}
       <Modal
@@ -696,7 +789,12 @@ export default function StudentsPage() {
             >
               Huỷ
             </Button>
-            <Button type="submit" variant="primary">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={editingStudent ? !isStudentFormDirty : false}
+              className={cn(editingStudent && !isStudentFormDirty && 'opacity-40 cursor-not-allowed')}
+            >
               {editingStudent ? 'Lưu thay đổi' : 'Thêm học sinh'}
             </Button>
           </div>

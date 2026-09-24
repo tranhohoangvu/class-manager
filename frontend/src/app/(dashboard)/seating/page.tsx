@@ -35,6 +35,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
 import { getTodayISO, formatDateVietnamese, cn } from '@/lib/utils';
+import { PrintHeader, PrintSignatures } from '@/components/common/printable-paper';
 
 const PERSISTENCE_KEY = 'cm_seating_perspective';
 
@@ -45,6 +46,17 @@ export default function SeatingPage() {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [selectedSeatId, setSelectedSeatId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [schoolSettings, setSchoolSettings] = useState(() => LocalStore.getSchoolSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setSchoolSettings(detail);
+      else setSchoolSettings(LocalStore.getSchoolSettings());
+    };
+    window.addEventListener('school-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('school-settings-updated', handleSettingsUpdate);
+  }, []);
 
   // View mode with persistence:
   // 'nhin_tu_duoi_len' (View A: Looking from back toward board - default)
@@ -314,25 +326,95 @@ export default function SeatingPage() {
   return (
     <div className="p-6 md:p-8 space-y-6 w-full mx-auto">
       {/* ========================================================================= */}
-      {/* FORMAL PRINT HEADER (Displayed ONLY when printing) */}
+      {/* FORMAL PRINT VIEW (A4 Landscape Seating Chart Table) */}
       {/* ========================================================================= */}
-      <div className="hidden print:block text-center border-b-2 border-black pb-4 mb-4">
-        <div className="flex justify-between items-start">
-          <div className="text-left">
-            <div className="font-bold text-xs uppercase tracking-wider text-black">TRƯỜNG THCS NGUYỄN TẤT THÀNH</div>
-            <div className="text-[11px] text-black">Năm học 2026 - 2027</div>
-          </div>
-          <div className="text-right text-[11px] text-black">
-            <div>Phòng học: {currentClass?.room_name || 'Phòng học chuẩn'}</div>
-            <div>Ngày in: {formatDateVietnamese(new Date())}</div>
-          </div>
+      <div className="hidden print:block p-2 max-w-[100%] mx-auto text-black bg-white printable-card">
+        <PrintHeader
+          settings={schoolSettings}
+          title={`SƠ ĐỒ CHỖ NGỒI LỚP ${currentClass ? currentClass.name : ''}`}
+          metaLines={[
+            `Phòng học: ${currentClass?.room_name || 'Phòng học chuẩn'} · Sĩ số: ${students.length}/40 học sinh (${genderStats.maleCount} Nam · ${genderStats.femaleCount} Nữ)`,
+            `Đã xếp: ${seatedCount}/40 vị trí · Hướng nhìn: ${viewPerspective === 'nhin_tu_duoi_len' ? 'Từ cuối lớp lên Bảng' : 'Từ bục giảng xuống Lớp'} · GVCN: ${teacherName || '...'}`,
+          ]}
+        />
+
+        {/* Podium / Black Board Header */}
+        <div className="border-2 border-black py-1.5 px-4 mb-3 text-center bg-gray-100 font-bold uppercase tracking-wider text-[9.5pt] flex justify-between items-center">
+          <span className="text-[8.5pt]">[ CỬA VÀO LỚP ]</span>
+          <span className="text-[10pt] font-black">BỤC GIẢNG & BẢNG LỚP HỌC</span>
+          <span className="text-[8.5pt]">[ BÀN GIÁO VIÊN ]</span>
         </div>
-        <h1 className="text-xl font-bold uppercase mt-2.5 text-black tracking-tight">
-          SƠ ĐỒ CHỖ NGỒI LỚP {currentClass ? currentClass.name : ''}
-        </h1>
-        <p className="text-xs italic text-black mt-0.5">
-          Sĩ số: {students.length}/40 học sinh ({genderStats.maleCount} Nam · {genderStats.femaleCount} Nữ) · Đã xếp: {seatedCount} vị trí · GVCN: {teacherName || '...'}
-        </p>
+
+        {/* Seating Grid Table */}
+        <table className="w-full border-collapse border-2 border-black text-center text-[8.5pt]">
+          <thead>
+            <tr className="bg-gray-100 border-b-2 border-black font-bold uppercase text-[9pt]">
+              <th className="border border-black py-1.5 w-14">Vị trí</th>
+              {orderedColNumbers.map((colNum) => (
+                <th key={colNum} className="border border-black py-1.5 w-1/4">
+                  DÃY {colNum}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {orderedRowNumbers.map((rowNum) => (
+              <tr key={rowNum} className="border-b border-black">
+                <td className="border border-black py-2 font-bold bg-gray-50 text-[8.5pt]">
+                  Bàn {rowNum}
+                </td>
+                {orderedColNumbers.map((colNum) => {
+                  const desk = desks.find((d) => d.row_num === rowNum && d.col_num === colNum);
+                  const seat01 = desk?.seats[0];
+                  const seat02 = desk?.seats[1];
+                  const [leftSeat, rightSeat] =
+                    viewPerspective === 'nhin_tu_duoi_len'
+                      ? [seat01, seat02]
+                      : [seat02, seat01];
+
+                  return (
+                    <td key={colNum} className="border border-black p-1 align-top bg-white">
+                      <div className="grid grid-cols-2 gap-1 min-h-[50px]">
+                        {/* Left Seat */}
+                        <div className="border border-black/60 p-1 text-left flex flex-col justify-between bg-gray-50/50">
+                          <div className="font-bold text-[8.5pt] text-black leading-tight truncate">
+                            {leftSeat?.student?.full_name || <span className="text-gray-400 italic font-normal">Trống</span>}
+                          </div>
+                          <div className="text-[7pt] text-gray-700 font-mono mt-0.5 flex justify-between">
+                            <span>{leftSeat?.student?.student_code || 'G1'}</span>
+                            <span>{leftSeat?.student?.gender === 'female' ? 'Nữ' : leftSeat?.student ? 'Nam' : ''}</span>
+                          </div>
+                        </div>
+
+                        {/* Right Seat */}
+                        <div className="border border-black/60 p-1 text-left flex flex-col justify-between bg-gray-50/50">
+                          <div className="font-bold text-[8.5pt] text-black leading-tight truncate">
+                            {rightSeat?.student?.full_name || <span className="text-gray-400 italic font-normal">Trống</span>}
+                          </div>
+                          <div className="text-[7pt] text-gray-700 font-mono mt-0.5 flex justify-between">
+                            <span>{rightSeat?.student?.student_code || 'G2'}</span>
+                            <span>{rightSeat?.student?.gender === 'female' ? 'Nữ' : rightSeat?.student ? 'Nam' : ''}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Back Wall Marker */}
+        <div className="border border-dashed border-black/60 py-1 px-4 mt-2 mb-2 text-center text-[8pt] text-gray-700 font-mono uppercase">
+          PHÍA CUỐI PHÒNG HỌC & CỬA SỔ
+        </div>
+
+        <PrintSignatures
+          settings={schoolSettings}
+          creatorRoleTitle="GIÁO VIÊN CHỦ NHIỆM"
+          creatorName={teacherName || user?.name || 'Nguyễn Văn An'}
+        />
       </div>
 
       {/* Top Header */}
@@ -541,7 +623,7 @@ export default function SeatingPage() {
       {/* ========================================================================= */}
       {/* CLASSROOM SEATING MAP CONTAINER */}
       {/* ========================================================================= */}
-      <div className="bg-surface rounded-sm border border-border-strong p-6 md:p-8 shadow-xs space-y-7 printable-card">
+      <div className="bg-surface rounded-sm border border-border-strong p-6 md:p-8 shadow-xs space-y-7 no-print">
         {/* Back Wall Marker (Rendered on top when viewPerspective === 'nhin_tu_buc_giang') */}
         {viewPerspective === 'nhin_tu_buc_giang' && (
           <div className="w-full pb-3 border-b-2 border-dashed border-border-strong flex items-center justify-between text-xs text-text-muted">
@@ -905,22 +987,7 @@ export default function SeatingPage() {
         )}
       </div>
 
-      {/* ========================================================================= */}
-      {/* FORMAL PRINT FOOTER (Displayed ONLY when printing) */}
-      {/* ========================================================================= */}
-      <div className="hidden print:grid grid-cols-2 mt-6 pt-4 border-t border-black text-center text-xs text-black">
-        <div>
-          <div className="font-bold uppercase tracking-wider">BAN GIÁM HIỆU PHÊ DUYỆT</div>
-          <div className="italic text-[10px] mt-1">(Ký và đóng dấu)</div>
-          <div className="h-16" />
-        </div>
-        <div>
-          <div className="font-bold uppercase tracking-wider">GIÁO VIÊN CHỦ NHIỆM</div>
-          <div className="italic text-[10px] mt-1">(Ký và ghi rõ họ tên)</div>
-          <div className="h-16" />
-          <div className="font-bold">{teacherName || ''}</div>
-        </div>
-      </div>
+
 
       {/* ========================================================================= */}
       {/* UNSEATED STUDENTS SECTION */}

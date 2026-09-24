@@ -34,7 +34,7 @@ import {
 import { StudentRow, DeskWithSeats, StudentNoteRow, AttendanceRow, ClassRow } from '@/types';
 import { Button } from '@/components/ui/button';
 import { StudentStatusBadge, AttendanceBadge } from '@/components/ui/badge';
-import { formatDateVietnamese } from '@/lib/utils';
+import { formatDateVietnamese, cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrentClass } from '@/contexts/class-context';
@@ -490,7 +490,13 @@ export default function StudentDetailPage() {
                 >
                   Huỷ
                 </Button>
-                <Button type="submit" variant="primary" size="sm">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  disabled={!newNoteContent.trim()}
+                  className={cn(!newNoteContent.trim() && 'opacity-40 cursor-not-allowed')}
+                >
                   Lưu ghi chú
                 </Button>
               </div>

@@ -22,12 +22,25 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useCurrentClass } from '@/contexts/class-context';
 import { compareVietnameseNames } from '@/lib/constants';
+import { LocalStore } from '@/lib/store';
+import { PrintHeader, PrintSignatures } from '@/components/common/printable-paper';
 
 export default function AttendanceHistoryPage() {
   const { currentClassId, currentClass } = useCurrentClass();
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRow[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [schoolSettings, setSchoolSettings] = useState(() => LocalStore.getSchoolSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setSchoolSettings(detail);
+      else setSchoolSettings(LocalStore.getSchoolSettings());
+    };
+    window.addEventListener('school-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('school-settings-updated', handleSettingsUpdate);
+  }, []);
   const [timeRange, setTimeRange] = useState<'all' | 'this_week' | 'this_month' | 'custom'>('all');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
@@ -225,10 +238,81 @@ export default function AttendanceHistoryPage() {
     }
   };
 
+  const homeroomTeacher = currentClass?.teacher_id
+    ? LocalStore.getUserById(currentClass.teacher_id)
+    : null;
+
   return (
     <div className="p-6 md:p-8 space-y-6 w-full mx-auto">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
+      {/* =============================================
+          1. FORMAL PRINT VIEW (A4 Attendance Matrix)
+          ============================================= */}
+      <div className="hidden print:block p-2 max-w-[100%] mx-auto text-black bg-white printable-card">
+        <PrintHeader
+          settings={schoolSettings}
+          title={`BẢNG THEO DÕI CHUYÊN CẦN LỚP ${currentClass?.name || ''}`}
+          metaLines={[
+            `Phòng học: ${currentClass?.room_name || 'Phòng học chính'} · Sĩ số: ${students.length} học sinh · Tổng số buổi: ${dates.length} buổi`,
+            `Giáo viên chủ nhiệm: ${homeroomTeacher?.name || '—'}`,
+          ]}
+        />
+
+        <table className="w-full border-collapse border-2 border-black text-center text-[8.5pt]">
+          <thead>
+            <tr className="bg-gray-100 border-b-2 border-black font-bold uppercase">
+              <th className="border border-black py-2 px-1 w-8">STT</th>
+              <th className="border border-black py-2 px-2 w-16">Mã HS</th>
+              <th className="border border-black py-2 px-3 text-left">Họ và tên</th>
+              {dates.slice(0, 10).map((d) => (
+                <th key={d} className="border border-black py-2 px-1 w-11 font-mono text-[8pt]">
+                  {formatDateShort(d)}
+                </th>
+              ))}
+              <th className="border border-black py-2 px-1.5 w-12 text-black">Có mặt</th>
+              <th className="border border-black py-2 px-1.5 w-12 text-black">Vắng</th>
+              <th className="border border-black py-2 px-1.5 w-12 text-black">Muộn</th>
+              <th className="border border-black py-2 px-2 w-14 text-black">Tỷ lệ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedStudentStats.map((item, idx) => (
+              <tr key={item.student.id} className="border-b border-black">
+                <td className="border border-black py-1.5 px-1 font-mono">{idx + 1}</td>
+                <td className="border border-black py-1.5 px-2 font-mono font-bold">{item.student.student_code}</td>
+                <td className="border border-black py-1.5 px-3 text-left font-bold">{item.student.full_name}</td>
+                {dates.slice(0, 10).map((d) => {
+                  const status = attendanceMap.get(`${item.student.id}_${d}`);
+                  let label = '—';
+                  if (status === 'present') label = '✓';
+                  else if (status === 'absent') label = 'V';
+                  else if (status === 'late') label = 'M';
+                  else if (status === 'excused') label = 'P';
+                  return (
+                    <td key={d} className="border border-black py-1.5 px-1 font-mono font-bold text-[8.5pt]">
+                      {label}
+                    </td>
+                  );
+                })}
+                <td className="border border-black py-1.5 px-1.5 font-mono">{item.present}</td>
+                <td className="border border-black py-1.5 px-1.5 font-mono">{item.absent}</td>
+                <td className="border border-black py-1.5 px-1.5 font-mono">{item.late}</td>
+                <td className="border border-black py-1.5 px-2 font-mono font-bold">{item.rate}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <PrintSignatures
+          settings={schoolSettings}
+          creatorRoleTitle="GIÁO VIÊN CHỦ NHIỆM"
+          creatorName={homeroomTeacher?.name || 'Nguyễn Văn An'}
+        />
+      </div>
+
+      {/* Screen View Container: Hidden on Print */}
+      <div className="no-print space-y-6">
+        {/* Top Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
@@ -440,7 +524,7 @@ export default function AttendanceHistoryPage() {
           actionHref="/attendance"
         />
       ) : (
-        <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs printable-card">
+        <div className="bg-surface rounded-sm border border-border-strong overflow-hidden shadow-xs no-print">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead className="bg-surface-muted text-xs font-bold text-text-primary uppercase border-b border-border font-mono tracking-wider">
@@ -513,6 +597,7 @@ export default function AttendanceHistoryPage() {
           </div>
         </div>
       )}
+      </div> {/* End no-print */}
     </div>
   );
 }

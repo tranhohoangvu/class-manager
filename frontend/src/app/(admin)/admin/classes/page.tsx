@@ -54,6 +54,19 @@ export default function AdminClassesPage() {
     desk_count: 20,
   });
 
+  const isClassFormDirty = useMemo(() => {
+    if (!editingClass) return true;
+    return (
+      formData.name.trim() !== (editingClass.name || '').trim() ||
+      formData.grade !== editingClass.grade ||
+      (formData.room_name || '').trim() !== (editingClass.room_name || '').trim() ||
+      (formData.school_year || '').trim() !== (editingClass.school_year || '').trim() ||
+      (formData.teacher_id || null) !== (editingClass.teacher_id || null) ||
+      formData.max_students !== editingClass.max_students ||
+      formData.desk_count !== editingClass.desk_count
+    );
+  }, [editingClass, formData]);
+
   const loadData = () => {
     setClasses(LocalStore.getClasses());
     setTeachers(LocalStore.getTeachers());
@@ -593,7 +606,12 @@ export default function AdminClassesPage() {
             >
               Hủy
             </Button>
-            <Button type="submit" variant="primary">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={editingClass ? !isClassFormDirty : false}
+              className={cn(editingClass && !isClassFormDirty && 'opacity-40 cursor-not-allowed')}
+            >
               {editingClass ? 'Lưu thay đổi' : 'Tạo lớp học'}
             </Button>
           </div>

@@ -20,9 +20,11 @@ import {
   Funnel,
   CheckCircle,
   WarningCircle,
+  Printer,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
 import { ClassRow, StudentRow, StudentFormData, UserRow } from '@/types';
+import { PrintHeader, PrintSignatures } from '@/components/common/printable-paper';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { StudentStatusBadge } from '@/components/ui/badge';
@@ -60,6 +62,17 @@ export default function AdminStudentsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('class_asc');
+  const [schoolSettings, setSchoolSettings] = useState(() => LocalStore.getSchoolSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setSchoolSettings(detail);
+      else setSchoolSettings(LocalStore.getSchoolSettings());
+    };
+    window.addEventListener('school-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('school-settings-updated', handleSettingsUpdate);
+  }, []);
 
   // Modals
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
@@ -87,6 +100,21 @@ export default function AdminStudentsPage() {
     parent_name: '',
     address: '',
   });
+
+  const isStudentFormDirty = useMemo(() => {
+    if (!editingStudent) return true;
+    return (
+      formData.student_code.trim() !== (editingStudent.student_code || '').trim() ||
+      formData.full_name.trim() !== (editingStudent.full_name || '').trim() ||
+      formData.class_id !== editingStudent.class_id ||
+      formData.gender !== editingStudent.gender ||
+      (formData.date_of_birth || '').trim() !== (editingStudent.date_of_birth || '').trim() ||
+      (formData.phone || '').trim() !== (editingStudent.phone || '').trim() ||
+      (formData.email || '').trim() !== (editingStudent.email || '').trim() ||
+      (formData.parent_name || '').trim() !== (editingStudent.parent_name || '').trim() ||
+      (formData.address || '').trim() !== (editingStudent.address || '').trim()
+    );
+  }, [editingStudent, formData]);
 
   const loadData = () => {
     const c = LocalStore.getClasses().filter((cls) => cls.status === 'active');
@@ -192,6 +220,11 @@ export default function AdminStudentsPage() {
   const femaleStudents = students.filter((s) => s.gender === 'female').length;
   const malePercent = totalStudents > 0 ? Math.round((maleStudents / totalStudents) * 100) : 0;
   const femalePercent = totalStudents > 0 ? Math.round((femaleStudents / totalStudents) * 100) : 0;
+
+  const selectedClass = classFilter !== 'all' ? classes.find((c) => c.id === classFilter) : null;
+  const selectedClassTeacher = selectedClass?.teacher_id
+    ? teachers.find((t) => t.id === selectedClass.teacher_id)
+    : null;
 
   // Handle open add modal
   const handleOpenAdd = () => {
@@ -418,9 +451,81 @@ export default function AdminStudentsPage() {
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6 w-full mx-auto">
       {/* =============================================
-          1. HEADER & ACTIONS
+          PRINT VIEW ONLY (A4 Portrait Student List)
           ============================================= */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-border">
+      <div className="hidden print:block p-2 max-w-[100%] mx-auto text-black bg-white printable-card">
+        <PrintHeader
+          settings={schoolSettings}
+          title={
+            selectedClass
+              ? `DANH SÁCH HỌC SINH ${formatClassName(selectedClass.name)}`
+              : 'DANH SÁCH HỌC SINH TOÀN TRƯỜNG'
+          }
+          metaLines={[
+            selectedClass
+              ? `Phòng học: ${selectedClass.room_name || 'Phòng học chính'} · Sĩ số: ${filteredStudents.length} học sinh`
+              : `Tổng số: ${filteredStudents.length} học sinh`,
+            selectedClassTeacher
+              ? `Giáo viên chủ nhiệm: ${selectedClassTeacher.name}`
+              : 'Ban Giám Hiệu & Quản trị hệ thống',
+          ]}
+        />
+
+        <table className="w-full border-collapse border-2 border-black text-center text-[9pt]">
+          <thead>
+            <tr className="bg-gray-100 border-b-2 border-black font-bold uppercase">
+              <th className="border border-black py-2 px-1 w-10">STT</th>
+              <th className="border border-black py-2 px-2 w-20">Mã HS</th>
+              <th className="border border-black py-2 px-3 text-left">Họ và tên</th>
+              <th className="border border-black py-2 px-2 w-20">Lớp</th>
+              <th className="border border-black py-2 px-2 w-24">Ngày sinh</th>
+              <th className="border border-black py-2 px-2 w-16">Giới tính</th>
+              <th className="border border-black py-2 px-2 text-left">Phụ huynh</th>
+              <th className="border border-black py-2 px-2 w-24">SĐT Liên hệ</th>
+              <th className="border border-black py-2 px-2 w-20">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredStudents.map((stu, idx) => {
+              const cls = classes.find((c) => c.id === stu.class_id);
+              return (
+                <tr key={stu.id} className="border-b border-black">
+                  <td className="border border-black py-1.5 px-1 font-mono">{idx + 1}</td>
+                  <td className="border border-black py-1.5 px-2 font-mono font-bold">{stu.student_code}</td>
+                  <td className="border border-black py-1.5 px-3 text-left font-bold">{stu.full_name}</td>
+                  <td className="border border-black py-1.5 px-2 font-bold">
+                    {cls?.name ? cls.name.replace(/^lớp\s+/i, '') : '—'}
+                  </td>
+                  <td className="border border-black py-1.5 px-2 font-mono">
+                    {stu.date_of_birth ? stu.date_of_birth.split('-').reverse().join('/') : '—'}
+                  </td>
+                  <td className="border border-black py-1.5 px-2">{stu.gender === 'male' ? 'Nam' : 'Nữ'}</td>
+                  <td className="border border-black py-1.5 px-2 text-left text-[8.5pt]">{stu.parent_name || '—'}</td>
+                  <td className="border border-black py-1.5 px-2 font-mono text-[8.5pt]">{stu.phone || '—'}</td>
+                  <td className="border border-black py-1.5 px-2 text-[8.5pt]">
+                    {stu.status === 'active' ? 'Đang học' : 'Nghỉ học'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        <PrintSignatures
+          settings={schoolSettings}
+          creatorRoleTitle={selectedClassTeacher ? 'GIÁO VIÊN CHỦ NHIỆM' : 'QUẢN TRỊ VIÊN HỆ THỐNG'}
+          creatorName={selectedClassTeacher?.name || user?.name || 'Nguyễn Văn An'}
+        />
+      </div>
+
+      {/* ============================================================== */}
+      {/* SCREEN VIEW CONTAINER (Strictly hidden during print: no-print)  */}
+      {/* ============================================================== */}
+      <div className="no-print space-y-6">
+        {/* =============================================
+            1. HEADER & ACTIONS
+            ============================================= */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-border">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
@@ -483,6 +588,18 @@ export default function AdminStudentsPage() {
             <span>Xuất Excel</span>
           </Button>
 
+          {/* Print Button */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => window.print()}
+            className="cursor-pointer bg-surface hover:bg-surface-muted text-text-primary border-border font-semibold shadow-2xs gap-1.5 whitespace-nowrap flex-shrink-0 h-8 px-3"
+            title="In danh sách học sinh chuẩn A4"
+          >
+            <Printer size={15} weight="bold" />
+            <span>In danh sách</span>
+          </Button>
+
           {/* Refresh Button */}
           <Button
             variant="secondary"
@@ -502,7 +619,7 @@ export default function AdminStudentsPage() {
       {/* =============================================
           2. OVERVIEW KPI TILES (4 CARDS)
           ============================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch no-print">
         {/* KPI 1: Tổng số học sinh */}
         <div className="bg-surface rounded-sm border border-border p-4 shadow-xs flex flex-col justify-between">
           <div>
@@ -610,7 +727,7 @@ export default function AdminStudentsPage() {
       {/* =============================================
           3. STUDENT MANAGEMENT TABLE & FILTERS
           ============================================= */}
-      <div className="bg-surface rounded-sm border border-border p-4 md:p-5 shadow-xs space-y-4">
+      <div className="bg-surface rounded-sm border border-border p-4 md:p-5 shadow-xs space-y-4 no-print">
         {/* Table Title & Filter Controls */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 pb-3 border-b border-border">
           <div>
@@ -869,6 +986,7 @@ export default function AdminStudentsPage() {
           </table>
         </div>
       </div>
+      </div> {/* End no-print screen container */}
 
       {/* =============================================
           MODAL: THÊM / CHỈNH SỬA HỌC SINH
@@ -893,7 +1011,11 @@ export default function AdminStudentsPage() {
               variant="primary"
               size="sm"
               onClick={handleSaveStudent}
-              className="cursor-pointer bg-teal hover:bg-teal-hover text-white font-bold gap-1.5"
+              disabled={editingStudent ? !isStudentFormDirty : false}
+              className={cn(
+                'cursor-pointer bg-teal hover:bg-teal-hover text-white font-bold gap-1.5',
+                editingStudent && !isStudentFormDirty && 'opacity-40 cursor-not-allowed'
+              )}
             >
               <CheckCircle size={15} weight="bold" />
               <span>{editingStudent ? 'Lưu thay đổi' : 'Tạo mới học sinh'}</span>

@@ -27,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
+import { cn } from '@/lib/utils';
 
 const getSubjectBadgeStyle = (code?: string) => {
   switch (code) {
@@ -84,6 +85,16 @@ export default function AdminTeachersPage() {
     status: 'active',
     assigned_class_ids: [],
   });
+
+  const isTeacherFormDirty = useMemo(() => {
+    if (!editingTeacher) return true;
+    return (
+      formData.name.trim() !== (editingTeacher.name || '').trim() ||
+      formData.email.trim() !== (editingTeacher.email || '').trim() ||
+      (formData.phone || '').trim() !== (editingTeacher.phone || '').trim() ||
+      formData.status !== editingTeacher.status
+    );
+  }, [editingTeacher, formData]);
 
   const loadData = () => {
     setTeachers(TeacherService.getTeachers());
@@ -635,7 +646,12 @@ export default function AdminTeachersPage() {
             >
               Hủy
             </Button>
-            <Button type="submit" variant="primary">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={editingTeacher ? !isTeacherFormDirty : false}
+              className={cn(editingTeacher && !isTeacherFormDirty && 'opacity-40 cursor-not-allowed')}
+            >
               {editingTeacher ? 'Lưu thay đổi' : 'Tạo tài khoản'}
             </Button>
           </div>

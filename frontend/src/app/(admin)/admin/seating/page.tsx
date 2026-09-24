@@ -38,6 +38,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { getTodayISO, formatDateVietnamese, cn } from '@/lib/utils';
 import { getGradeShift } from '@/lib/constants';
+import { PrintHeader, PrintSignatures } from '@/components/common/printable-paper';
 
 const PERSISTENCE_KEY = 'cm_admin_seating_perspective';
 
@@ -62,6 +63,17 @@ export default function AdminSeatingPage() {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [selectedSeatId, setSelectedSeatId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [schoolSettings, setSchoolSettings] = useState(() => LocalStore.getSchoolSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setSchoolSettings(detail);
+      else setSchoolSettings(LocalStore.getSchoolSettings());
+    };
+    window.addEventListener('school-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('school-settings-updated', handleSettingsUpdate);
+  }, []);
 
   // View perspective:
   // 'nhin_tu_duoi_len' (View A: Looking from back toward board - default)
@@ -390,10 +402,102 @@ export default function AdminSeatingPage() {
 
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6 w-full mx-auto">
+      {/* ========================================================================= */}
+      {/* FORMAL PRINT VIEW (A4 Landscape Seating Chart Table) */}
+      {/* ========================================================================= */}
+      <div className="hidden print:block p-2 max-w-[100%] mx-auto text-black bg-white printable-card">
+        <PrintHeader
+          settings={schoolSettings}
+          title={`SƠ ĐỒ CHỖ NGỒI ${formatClassName(currentClass?.name)}`}
+          metaLines={[
+            `Phòng học: ${currentClass?.room_name || 'Phòng học chính'} · Sĩ số: ${students.length}/40 học sinh (${genderStats.maleCount} Nam · ${genderStats.femaleCount} Nữ)`,
+            `Đã xếp: ${seatedCount}/40 vị trí · Hướng nhìn: ${viewPerspective === 'nhin_tu_duoi_len' ? 'Từ cuối lớp lên Bảng' : 'Từ bục giảng xuống Lớp'} · GVCN: ${teacherName || '...'}`,
+          ]}
+        />
+
+        {/* Podium / Black Board Header */}
+        <div className="border-2 border-black py-1.5 px-4 mb-3 text-center bg-gray-100 font-bold uppercase tracking-wider text-[9.5pt] flex justify-between items-center">
+          <span className="text-[8.5pt]">[ CỬA VÀO LỚP ]</span>
+          <span className="text-[10pt] font-black">BỤC GIẢNG & BẢNG LỚP HỌC</span>
+          <span className="text-[8.5pt]">[ BÀN GIÁO VIÊN ]</span>
+        </div>
+
+        {/* Seating Grid Table */}
+        <table className="w-full border-collapse border-2 border-black text-center text-[8.5pt]">
+          <thead>
+            <tr className="bg-gray-100 border-b-2 border-black font-bold uppercase text-[9pt]">
+              <th className="border border-black py-1.5 w-14">Vị trí</th>
+              {orderedColNumbers.map((colNum) => (
+                <th key={colNum} className="border border-black py-1.5 w-1/4">
+                  DÃY {colNum}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {orderedRowNumbers.map((rowNum) => (
+              <tr key={rowNum} className="border-b border-black">
+                <td className="border border-black py-2 font-bold bg-gray-50 text-[8.5pt]">
+                  Bàn {rowNum}
+                </td>
+                {orderedColNumbers.map((colNum) => {
+                  const desk = desks.find((d) => d.row_num === rowNum && d.col_num === colNum);
+                  const seat01 = desk?.seats[0];
+                  const seat02 = desk?.seats[1];
+                  const [leftSeat, rightSeat] =
+                    viewPerspective === 'nhin_tu_duoi_len'
+                      ? [seat01, seat02]
+                      : [seat02, seat01];
+
+                  return (
+                    <td key={colNum} className="border border-black p-1 align-top bg-white">
+                      <div className="grid grid-cols-2 gap-1 min-h-[50px]">
+                        {/* Left Seat */}
+                        <div className="border border-black/60 p-1 text-left flex flex-col justify-between bg-gray-50/50">
+                          <div className="font-bold text-[8.5pt] text-black leading-tight truncate">
+                            {leftSeat?.student?.full_name || <span className="text-gray-400 italic font-normal">Trống</span>}
+                          </div>
+                          <div className="text-[7pt] text-gray-700 font-mono mt-0.5 flex justify-between">
+                            <span>{leftSeat?.student?.student_code || 'G1'}</span>
+                            <span>{leftSeat?.student?.gender === 'female' ? 'Nữ' : leftSeat?.student ? 'Nam' : ''}</span>
+                          </div>
+                        </div>
+
+                        {/* Right Seat */}
+                        <div className="border border-black/60 p-1 text-left flex flex-col justify-between bg-gray-50/50">
+                          <div className="font-bold text-[8.5pt] text-black leading-tight truncate">
+                            {rightSeat?.student?.full_name || <span className="text-gray-400 italic font-normal">Trống</span>}
+                          </div>
+                          <div className="text-[7pt] text-gray-700 font-mono mt-0.5 flex justify-between">
+                            <span>{rightSeat?.student?.student_code || 'G2'}</span>
+                            <span>{rightSeat?.student?.gender === 'female' ? 'Nữ' : rightSeat?.student ? 'Nam' : ''}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Back Wall Marker */}
+        <div className="border border-dashed border-black/60 py-1 px-4 mt-2 mb-2 text-center text-[8pt] text-gray-700 font-mono uppercase">
+          PHÍA CUỐI PHÒNG HỌC & CỬA SỔ
+        </div>
+
+        <PrintSignatures
+          settings={schoolSettings}
+          creatorRoleTitle="GIÁO VIÊN CHỦ NHIỆM"
+          creatorName={teacherName || 'Nguyễn Văn An'}
+        />
+      </div>
+
       {/* =============================================
           1. HEADER & CLASS SELECTOR
           ============================================= */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-border">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-border no-print">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
@@ -466,7 +570,7 @@ export default function AdminSeatingPage() {
       {/* =============================================
           2. GRADE & CLASS SWITCHER (STRICT SINGLE-LINE TABS)
           ============================================= */}
-      <div className="bg-surface rounded-sm border border-border p-4 shadow-xs space-y-3">
+      <div className="bg-surface rounded-sm border border-border p-4 shadow-xs space-y-3 no-print">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase text-text-primary tracking-wide">
@@ -545,7 +649,7 @@ export default function AdminSeatingPage() {
       {/* =============================================
           3. CLASS INFO & SEATING TOOLBAR
           ============================================= */}
-      <div className="bg-surface rounded-sm border border-border p-4 shadow-xs">
+      <div className="bg-surface rounded-sm border border-border p-4 shadow-xs no-print">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Class Quick Overview */}
           <div className="flex items-center gap-3.5">
@@ -644,7 +748,7 @@ export default function AdminSeatingPage() {
       {/* =============================================
           4. INTERACTIVE SEATING CHART (16 DESKS · 32 SEATS)
           ============================================= */}
-      <div className="bg-surface rounded-sm border border-border p-4 sm:p-6 shadow-xs space-y-6">
+      <div className="bg-surface rounded-sm border border-border p-4 sm:p-6 shadow-xs space-y-6 no-print">
         {/* Selection Hint Banner */}
         {selectedSeatId && (
           <div className="p-3 rounded-xs bg-amber-50 dark:bg-amber-950/30 border border-amber-300 text-amber-900 text-xs flex items-center justify-between gap-3 shadow-2xs animate-fade-in">
@@ -840,11 +944,13 @@ export default function AdminSeatingPage() {
         )}
       </div>
 
+
+
       {/* =============================================
           5. UNSEATED STUDENTS DRAWER (HỌC SINH CHƯA XẾP CHỖ)
           ============================================= */}
       {unseatedStudents.length > 0 && (
-        <div className="bg-surface rounded-sm border border-amber-300 bg-amber-50/20 p-4 space-y-3 shadow-xs">
+        <div className="bg-surface rounded-sm border border-amber-300 bg-amber-50/20 p-4 space-y-3 shadow-xs no-print">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <UserPlus size={16} className="text-amber-800" weight="bold" />

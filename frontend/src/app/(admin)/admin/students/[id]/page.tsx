@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -40,11 +40,10 @@ import {
 import { StudentRow, DeskWithSeats, StudentNoteRow, AttendanceRow, ClassRow, StudentFormData, UserRow, StudentStatus } from '@/types';
 import { Button } from '@/components/ui/button';
 import { StudentStatusBadge, AttendanceBadge } from '@/components/ui/badge';
-import { formatDateVietnamese } from '@/lib/utils';
+import { formatDateVietnamese, cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { LocalStore } from '@/lib/store';
-import { cn } from '@/lib/utils';
 
 // Helper to normalize class display name
 const formatClassName = (name?: string | null) => {
@@ -88,6 +87,22 @@ export default function AdminStudentDetailPage() {
     address: '',
     status: 'active',
   });
+
+  const isEditFormDirty = useMemo(() => {
+    if (!student) return false;
+    return (
+      editFormData.student_code.trim() !== (student.student_code || '').trim() ||
+      editFormData.full_name.trim() !== (student.full_name || '').trim() ||
+      editFormData.class_id !== student.class_id ||
+      editFormData.gender !== student.gender ||
+      (editFormData.date_of_birth || '').trim() !== (student.date_of_birth || '').trim() ||
+      (editFormData.phone || '').trim() !== (student.phone || '').trim() ||
+      (editFormData.email || '').trim() !== (student.email || '').trim() ||
+      (editFormData.parent_name || '').trim() !== (student.parent_name || '').trim() ||
+      (editFormData.address || '').trim() !== (student.address || '').trim() ||
+      editFormData.status !== student.status
+    );
+  }, [student, editFormData]);
 
   // Transfer Class Modal
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
@@ -692,7 +707,11 @@ export default function AdminStudentDetailPage() {
                 type="submit"
                 variant="primary"
                 size="sm"
-                className="h-7 text-xs font-bold bg-teal hover:bg-teal-hover text-white"
+                disabled={!newNoteContent.trim()}
+                className={cn(
+                  'h-7 text-xs font-bold bg-teal hover:bg-teal-hover text-white',
+                  !newNoteContent.trim() && 'opacity-40 cursor-not-allowed'
+                )}
               >
                 Lưu ghi chú
               </Button>
@@ -755,7 +774,11 @@ export default function AdminStudentDetailPage() {
               variant="primary"
               size="sm"
               onClick={handleSaveEdit}
-              className="cursor-pointer bg-teal hover:bg-teal-hover text-white font-bold"
+              disabled={!isEditFormDirty}
+              className={cn(
+                'cursor-pointer bg-teal hover:bg-teal-hover text-white font-bold',
+                !isEditFormDirty && 'opacity-40 cursor-not-allowed'
+              )}
             >
               Lưu thay đổi
             </Button>
