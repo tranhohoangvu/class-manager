@@ -512,40 +512,113 @@ export default function AdminDashboardPage() {
           )
         )}
 
-        {/* High Absence Classes Alert (Only shows when there are absent students) */}
-        {highAbsenceClasses.length > 0 && (
-          <div className="rounded-sm border border-warning/40 bg-warning-bg/60 p-3.5 text-xs space-y-2.5 shadow-xs">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <UserMinus size={17} weight="fill" className="text-warning flex-shrink-0" />
-                <span className="font-bold text-text-primary">
-                  Theo dõi Nề nếp Hôm nay: {highAbsenceClasses.length} lớp có học sinh vắng (Tổng cộng {highAbsenceClasses.reduce((acc, c) => acc + c.absentCount, 0)} HS vắng)
+        {/* Level 1.5: Theo dõi Nề nếp Hôm nay - Phân rã 4 cột Khối 6, 7, 8, 9 */}
+        <div className="rounded-sm border border-border-strong bg-surface p-4 text-xs space-y-3 shadow-xs">
+          <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <span className="w-7 h-7 rounded-xs bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center font-bold flex-shrink-0 shadow-2xs">
+                <UserMinus size={16} weight="fill" className="text-amber-700" />
+              </span>
+              <div>
+                <span className="font-extrabold uppercase tracking-wide text-xs text-text-primary">
+                  THEO DÕI NỀ NẾP & CHUYÊN CẦN HÔM NAY THEO KHỐI
+                </span>
+                <span className="text-[11px] text-text-muted block sm:inline sm:ml-2">
+                  {classAttendanceList.reduce((acc, c) => acc + c.absentCount, 0) > 0
+                    ? `Phát hiện ${classAttendanceList.reduce((acc, c) => acc + c.absentCount, 0)} học sinh vắng trên toàn trường`
+                    : 'Toàn trường ghi nhận chuyên cần ổn định (0 HS vắng)'}
                 </span>
               </div>
-              <Link
-                href="/attendance"
-                className="text-xs font-bold text-teal hover:underline flex items-center gap-1"
-              >
-                <span>Mở sổ điểm danh toàn trường</span>
-                <ArrowRight size={12} weight="bold" />
-              </Link>
             </div>
-
-            <div className="flex items-center gap-2 flex-wrap pt-0.5">
-              {highAbsenceClasses.map((item) => (
-                <Link
-                  key={item.classId}
-                  href="/attendance"
-                  className="px-2.5 py-1 rounded-sm bg-surface border border-warning/40 hover:border-warning text-text-primary text-xs flex items-center gap-2 transition-colors shadow-2xs"
-                >
-                  <span className="font-bold">{item.className}</span>
-                  <span className="text-[11px] font-bold text-danger">Vắng {item.absentCount}</span>
-                  <span className="text-[11px] text-text-muted">GVCN: {item.teacherName}</span>
-                </Link>
-              ))}
-            </div>
+            <Link
+              href="/attendance"
+              className="text-xs font-bold text-teal hover:underline flex items-center gap-1"
+            >
+              <span>Mở sổ điểm danh toàn trường</span>
+              <ArrowRight size={12} weight="bold" />
+            </Link>
           </div>
-        )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { grade: 6, label: 'Khối 6', shift: 'Ca Sáng' },
+              { grade: 7, label: 'Khối 7', shift: 'Ca Chiều' },
+              { grade: 8, label: 'Khối 8', shift: 'Ca Chiều' },
+              { grade: 9, label: 'Khối 9', shift: 'Ca Sáng' },
+            ].map((g) => {
+              const items = classAttendanceList.filter((c) => c.grade === g.grade);
+              const gradeAbsent = items.reduce((acc, c) => acc + c.absentCount, 0);
+
+              return (
+                <div
+                  key={g.grade}
+                  className="rounded-xs border border-border bg-surface-muted/30 p-3 space-y-2 flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between pb-1.5 border-b border-border/70">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-extrabold text-xs text-text-primary uppercase tracking-wider font-mono">
+                        {g.label}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-xs font-mono font-bold bg-surface border border-border text-text-muted">
+                        {g.shift}
+                      </span>
+                    </div>
+                    {gradeAbsent > 0 ? (
+                      <span className="text-[11px] font-bold text-danger bg-danger-bg px-1.5 py-0.2 rounded-xs border border-danger/30 font-mono">
+                        Vắng {gradeAbsent}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-teal bg-teal-subtle px-1.5 py-0.2 rounded-xs border border-teal/20 font-mono">
+                        Đủ 100%
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {items.map((item) => (
+                      <Link
+                        key={item.classId}
+                        href="/attendance"
+                        className={cn(
+                          'p-2 rounded-xs border text-text-primary text-xs flex items-center justify-between transition-all shadow-2xs hover:border-border-strong',
+                          item.absentCount > 0
+                            ? 'bg-danger-bg/40 border-danger/40 hover:bg-danger-bg/70'
+                            : 'bg-surface border-border hover:bg-surface-muted/70'
+                        )}
+                      >
+                        <div className="min-w-0 pr-1">
+                          <div className="font-bold text-xs text-text-primary truncate">
+                            {item.className}
+                          </div>
+                          <div className="text-[11px] text-text-muted truncate mt-0.5">
+                            GVCN: {item.teacherName}
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <span
+                            className={cn(
+                              'px-1.5 py-0.5 rounded-xs font-mono font-bold text-[11px] border',
+                              item.absentCount > 0
+                                ? 'bg-danger text-white border-danger'
+                                : 'bg-surface-muted text-text-muted border-border'
+                            )}
+                          >
+                            Vắng {item.absentCount}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                    {items.length === 0 && (
+                      <div className="text-center py-2 text-text-muted text-[11px] italic">
+                        Chưa có dữ liệu lớp
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* =============================================

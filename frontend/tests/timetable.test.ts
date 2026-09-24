@@ -895,7 +895,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
           adminUser
         );
         expect(res2.success).toBe(false);
-        expect(res2.error).toContain('Lớp Lớp 6A1 đã có tiết học môn Toán');
+        expect(res2.error).toContain('Lớp 6A1 đã có tiết học môn Toán');
       });
 
       it('Same teacher, same period, different classes -> REJECTED (Teacher conflict)', () => {
@@ -907,7 +907,7 @@ describe('TimetableService — Secondary School Class Timetable (10 Periods & Sa
         const res2 = TimetableService.saveEntry('c-6a2', 2, 3, 'sub-mat', 'u-tea-01', adminUser);
         expect(res2.success).toBe(false);
         expect(res2.error).toContain('Thầy Nguyễn Văn An');
-        expect(res2.error).toContain('đã được xếp dạy lớp Lớp 6A1');
+        expect(res2.error).toContain('đã được xếp dạy Lớp 6A1');
       });
 
       it('Same room, same period, different classes -> REJECTED (Room conflict)', () => {

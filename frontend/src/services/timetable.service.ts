@@ -107,6 +107,12 @@ function timeToMinutes(timeStr: string): number {
   return hours * 60 + minutes;
 }
 
+export function formatClassName(name?: string): string {
+  if (!name) return 'Lớp học';
+  const trimmed = name.trim();
+  return trimmed.startsWith('Lớp') ? trimmed : `Lớp ${trimmed}`;
+}
+
 export const TimetableService = {
   /**
    * Lấy toàn bộ thời khóa biểu của một lớp (hỗ trợ kiểm tra phân quyền giáo viên)
@@ -365,7 +371,7 @@ export const TimetableService = {
       subjectId: conflict.subject_id,
       subjectName,
       teacherId: conflict.teacher_id || undefined,
-      message: `Lớp ${className} đã có tiết học môn ${subjectName} vào ${dayName}, ${periodLabel}.`,
+      message: `${formatClassName(className)} đã có tiết học môn ${subjectName} vào ${dayName}, ${periodLabel}.`,
     };
   },
 
@@ -418,7 +424,7 @@ export const TimetableService = {
       subjectName,
       teacherId,
       teacherName,
-      message: `Không thể xếp tiết học này. Giáo viên ${teacherName} đã được xếp dạy lớp ${conflictClassName} (môn ${subjectName}) vào ${dayName}, ${periodLabel}.`,
+      message: `Không thể xếp tiết học này. Giáo viên ${teacherName} đã được xếp dạy ${formatClassName(conflictClassName)} (môn ${subjectName}) vào ${dayName}, ${periodLabel}.`,
     };
   },
 
@@ -589,7 +595,7 @@ export const TimetableService = {
         if (entry.period >= 6) {
           return {
             valid: false,
-            error: `Lớp ${cls?.name || entry.class_id} thuộc Khối ${grade} học buổi Sáng (Tiết 1-5), không học buổi Chiều (Tiết ${entry.period}).`,
+            error: `${formatClassName(cls?.name || entry.class_id)} thuộc Khối ${grade} học buổi Sáng (Tiết 1-5), không học buổi Chiều (Tiết ${entry.period}).`,
           };
         }
         if (entry.day_of_week === 7 && entry.period > 3) {
@@ -602,7 +608,7 @@ export const TimetableService = {
         if (entry.period <= 5) {
           return {
             valid: false,
-            error: `Lớp ${cls?.name || entry.class_id} thuộc Khối ${grade} học buổi Chiều (Tiết 6-10), không học buổi Sáng (Tiết ${entry.period}).`,
+            error: `${formatClassName(cls?.name || entry.class_id)} thuộc Khối ${grade} học buổi Chiều (Tiết 6-10), không học buổi Sáng (Tiết ${entry.period}).`,
           };
         }
         if (entry.day_of_week === 7 && (entry.period < 6 || entry.period > 8)) {
@@ -759,14 +765,14 @@ export const TimetableService = {
     if (!isAllowedPeriodForClass(grade, dayOfWeek, period)) {
       if (shift === 'morning') {
         if (period >= 6) {
-          return failure(`Lớp ${cls?.name || classId} thuộc Khối ${grade} học buổi Sáng (Tiết 1-5), không học buổi Chiều (Tiết ${period}).`);
+          return failure(`${formatClassName(cls?.name || classId)} thuộc Khối ${grade} học buổi Sáng (Tiết 1-5), không học buổi Chiều (Tiết ${period}).`);
         }
         if (dayOfWeek === 7) {
           return failure(`Tiết ${period} không tồn tại vào Thứ Bảy. Thứ Bảy ca Sáng chỉ có 3 tiết (Tiết 1-3).`);
         }
       } else {
         if (period <= 5) {
-          return failure(`Lớp ${cls?.name || classId} thuộc Khối ${grade} học buổi Chiều (Tiết 6-10), không học buổi Sáng (Tiết ${period}).`);
+          return failure(`${formatClassName(cls?.name || classId)} thuộc Khối ${grade} học buổi Chiều (Tiết 6-10), không học buổi Sáng (Tiết ${period}).`);
         }
         if (dayOfWeek === 7) {
           return failure(`Tiết ${period} không tồn tại vào Thứ Bảy. Thứ Bảy ca Chiều chỉ có 3 tiết (Tiết 6-8).`);
@@ -1278,7 +1284,7 @@ export const TimetableService = {
           periodLabel: periodObj?.label || `Tiết ${e.period}`,
           subjectId: e.subject_id,
           subjectName: LocalStore.getSubjectById(e.subject_id)?.name || e.subject_id,
-          message: `Lớp ${cls?.name || e.class_id} có ${entries.length} môn học cùng được xếp vào ${dayObj?.name || `Thứ ${e.day_of_week}`}, ${periodObj?.label || `Tiết ${e.period}`}.`,
+          message: `${formatClassName(cls?.name || e.class_id)} có ${entries.length} môn học cùng được xếp vào ${dayObj?.name || `Thứ ${e.day_of_week}`}, ${periodObj?.label || `Tiết ${e.period}`}.`,
         });
       }
     }

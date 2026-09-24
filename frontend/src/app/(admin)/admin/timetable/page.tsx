@@ -24,6 +24,10 @@ import {
   Info,
   Clock,
   ArrowsLeftRight,
+  Sun,
+  SunHorizon,
+  Eye,
+  EyeSlash,
 } from '@phosphor-icons/react';
 import { LocalStore } from '@/lib/store';
 import {
@@ -32,6 +36,7 @@ import {
   TimetableRuleViolation,
   TimetableAuditReport,
   EnrichedTimetableEntry,
+  formatClassName,
 } from '@/services';
 import {
   ClassRow,
@@ -44,6 +49,7 @@ import {
   TIMETABLE_DAYS,
   SUBJECT_COLOR_MAP,
   DEFAULT_SUBJECT_COLOR,
+  SubjectColorStyle,
   getGradeShift,
   isAllowedPeriodForClass,
   getClassHomeroomSlot,
@@ -55,6 +61,17 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 
+function getSubjectStyle(subjectCode?: string, subjectId?: string): SubjectColorStyle {
+  if (subjectCode && SUBJECT_COLOR_MAP[subjectCode.toUpperCase()]) {
+    return SUBJECT_COLOR_MAP[subjectCode.toUpperCase()];
+  }
+  if (subjectId) {
+    const raw = subjectId.replace('sub-', '').toUpperCase();
+    if (SUBJECT_COLOR_MAP[raw]) return SUBJECT_COLOR_MAP[raw];
+  }
+  return DEFAULT_SUBJECT_COLOR;
+}
+
 export default function AdminTimetablePage() {
   const { user } = useAuth();
 
@@ -64,13 +81,13 @@ export default function AdminTimetablePage() {
   const [allTimetables, setAllTimetables] = useState<TimetableEntryRow[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Filters
+  // Filters (Không có "Tất cả lớp", không lọc phòng vì phòng cố định)
   const [selectedClassId, setSelectedClassId] = useState<string>('c-6a1');
   const [teacherFilter, setTeacherFilter] = useState<string>('all');
   const [subjectFilter, setSubjectFilter] = useState<string>('all');
-  const [roomFilter, setRoomFilter] = useState<string>('');
   const [dayFilter, setDayFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showOppositeShift, setShowOppositeShift] = useState<boolean>(false);
 
   // Audit state
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
@@ -131,28 +148,120 @@ export default function AdminTimetablePage() {
     return classes.find((c) => c.id === selectedClassId) || classes[0] || null;
   }, [classes, selectedClassId]);
 
-  // Distinct rooms across all classes and entries
-  const distinctRooms = useMemo(() => {
-    const rooms = new Set<string>();
-    classes.forEach((c) => {
-      if (c.room_name?.trim()) rooms.add(c.room_name.trim());
-    });
-    allTimetables.forEach((t) => {
-      if (t.room?.trim()) rooms.add(t.room.trim());
-    });
-    return Array.from(rooms).sort();
-  }, [classes, allTimetables]);
+  // Teachers who teach the currently selected class
+  const availableTeachers = useMemo(() => {
+    if (!selectedClassId) return teachers;
+    const assignments = LocalStore.getSubjectAssignmentsForClass(selectedClassId);
+    const teacherIds = new Set<string>();
+    assignments.forEach((a) => teacherIds.add(a.teacher_id));
+    const targetCls = classes.find((c) => c.id === selectedClassId);
+    if (targetCls?.teacher_id) teacherIds.add(targetCls.teacher_id);
+    allTimetables
+      .filter((t) => t.class_id === selectedClassId && t.teacher_id)
+      .forEach((t) => teacherIds.add(t.teacher_id!));
+    return teachers.filter((t) => teacherIds.has(t.id));
+  }, [selectedClassId, classes, teachers, allTimetables]);
+
+  // Classes taught by the currently selected teacher (if teacher filter is active)
+  const availableClasses = useMemo(() => {
+    if (teacherFilter === 'all') return classes;
+    const assignments = LocalStore.getSubjectAssignmentsForTeacher(teacherFilter);
+    const classIds = new Set<string>();
+    assignments.forEach((a) => classIds.add(a.class_id));
+    classes.filter((c) => c.teacher_id === teacherFilter).forEach((c) => classIds.add(c.id));
+    allTimetables
+      .filter((t) => t.teacher_id === teacherFilter)
+      .forEach((t) => classIds.add(t.class_id));
+    return classes.filter((c) => classIds.has(c.id));
+  }, [teacherFilter, classes, allTimetables]);
+
+  // Subjects taught in selected class / by selected teacher
+  const availableSubjects = useMemo(() => {
+    const assignments = LocalStore.getSubjectAssignmentsForClass(selectedClassId);
+    const subjectIds = new Set<string>();
+
+    if (teacherFilter !== 'all') {
+      assignments
+        .filter((a) => a.teacher_id === teacherFilter)
+        .forEach((a) => subjectIds.add(a.subject_id));
+      allTimetables
+        .filter((t) => t.class_id === selectedClassId && t.teacher_id === teacherFilter)
+        .forEach((t) => subjectIds.add(t.subject_id));
+      const targetCls = classes.find((c) => c.id === selectedClassId);
+      if (targetCls?.teacher_id === teacherFilter) {
+        subjectIds.add('sub-shl');
+      }
+    } else {
+      assignments.forEach((a) => subjectIds.add(a.subject_id));
+      allTimetables
+        .filter((t) => t.class_id === selectedClassId)
+        .forEach((t) => subjectIds.add(t.subject_id));
+      subjectIds.add('sub-shl');
+    }
+    return subjects.filter((s) => subjectIds.has(s.id));
+  }, [selectedClassId, teacherFilter, classes, subjects, allTimetables]);
+
+  // Modal available teachers for formClassId
+  const modalAvailableTeachers = useMemo(() => {
+    const asgns = LocalStore.getSubjectAssignmentsForClass(formClassId);
+    const teacherIds = new Set<string>();
+    asgns.forEach((a) => teacherIds.add(a.teacher_id));
+    const targetCls = classes.find((c) => c.id === formClassId);
+    if (targetCls?.teacher_id) teacherIds.add(targetCls.teacher_id);
+    allTimetables
+      .filter((t) => t.class_id === formClassId && t.teacher_id)
+      .forEach((t) => teacherIds.add(t.teacher_id!));
+    return teachers.filter((t) => teacherIds.has(t.id));
+  }, [formClassId, classes, teachers, allTimetables]);
 
   // Enriched entries for current view
   const enrichedEntries = useMemo(() => {
     return TimetableService.filterTimetableEntries({
-      classId: selectedClassId === 'all' ? undefined : selectedClassId,
+      classId: selectedClassId,
       teacherId: teacherFilter === 'all' ? undefined : teacherFilter,
       subjectId: subjectFilter === 'all' ? undefined : subjectFilter,
-      room: roomFilter.trim() ? roomFilter.trim() : undefined,
       dayOfWeek: dayFilter === 'all' ? undefined : parseInt(dayFilter, 10),
     });
-  }, [selectedClassId, teacherFilter, subjectFilter, roomFilter, dayFilter, allTimetables]);
+  }, [selectedClassId, teacherFilter, subjectFilter, dayFilter, allTimetables]);
+
+  // Handle class switch
+  const handleSelectClass = (newClassId: string) => {
+    setSelectedClassId(newClassId);
+    if (teacherFilter !== 'all') {
+      const teachesNewClass =
+        LocalStore.getSubjectAssignmentsForClass(newClassId).some((a) => a.teacher_id === teacherFilter) ||
+        classes.find((c) => c.id === newClassId)?.teacher_id === teacherFilter ||
+        allTimetables.some((t) => t.class_id === newClassId && t.teacher_id === teacherFilter);
+      if (!teachesNewClass) {
+        setTeacherFilter('all');
+      }
+    }
+    setSubjectFilter('all');
+  };
+
+  // Handle teacher switch
+  const handleSelectTeacher = (newTeacherId: string) => {
+    setTeacherFilter(newTeacherId);
+    if (newTeacherId !== 'all') {
+      const teachesCurrentClass =
+        LocalStore.getSubjectAssignmentsForClass(selectedClassId).some((a) => a.teacher_id === newTeacherId) ||
+        classes.find((c) => c.id === selectedClassId)?.teacher_id === newTeacherId ||
+        allTimetables.some((t) => t.class_id === selectedClassId && t.teacher_id === newTeacherId);
+
+      if (!teachesCurrentClass) {
+        const teacherClasses = classes.filter(
+          (c) =>
+            LocalStore.getSubjectAssignmentsForTeacher(newTeacherId).some((a) => a.class_id === c.id) ||
+            c.teacher_id === newTeacherId ||
+            allTimetables.some((t) => t.teacher_id === newTeacherId && t.class_id === c.id)
+        );
+        if (teacherClasses.length > 0) {
+          setSelectedClassId(teacherClasses[0].id);
+        }
+      }
+    }
+    setSubjectFilter('all');
+  };
 
   // Quick lookup map by (classId_day_period)
   const entryLookupMap = useMemo(() => {
@@ -545,20 +654,19 @@ export default function AdminTimetablePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {/* Class Filter */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Class Filter (Không có tất cả lớp) */}
           <div>
             <label className="block text-[11px] font-bold text-text-muted mb-1 flex items-center gap-1.5">
-              <Chalkboard size={13} />
+              <Chalkboard size={13} className="text-teal" />
               <span>Lớp học</span>
             </label>
             <select
               value={selectedClassId}
-              onChange={(e) => setSelectedClassId(e.target.value)}
+              onChange={(e) => handleSelectClass(e.target.value)}
               className="w-full text-xs h-9 px-2.5 rounded-sm border border-border bg-surface text-text-primary font-medium focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent"
             >
-              <option value="all">-- Tất cả 16 lớp --</option>
-              {classes.map((cls) => (
+              {availableClasses.map((cls) => (
                 <option key={cls.id} value={cls.id}>
                   {cls.name} (Khối {cls.grade} · {getGradeShift(cls.grade) === 'morning' ? 'Ca Sáng' : 'Ca Chiều'})
                 </option>
@@ -566,19 +674,19 @@ export default function AdminTimetablePage() {
             </select>
           </div>
 
-          {/* Teacher Filter */}
+          {/* Teacher Filter (Chỉ hiện GV dạy lớp đang chọn) */}
           <div>
             <label className="block text-[11px] font-bold text-text-muted mb-1 flex items-center gap-1.5">
-              <ChalkboardTeacher size={13} />
+              <ChalkboardTeacher size={13} className="text-teal" />
               <span>Giáo viên</span>
             </label>
             <select
               value={teacherFilter}
-              onChange={(e) => setTeacherFilter(e.target.value)}
+              onChange={(e) => handleSelectTeacher(e.target.value)}
               className="w-full text-xs h-9 px-2.5 rounded-sm border border-border bg-surface text-text-primary font-medium focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent"
             >
-              <option value="all">-- Tất cả giáo viên --</option>
-              {teachers.map((t) => (
+              <option value="all">-- Tất cả GV dạy lớp này ({availableTeachers.length} GV) --</option>
+              {availableTeachers.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
@@ -586,10 +694,10 @@ export default function AdminTimetablePage() {
             </select>
           </div>
 
-          {/* Subject Filter */}
+          {/* Subject Filter (Chỉ lọc môn khi đã chọn lớp hoặc GV) */}
           <div>
             <label className="block text-[11px] font-bold text-text-muted mb-1 flex items-center gap-1.5">
-              <BookOpen size={13} />
+              <BookOpen size={13} className="text-teal" />
               <span>Môn học</span>
             </label>
             <select
@@ -597,30 +705,10 @@ export default function AdminTimetablePage() {
               onChange={(e) => setSubjectFilter(e.target.value)}
               className="w-full text-xs h-9 px-2.5 rounded-sm border border-border bg-surface text-text-primary font-medium focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent"
             >
-              <option value="all">-- Tất cả môn học --</option>
-              {subjects.map((s) => (
+              <option value="all">-- Tất cả môn học của lớp ({availableSubjects.length} môn) --</option>
+              {availableSubjects.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name} (Tối đa {s.max_consecutive_periods ?? 1} tiết liên tiếp)
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Room Filter */}
-          <div>
-            <label className="block text-[11px] font-bold text-text-muted mb-1 flex items-center gap-1.5">
-              <Buildings size={13} />
-              <span>Phòng học</span>
-            </label>
-            <select
-              value={roomFilter}
-              onChange={(e) => setRoomFilter(e.target.value)}
-              className="w-full text-xs h-9 px-2.5 rounded-sm border border-border bg-surface text-text-primary font-medium focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent"
-            >
-              <option value="">-- Tất cả phòng học --</option>
-              {distinctRooms.map((rm) => (
-                <option key={rm} value={rm}>
-                  {rm}
+                  {s.name} ({s.code}) · Tối đa {s.max_consecutive_periods ?? 1} tiết/buổi
                 </option>
               ))}
             </select>
@@ -629,7 +717,7 @@ export default function AdminTimetablePage() {
           {/* Day of Week Filter */}
           <div>
             <label className="block text-[11px] font-bold text-text-muted mb-1 flex items-center gap-1.5">
-              <Clock size={13} />
+              <Clock size={13} className="text-teal" />
               <span>Ngày trong tuần</span>
             </label>
             <select
@@ -692,35 +780,99 @@ export default function AdminTimetablePage() {
       {viewMode === 'grid' ? (
         <div className="bg-surface rounded-sm border border-border-strong shadow-xs overflow-hidden">
           {/* Shift Banner */}
-          <div className="px-4 py-2.5 bg-surface-muted/80 border-b border-border-strong flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-teal" />
-              <span className="text-xs font-bold text-text-primary">
-                {selectedClassId === 'all'
-                  ? 'Tổng thể thời khóa biểu theo bộ lọc'
-                  : `Thời khóa biểu ${currentClass?.name} · Khối ${currentClass?.grade} (${shift === 'morning' ? 'Ca Sáng: Tiết 1 - 5' : 'Ca Chiều: Tiết 6 - 10'})`}
-              </span>
+          <div className="px-5 py-3.5 bg-surface-muted border-b border-border-strong flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="w-3 h-3 rounded-full bg-teal ring-4 ring-teal/20 flex-shrink-0" />
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-extrabold text-text-primary uppercase tracking-wide">
+                  {currentClass?.name}
+                </span>
+                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-xs bg-surface border border-border text-text-secondary">
+                  Khối {currentClass?.grade}
+                </span>
+                <span
+                  className={cn(
+                    'text-[11px] font-mono font-bold px-2 py-0.5 rounded-xs border',
+                    shift === 'morning'
+                      ? 'bg-amber-100 text-amber-950 border-amber-300'
+                      : 'bg-teal-100 text-teal-950 border-teal-300'
+                  )}
+                >
+                  {shift === 'morning' ? 'Ca Sáng: Tiết 1 - 5' : 'Ca Chiều: Tiết 6 - 10'}
+                </span>
+                <span className="text-xs text-text-muted">·</span>
+                <span className="text-xs text-text-muted flex items-center gap-1 font-medium">
+                  <Buildings size={14} className="text-teal" />
+                  <span>
+                    Phòng cố định:{' '}
+                    <strong className="text-text-primary">
+                      {currentClass?.room_name || 'Chưa gán'}
+                    </strong>
+                  </span>
+                </span>
+                {currentClass?.teacher_id && (
+                  <>
+                    <span className="text-xs text-text-muted">·</span>
+                    <span className="text-xs text-text-muted flex items-center gap-1 font-medium">
+                      <ChalkboardTeacher size={14} className="text-teal" />
+                      <span>
+                        GVCN:{' '}
+                        <strong className="text-text-primary">
+                          {teachers.find((t) => t.id === currentClass.teacher_id)?.name ||
+                            'Chưa phân công'}
+                        </strong>
+                      </span>
+                    </span>
+                  </>
+                )}
+                <span className="text-xs text-text-muted">·</span>
+                <span className="text-xs font-mono font-bold text-teal bg-teal-subtle px-1.5 py-0.5 rounded-xs border border-teal/20">
+                  {enrichedEntries.length} tiết đã xếp
+                </span>
+              </div>
             </div>
-            <span className="text-[11px] text-text-muted font-medium">
-              Phòng học mặc định: <strong className="text-text-primary">{currentClass?.room_name || 'Chưa gán'}</strong>
-            </span>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setShowOppositeShift((prev) => !prev)}
+                className={cn(
+                  'px-3 py-1.5 rounded-xs border border-border-strong text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-xs',
+                  showOppositeShift
+                    ? 'bg-surface-muted text-text-primary hover:bg-surface-muted/80'
+                    : 'bg-accent/20 text-accent-text hover:bg-accent/35'
+                )}
+              >
+                {showOppositeShift ? (
+                  <>
+                    <EyeSlash size={14} />
+                    <span>{shift === 'morning' ? 'Ẩn ca Chiều' : 'Ẩn ca Sáng'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye size={14} />
+                    <span>{shift === 'morning' ? 'Hiện ca Chiều' : 'Hiện ca Sáng'}</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Table Matrix */}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse min-w-[900px] text-left">
               <thead>
-                <tr className="bg-surface-muted/90 border-b border-border-strong">
-                  <th className="w-28 px-4 py-3 text-[11px] font-bold text-text-muted uppercase tracking-wider">
-                    Tiết / Giờ
+                <tr className="bg-surface-muted border-b-2 border-border-strong">
+                  <th className="w-28 px-4 py-3 text-[11px] font-extrabold text-text-primary uppercase tracking-wider font-mono">
+                    TIẾT / GIỜ
                   </th>
                   {TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).map((d) => (
-                    <th key={d.day} className="px-3 py-3 text-xs font-bold text-text-primary border-l border-border">
+                    <th key={d.day} className="px-3 py-3 text-xs font-extrabold text-text-primary border-l border-border uppercase tracking-wide">
                       <div className="flex items-center justify-between">
-                        <span>{d.name}</span>
+                        <span className="font-mono">{d.name}</span>
                         {d.day === 7 && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-accent text-accent-text border border-border">
-                            3 tiết
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-xs bg-amber-200 text-amber-950 border border-amber-400 font-mono">
+                            3 TIẾT
                           </span>
                         )}
                       </div>
@@ -729,273 +881,291 @@ export default function AdminTimetablePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {/* Morning Header */}
-                <tr className="bg-teal-subtle/70 text-teal border-y border-teal/20">
-                  <td
-                    colSpan={1 + TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).length}
-                    className="px-4 py-1.5 text-[11px] font-bold tracking-wide uppercase"
-                  >
-                    Ca Sáng (07:15 — 11:15) · Khối 6 & Khối 9
-                  </td>
-                </tr>
-
-                {/* Periods 1 to 5 */}
-                {TIMETABLE_PERIODS.slice(0, 5).map((periodConfig) => (
-                  <tr key={periodConfig.period} className="hover:bg-accent-subtle/20 transition-colors">
-                    <td className="px-4 py-3 border-r border-border bg-surface-muted/30 align-top">
-                      <div className="font-bold text-xs text-text-primary">{periodConfig.label}</div>
-                      <div className="text-[10px] text-text-muted font-medium mt-0.5">
-                        {periodConfig.startTime} - {periodConfig.endTime}
-                      </div>
-                    </td>
-
-                    {TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).map((d) => {
-                      const isSaturday = d.day === 7;
-                      const isProhibited = isSaturday && periodConfig.period > 3;
-
-                      if (isProhibited) {
-                        return (
-                          <td key={d.day} className="p-2 border-l border-border bg-surface-muted/40 text-center align-middle">
-                            <span className="text-[11px] font-medium text-text-muted italic">
-                              Nghỉ
+                {/* Morning Shift */}
+                {(shift === 'morning' || showOppositeShift) && (
+                  <>
+                    <tr className="bg-amber-100/70 text-amber-950 border-y border-amber-300">
+                      <td
+                        colSpan={1 + TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).length}
+                        className="px-4 py-2 text-xs font-extrabold tracking-wide uppercase font-mono"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Sun size={16} weight="fill" className="text-amber-600" />
+                            <span>CA SÁNG (07:15 — 11:15) · KHỐI 6 & KHỐI 9</span>
+                          </div>
+                          {shift === 'morning' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-xs bg-amber-200/90 text-amber-950 border border-amber-400">
+                              Ca học chính
                             </span>
-                          </td>
-                        );
-                      }
-
-                      // Find entry matching class, day, period
-                      const targetClassKey = selectedClassId === 'all' ? undefined : selectedClassId;
-                      const entry = targetClassKey
-                        ? entryLookupMap.get(`${targetClassKey}_${d.day}_${periodConfig.period}`)
-                        : enrichedEntries.find((e) => e.day_of_week === d.day && e.period === periodConfig.period);
-
-                      const slotIssues = entry ? issueMapBySlot.get(`${entry.class_id}_${entry.day_of_week}_${entry.period}`) : undefined;
-                      const hasIssue = Boolean(slotIssues && slotIssues.length > 0);
-
-                      return (
-                        <td key={d.day} className="p-2 border-l border-border align-top h-24 min-w-[130px] group relative">
-                          {entry ? (
-                            <div
-                              className={cn(
-                                'h-full flex flex-col justify-between p-2 rounded-sm transition-all',
-                                hasIssue
-                                  ? 'bg-danger-bg border-2 border-danger shadow-xs ring-1 ring-danger/30'
-                                  : 'bg-surface border border-border shadow-2xs hover:border-border-strong'
-                              )}
-                            >
-                              <div>
-                                <div className="flex items-center justify-between gap-1">
-                                  <span
-                                    className={cn(
-                                      'text-[11px] font-bold px-2 py-0.5 rounded-sm truncate',
-                                      SUBJECT_COLOR_MAP[entry.subject_id] || DEFAULT_SUBJECT_COLOR
-                                    )}
-                                  >
-                                    {entry.subjectName}
-                                  </span>
-
-                                  {selectedClassId === 'all' && (
-                                    <span className="text-[10px] font-bold text-accent-text bg-accent px-1.5 py-0.5 rounded-sm border border-border">
-                                      {entry.className}
-                                    </span>
-                                  )}
-                                </div>
-
-                                <div className="text-[11px] font-medium text-text-secondary mt-1.5 truncate flex items-center gap-1">
-                                  <ChalkboardTeacher size={12} className="text-text-muted flex-shrink-0" />
-                                  <span className="truncate">{entry.teacherName}</span>
-                                </div>
-
-                                <div className="text-[10px] text-text-muted mt-1 truncate flex items-center gap-1">
-                                  <Buildings size={11} className="text-text-muted flex-shrink-0" />
-                                  <span className="truncate">{entry.effectiveRoom}</span>
-                                </div>
-
-                                {hasIssue && (
-                                  <div
-                                    title={slotIssues?.join('\n')}
-                                    className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-danger bg-danger-bg border border-danger/40 px-1.5 py-0.5 rounded-sm cursor-help animate-pulse"
-                                  >
-                                    <WarningCircle size={12} weight="fill" className="text-danger flex-shrink-0" />
-                                    <span className="truncate">Cảnh báo vi phạm</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Quick Hover Controls */}
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1 mt-1 pt-1 border-t border-border">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenSwapModal(d.day, periodConfig.period)}
-                                  title="Hoán đổi/Di chuyển"
-                                  className="p-1 rounded-sm text-text-muted hover:text-accent-text hover:bg-accent cursor-pointer"
-                                >
-                                  <ArrowsLeftRight size={13} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEditModal(entry)}
-                                  title="Sửa tiết"
-                                  className="p-1 rounded-sm text-text-muted hover:text-accent-text hover:bg-accent cursor-pointer"
-                                >
-                                  <PencilSimple size={13} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteEntry(entry)}
-                                  title="Xóa tiết"
-                                  className="p-1 rounded-sm text-text-muted hover:text-danger hover:bg-danger-bg cursor-pointer"
-                                >
-                                  <Trash size={13} />
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div
-                              onClick={() => handleOpenAddModal(d.day, periodConfig.period)}
-                              className="h-full border border-dashed border-border/80 hover:border-border-strong hover:bg-accent-subtle/30 rounded-sm flex items-center justify-center cursor-pointer transition-colors group/empty"
-                            >
-                              <Plus size={16} className="text-text-muted/50 group-hover/empty:text-text-primary transition-colors" />
-                            </div>
                           )}
+                        </div>
+                      </td>
+                    </tr>
+
+                    {TIMETABLE_PERIODS.slice(0, 5).map((periodConfig) => (
+                      <tr key={periodConfig.period} className="hover:bg-accent-subtle/10 transition-colors">
+                        <td className="px-4 py-3 border-r border-border bg-surface-muted/30 align-top">
+                          <div className="font-extrabold text-xs text-text-primary font-mono">{periodConfig.label}</div>
+                          <div className="text-[10px] text-text-muted font-mono mt-0.5">
+                            {periodConfig.startTime} - {periodConfig.endTime}
+                          </div>
                         </td>
-                      );
-                    })}
-                  </tr>
-                ))}
 
-                {/* Afternoon Header */}
-                <tr className="bg-accent-subtle/50 text-accent-text border-y border-border-strong">
-                  <td
-                    colSpan={1 + TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).length}
-                    className="px-4 py-1.5 text-[11px] font-bold tracking-wide uppercase"
-                  >
-                    Ca Chiều (13:00 — 17:00) · Khối 7 & Khối 8
-                  </td>
-                </tr>
+                        {TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).map((d) => {
+                          const isSaturday = d.day === 7;
+                          const isProhibited = isSaturday && periodConfig.period > 3;
 
-                {/* Periods 6 to 10 */}
-                {TIMETABLE_PERIODS.slice(5, 10).map((periodConfig) => (
-                  <tr key={periodConfig.period} className="hover:bg-accent-subtle/20 transition-colors">
-                    <td className="px-4 py-3 border-r border-border bg-surface-muted/30 align-top">
-                      <div className="font-bold text-xs text-text-primary">{periodConfig.label}</div>
-                      <div className="text-[10px] text-text-muted font-medium mt-0.5">
-                        {periodConfig.startTime} - {periodConfig.endTime}
-                      </div>
-                    </td>
+                          if (isProhibited) {
+                            return (
+                              <td key={d.day} className="p-2 border-l border-border bg-surface-muted/50 text-center align-middle">
+                                <span className="text-[11px] font-medium text-text-muted italic">
+                                  Nghỉ
+                                </span>
+                              </td>
+                            );
+                          }
 
-                    {TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).map((d) => {
-                      const isSaturday = d.day === 7;
-                      const isProhibited = isSaturday && periodConfig.period > 8;
+                          const entry = entryLookupMap.get(`${selectedClassId}_${d.day}_${periodConfig.period}`);
+                          const slotIssues = entry ? issueMapBySlot.get(`${entry.class_id}_${entry.day_of_week}_${entry.period}`) : undefined;
+                          const hasIssue = Boolean(slotIssues && slotIssues.length > 0);
+                          const colorStyle = entry ? getSubjectStyle(entry.subjectCode, entry.subject_id) : DEFAULT_SUBJECT_COLOR;
 
-                      if (isProhibited) {
-                        return (
-                          <td key={d.day} className="p-2 border-l border-border bg-surface-muted/40 text-center align-middle">
-                            <span className="text-[11px] font-medium text-text-muted italic">
-                              Nghỉ
+                          return (
+                            <td key={d.day} className="p-2 border-l border-border align-top h-24 min-w-[130px] group relative">
+                              {entry ? (
+                                <div
+                                  className={cn(
+                                    'h-full flex flex-col justify-between p-2.5 rounded-xs transition-all shadow-2xs border',
+                                    hasIssue
+                                      ? 'bg-danger-bg border-2 border-danger shadow-xs ring-1 ring-danger/30'
+                                      : cn(colorStyle.bg, colorStyle.border, 'hover:border-border-strong hover:shadow-xs')
+                                  )}
+                                >
+                                  <div>
+                                    <div className="flex items-center justify-between gap-1 flex-wrap">
+                                      <span
+                                        className={cn(
+                                          'text-[11px] font-extrabold px-2 py-0.5 rounded-xs font-mono border truncate flex items-center gap-1',
+                                          colorStyle.badgeBg,
+                                          colorStyle.border
+                                        )}
+                                      >
+                                        <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colorStyle.dot)} />
+                                        <span className="truncate">{entry.subjectName}</span>
+                                      </span>
+                                    </div>
+
+                                    <div className="text-[11px] font-semibold text-text-primary mt-1.5 truncate flex items-center gap-1.5">
+                                      <ChalkboardTeacher size={13} className="text-text-muted flex-shrink-0" />
+                                      <span className="truncate">{entry.teacherName}</span>
+                                    </div>
+
+                                    <div className="text-[10px] text-text-muted mt-1 truncate flex items-center gap-1.5 font-mono">
+                                      <Buildings size={12} className="text-text-muted flex-shrink-0" />
+                                      <span className="truncate">{entry.effectiveRoom}</span>
+                                    </div>
+
+                                    {hasIssue && (
+                                      <div
+                                        title={slotIssues?.join('\n')}
+                                        className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-danger bg-danger-bg border border-danger/40 px-1.5 py-0.5 rounded-xs cursor-help animate-pulse"
+                                      >
+                                        <WarningCircle size={12} weight="fill" className="text-danger flex-shrink-0" />
+                                        <span className="truncate">Cảnh báo vi phạm</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Quick Hover Controls */}
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1 mt-1.5 pt-1 border-t border-black/10">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenSwapModal(d.day, periodConfig.period)}
+                                      title="Hoán đổi/Di chuyển tiết"
+                                      className="p-1 rounded-xs text-text-secondary hover:text-accent-text hover:bg-accent cursor-pointer transition-colors"
+                                    >
+                                      <ArrowsLeftRight size={13} weight="bold" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditModal(entry)}
+                                      title="Sửa tiết"
+                                      className="p-1 rounded-xs text-text-secondary hover:text-accent-text hover:bg-accent cursor-pointer transition-colors"
+                                    >
+                                      <PencilSimple size={13} weight="bold" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteEntry(entry)}
+                                      title="Xóa tiết"
+                                      className="p-1 rounded-xs text-text-secondary hover:text-danger hover:bg-danger-bg cursor-pointer transition-colors"
+                                    >
+                                      <Trash size={13} weight="bold" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div
+                                  onClick={() => handleOpenAddModal(d.day, periodConfig.period)}
+                                  className="h-full min-h-[75px] border-2 border-dashed border-border/70 hover:border-teal hover:bg-teal-subtle/20 rounded-xs flex flex-col items-center justify-center cursor-pointer transition-all group/empty p-1.5"
+                                >
+                                  <Plus size={16} className="text-text-muted/40 group-hover/empty:text-teal group-hover/empty:scale-110 transition-all" weight="bold" />
+                                  <span className="text-[10px] text-text-muted/50 group-hover/empty:text-teal mt-0.5 font-mono">
+                                    + Thêm
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </>
+                )}
+
+                {/* Afternoon Shift */}
+                {(shift === 'afternoon' || showOppositeShift) && (
+                  <>
+                    <tr className="bg-teal-100/70 text-teal-950 border-y border-teal-300">
+                      <td
+                        colSpan={1 + TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).length}
+                        className="px-4 py-2 text-xs font-extrabold tracking-wide uppercase font-mono"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <SunHorizon size={16} weight="fill" className="text-teal" />
+                            <span>CA CHIỀU (13:00 — 17:00) · KHỐI 7 & KHỐI 8</span>
+                          </div>
+                          {shift === 'afternoon' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-xs bg-teal-200 text-teal-950 border border-teal-400">
+                              Ca học chính
                             </span>
-                          </td>
-                        );
-                      }
-
-                      const targetClassKey = selectedClassId === 'all' ? undefined : selectedClassId;
-                      const entry = targetClassKey
-                        ? entryLookupMap.get(`${targetClassKey}_${d.day}_${periodConfig.period}`)
-                        : enrichedEntries.find((e) => e.day_of_week === d.day && e.period === periodConfig.period);
-
-                      const slotIssues = entry ? issueMapBySlot.get(`${entry.class_id}_${entry.day_of_week}_${entry.period}`) : undefined;
-                      const hasIssue = Boolean(slotIssues && slotIssues.length > 0);
-
-                      return (
-                        <td key={d.day} className="p-2 border-l border-border align-top h-24 min-w-[130px] group relative">
-                          {entry ? (
-                            <div
-                              className={cn(
-                                'h-full flex flex-col justify-between p-2 rounded-sm transition-all',
-                                hasIssue
-                                  ? 'bg-danger-bg border-2 border-danger shadow-xs ring-1 ring-danger/30'
-                                  : 'bg-surface border border-border shadow-2xs hover:border-border-strong'
-                              )}
-                            >
-                              <div>
-                                <div className="flex items-center justify-between gap-1">
-                                  <span
-                                    className={cn(
-                                      'text-[11px] font-bold px-2 py-0.5 rounded-sm truncate',
-                                      SUBJECT_COLOR_MAP[entry.subject_id] || DEFAULT_SUBJECT_COLOR
-                                    )}
-                                  >
-                                    {entry.subjectName}
-                                  </span>
-
-                                  {selectedClassId === 'all' && (
-                                    <span className="text-[10px] font-bold text-accent-text bg-accent px-1.5 py-0.5 rounded-sm border border-border">
-                                      {entry.className}
-                                    </span>
-                                  )}
-                                </div>
-
-                                <div className="text-[11px] font-medium text-text-secondary mt-1.5 truncate flex items-center gap-1">
-                                  <ChalkboardTeacher size={12} className="text-text-muted flex-shrink-0" />
-                                  <span className="truncate">{entry.teacherName}</span>
-                                </div>
-
-                                <div className="text-[10px] text-text-muted mt-1 truncate flex items-center gap-1">
-                                  <Buildings size={11} className="text-text-muted flex-shrink-0" />
-                                  <span className="truncate">{entry.effectiveRoom}</span>
-                                </div>
-
-                                {hasIssue && (
-                                  <div
-                                    title={slotIssues?.join('\n')}
-                                    className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-danger bg-danger-bg border border-danger/40 px-1.5 py-0.5 rounded-sm cursor-help animate-pulse"
-                                  >
-                                    <WarningCircle size={12} weight="fill" className="text-danger flex-shrink-0" />
-                                    <span className="truncate">Cảnh báo vi phạm</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1 mt-1 pt-1 border-t border-border">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenSwapModal(d.day, periodConfig.period)}
-                                  title="Hoán đổi/Di chuyển"
-                                  className="p-1 rounded-sm text-text-muted hover:text-accent-text hover:bg-accent cursor-pointer"
-                                >
-                                  <ArrowsLeftRight size={13} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEditModal(entry)}
-                                  title="Sửa tiết"
-                                  className="p-1 rounded-sm text-text-muted hover:text-accent-text hover:bg-accent cursor-pointer"
-                                >
-                                  <PencilSimple size={13} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteEntry(entry)}
-                                  title="Xóa tiết"
-                                  className="p-1 rounded-sm text-text-muted hover:text-danger hover:bg-danger-bg cursor-pointer"
-                                >
-                                  <Trash size={13} />
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div
-                              onClick={() => handleOpenAddModal(d.day, periodConfig.period)}
-                              className="h-full border border-dashed border-border/80 hover:border-border-strong hover:bg-accent-subtle/30 rounded-sm flex items-center justify-center cursor-pointer transition-colors group/empty"
-                            >
-                              <Plus size={16} className="text-text-muted/50 group-hover/empty:text-text-primary transition-colors" />
-                            </div>
                           )}
+                        </div>
+                      </td>
+                    </tr>
+
+                    {TIMETABLE_PERIODS.slice(5, 10).map((periodConfig) => (
+                      <tr key={periodConfig.period} className="hover:bg-accent-subtle/10 transition-colors">
+                        <td className="px-4 py-3 border-r border-border bg-surface-muted/30 align-top">
+                          <div className="font-extrabold text-xs text-text-primary font-mono">{periodConfig.label}</div>
+                          <div className="text-[10px] text-text-muted font-mono mt-0.5">
+                            {periodConfig.startTime} - {periodConfig.endTime}
+                          </div>
                         </td>
-                      );
-                    })}
-                  </tr>
-                ))}
+
+                        {TIMETABLE_DAYS.filter((d) => dayFilter === 'all' || d.day === parseInt(dayFilter, 10)).map((d) => {
+                          const isSaturday = d.day === 7;
+                          const isProhibited = isSaturday && periodConfig.period > 8;
+
+                          if (isProhibited) {
+                            return (
+                              <td key={d.day} className="p-2 border-l border-border bg-surface-muted/50 text-center align-middle">
+                                <span className="text-[11px] font-medium text-text-muted italic">
+                                  Nghỉ
+                                </span>
+                              </td>
+                            );
+                          }
+
+                          const entry = entryLookupMap.get(`${selectedClassId}_${d.day}_${periodConfig.period}`);
+                          const slotIssues = entry ? issueMapBySlot.get(`${entry.class_id}_${entry.day_of_week}_${entry.period}`) : undefined;
+                          const hasIssue = Boolean(slotIssues && slotIssues.length > 0);
+                          const colorStyle = entry ? getSubjectStyle(entry.subjectCode, entry.subject_id) : DEFAULT_SUBJECT_COLOR;
+
+                          return (
+                            <td key={d.day} className="p-2 border-l border-border align-top h-24 min-w-[130px] group relative">
+                              {entry ? (
+                                <div
+                                  className={cn(
+                                    'h-full flex flex-col justify-between p-2.5 rounded-xs transition-all shadow-2xs border',
+                                    hasIssue
+                                      ? 'bg-danger-bg border-2 border-danger shadow-xs ring-1 ring-danger/30'
+                                      : cn(colorStyle.bg, colorStyle.border, 'hover:border-border-strong hover:shadow-xs')
+                                  )}
+                                >
+                                  <div>
+                                    <div className="flex items-center justify-between gap-1 flex-wrap">
+                                      <span
+                                        className={cn(
+                                          'text-[11px] font-extrabold px-2 py-0.5 rounded-xs font-mono border truncate flex items-center gap-1',
+                                          colorStyle.badgeBg,
+                                          colorStyle.border
+                                        )}
+                                      >
+                                        <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colorStyle.dot)} />
+                                        <span className="truncate">{entry.subjectName}</span>
+                                      </span>
+                                    </div>
+
+                                    <div className="text-[11px] font-semibold text-text-primary mt-1.5 truncate flex items-center gap-1.5">
+                                      <ChalkboardTeacher size={13} className="text-text-muted flex-shrink-0" />
+                                      <span className="truncate">{entry.teacherName}</span>
+                                    </div>
+
+                                    <div className="text-[10px] text-text-muted mt-1 truncate flex items-center gap-1.5 font-mono">
+                                      <Buildings size={12} className="text-text-muted flex-shrink-0" />
+                                      <span className="truncate">{entry.effectiveRoom}</span>
+                                    </div>
+
+                                    {hasIssue && (
+                                      <div
+                                        title={slotIssues?.join('\n')}
+                                        className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-danger bg-danger-bg border border-danger/40 px-1.5 py-0.5 rounded-xs cursor-help animate-pulse"
+                                      >
+                                        <WarningCircle size={12} weight="fill" className="text-danger flex-shrink-0" />
+                                        <span className="truncate">Cảnh báo vi phạm</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Quick Hover Controls */}
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1 mt-1.5 pt-1 border-t border-black/10">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenSwapModal(d.day, periodConfig.period)}
+                                      title="Hoán đổi/Di chuyển tiết"
+                                      className="p-1 rounded-xs text-text-secondary hover:text-accent-text hover:bg-accent cursor-pointer transition-colors"
+                                    >
+                                      <ArrowsLeftRight size={13} weight="bold" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditModal(entry)}
+                                      title="Sửa tiết"
+                                      className="p-1 rounded-xs text-text-secondary hover:text-accent-text hover:bg-accent cursor-pointer transition-colors"
+                                    >
+                                      <PencilSimple size={13} weight="bold" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteEntry(entry)}
+                                      title="Xóa tiết"
+                                      className="p-1 rounded-xs text-text-secondary hover:text-danger hover:bg-danger-bg cursor-pointer transition-colors"
+                                    >
+                                      <Trash size={13} weight="bold" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div
+                                  onClick={() => handleOpenAddModal(d.day, periodConfig.period)}
+                                  className="h-full min-h-[75px] border-2 border-dashed border-border/70 hover:border-teal hover:bg-teal-subtle/20 rounded-xs flex flex-col items-center justify-center cursor-pointer transition-all group/empty p-1.5"
+                                >
+                                  <Plus size={16} className="text-text-muted/40 group-hover/empty:text-teal group-hover/empty:scale-110 transition-all" weight="bold" />
+                                  <span className="text-[10px] text-text-muted/50 group-hover/empty:text-teal mt-0.5 font-mono">
+                                    + Thêm
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </>
+                )}
               </tbody>
             </table>
           </div>
@@ -1370,7 +1540,7 @@ export default function AdminTimetablePage() {
               className="w-full text-xs h-9 px-3 rounded-sm border border-border bg-surface text-text-primary font-medium focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent"
             >
               <option value="">-- Chưa chỉ định (Hệ thống tự động gán) --</option>
-              {teachers.map((t) => (
+              {modalAvailableTeachers.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>

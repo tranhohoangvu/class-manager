@@ -39,6 +39,7 @@ import {
   TIMETABLE_DAYS,
   SUBJECT_COLOR_MAP,
   DEFAULT_SUBJECT_COLOR,
+  getGradeShift,
 } from '@/lib/constants';
 
 export default function DashboardPage() {
@@ -136,12 +137,21 @@ export default function DashboardPage() {
   const currentDayOfWeek = periodInfo?.dayOfWeek ?? (new Date().getDay() === 0 ? 8 : new Date().getDay() + 1);
   const isWeekend = currentDayOfWeek === 8;
   const todayDayConfig = TIMETABLE_DAYS.find((d) => d.day === (isWeekend ? 2 : currentDayOfWeek));
+  const classShift = classInfo ? getGradeShift(classInfo.grade) : 'morning';
 
   const todaySchedule = TIMETABLE_PERIODS
     .filter((period) => {
+      // Chỉ hiển thị ca học tương ứng với khối/lớp:
+      // Lớp ca Sáng (Khối 6, 9): chỉ hiển thị Tiết 1 - 5
+      // Lớp ca Chiều (Khối 7, 8): chỉ hiển thị Tiết 6 - 10
+      if (classShift === 'morning' && period.period > 5) return false;
+      if (classShift === 'afternoon' && period.period <= 5) return false;
+
       const targetDay = isWeekend ? 2 : currentDayOfWeek;
       if (targetDay === 7) {
-        return [1, 2, 3, 6, 7, 8].includes(period.period);
+        return classShift === 'morning'
+          ? [1, 2, 3].includes(period.period)
+          : [6, 7, 8].includes(period.period);
       }
       return true;
     })
@@ -176,8 +186,9 @@ export default function DashboardPage() {
     };
   });
 
+  const totalPeriodsToday = todaySchedule.length;
   const completedPeriodCount = todaySchedule.filter((s) => s.status === 'completed').length;
-  const periodProgressPercent = Math.round((completedPeriodCount / 5) * 100);
+  const periodProgressPercent = totalPeriodsToday > 0 ? Math.min(100, Math.round((completedPeriodCount / totalPeriodsToday) * 100)) : 0;
 
   return (
     <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
@@ -468,14 +479,14 @@ export default function DashboardPage() {
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-xs bg-teal-subtle text-teal border border-teal/30">
-                        BUỔI SÁNG (5 TIẾT)
+                        {classShift === 'morning' ? 'BUỔI SÁNG' : 'BUỔI CHIỀU'} ({totalPeriodsToday} TIẾT)
                       </span>
                     )}
                   </div>
                   <p className="text-[12px] text-text-muted mt-0.5">
                     {isWeekend
                       ? 'Học sinh nghỉ cuối tuần · Hiển thị lịch ngày học kế tiếp'
-                      : `Tiến độ: ${completedPeriodCount}/5 tiết hoàn thành (${periodProgressPercent}%)`}
+                      : `Tiến độ: ${completedPeriodCount}/${totalPeriodsToday} tiết hoàn thành (${periodProgressPercent}%)`}
                   </p>
                 </div>
               </div>

@@ -690,8 +690,13 @@ export default function TimetablePage() {
               })}
           </div>
 
-          {/* Class Quick-Select Chips */}
-          <div className="flex items-center gap-2 flex-wrap pt-0.5">
+          {/* Class Quick-Select Chips (Grid ngay hàng thẳng lối) */}
+          <div className={cn(
+            'grid gap-2 pt-0.5',
+            gradeFilter === 'all'
+              ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8'
+              : 'grid-cols-2 sm:grid-cols-4'
+          )}>
             {allowedClasses
               .filter((c) => gradeFilter === 'all' || c.grade === gradeFilter)
               .map((c) => {
@@ -703,7 +708,7 @@ export default function TimetablePage() {
                     type="button"
                     onClick={() => handleSelectClass(c.id)}
                     className={cn(
-                      'px-3 py-1.5 rounded-xs text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs',
+                      'w-full px-2.5 py-2 rounded-xs text-xs font-bold transition-all cursor-pointer flex items-center justify-between shadow-xs',
                       isSelected
                         ? shift === 'morning'
                           ? 'bg-amber-300 text-amber-950 border-2 border-border-strong ring-2 ring-amber-300'
@@ -713,9 +718,9 @@ export default function TimetablePage() {
                         : 'bg-teal-50/50 border border-teal/30 text-teal hover:bg-teal-100/50 hover:border-teal/50'
                     )}
                   >
-                    <span>{c.name}</span>
+                    <span className="truncate">{c.name}</span>
                     <span className={cn(
-                      'text-[9px] px-1.5 py-0.2 rounded-xs font-mono font-bold border',
+                      'text-[9px] px-1.5 py-0.2 rounded-xs font-mono font-bold border flex-shrink-0',
                       isSelected
                         ? 'bg-black/15 text-inherit border-black/20'
                         : shift === 'morning'
