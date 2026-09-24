@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   SquaresFour,
+  CalendarCheck,
+  CalendarDots,
   ChalkboardTeacher,
   Chalkboard,
-  CalendarDots,
   GearSix,
   SignOut,
   ArrowSquareOut,
@@ -18,6 +19,7 @@ import { useAuth } from '@/contexts/auth-context';
 
 const adminNavItems = [
   { href: '/admin/dashboard', label: 'Tổng quan hệ thống', icon: SquaresFour },
+  { href: '/admin/attendance', label: 'Quản lý Chuyên cần', icon: CalendarCheck },
   { href: '/admin/timetable', label: 'Quản lý Thời khóa biểu', icon: CalendarDots },
   { href: '/admin/teachers', label: 'Quản lý Giáo viên', icon: ChalkboardTeacher },
   { href: '/admin/classes', label: 'Quản lý Lớp học', icon: Chalkboard },

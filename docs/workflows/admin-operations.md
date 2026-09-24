@@ -77,6 +77,14 @@ Administrators are equipped with an emergency and reconciliation tool:
 - **Confirmation Modal:** Allows specifying date and target scope (Whole school or specific class).
 - **Functionality:** Wipes out all mistaken absence/tardy records and restores the cohort to 100% Present immediately.
 
+### 2.5. Dedicated Attendance Management Portal (`/admin/attendance`)
+To separate school-level executive governance from individual subject rolls, a dedicated **Quản lý Chuyên cần** tab is permanently pinned to the Admin Sidebar:
+- **School-Wide KPI Deck:** Live attendance rate (%), present tally, excused/unexcused absences, and tardy counts.
+- **4-Grade Cohort Breakdown:** Visual breakdown of Khối 6 & 9 (Morning Shift) and Khối 7 & 8 (Afternoon Shift).
+- **16-Class Granular Table:** Real-time roster counts, present/absent/late counts, compliance rates, single-class reset actions, and class detail modals.
+- **School-Wide Daily Exceptions Register:** Comprehensive roster of every student absent or late today across all 16 classes, including reasons/notes.
+- **Integrated Reset Tool:** Central hub for executing whole-school or per-class attendance resets.
+
 ---
 
 ## 3. Comprehensive Master Excel Workbook (4 Sheets)

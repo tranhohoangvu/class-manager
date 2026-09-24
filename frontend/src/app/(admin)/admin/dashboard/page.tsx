@@ -93,14 +93,6 @@ export default function AdminDashboardPage() {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  const { user } = useAuth();
-
-  // Reset Attendance Modal state
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const [resetTargetDate, setResetTargetDate] = useState<string>('');
-  const [resetTargetScope, setResetTargetScope] = useState<string>('all');
-  const [isResetting, setIsResetting] = useState(false);
-
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -160,45 +152,6 @@ export default function AdminDashboardPage() {
   const handleRefresh = () => {
     loadDashboardData();
     toast.success('Dữ liệu điều hành trường học đã được làm mới!');
-  };
-
-  // Open Reset Attendance Modal
-  const handleOpenResetModal = () => {
-    setResetTargetDate(attendanceOverview?.date || new Date().toISOString().split('T')[0]);
-    setResetTargetScope('all');
-    setIsResetModalOpen(true);
-  };
-
-  // Confirm Reset Attendance
-  const handleConfirmReset = () => {
-    try {
-      setIsResetting(true);
-      const targetClassId = resetTargetScope === 'all' ? undefined : resetTargetScope;
-      const currentUser = user || (LocalStore.getUsers().find((u) => u.role === 'ADMIN') || null);
-      const res = AttendanceService.resetAttendanceForDate(
-        resetTargetDate,
-        targetClassId,
-        currentUser
-      );
-
-      if (!res.success) {
-        toast.error(res.error || 'Đặt lại điểm danh thất bại');
-        return;
-      }
-
-      const scopeText =
-        resetTargetScope === 'all'
-          ? 'toàn bộ 16 lớp (480 học sinh)'
-          : `lớp ${classes.find((c) => c.id === resetTargetScope)?.name || resetTargetScope}`;
-
-      toast.success(`Đã đặt lại điểm danh ngày ${resetTargetDate} cho ${scopeText} về 100% Có mặt!`);
-      setIsResetModalOpen(false);
-      loadDashboardData();
-    } catch (err: any) {
-      toast.error('Lỗi khi đặt lại điểm danh: ' + (err?.message || 'Không xác định'));
-    } finally {
-      setIsResetting(false);
-    }
   };
 
   // Subject map
@@ -447,17 +400,6 @@ export default function AdminDashboardPage() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={handleOpenResetModal}
-            className="cursor-pointer bg-surface hover:bg-surface-muted text-text-primary border-border font-semibold shadow-2xs gap-1.5"
-            title="Khôi phục trạng thái 100% Có mặt cho toàn trường hoặc lớp khi có sai sót nhập liệu"
-          >
-            <ArrowsClockwise size={15} className="text-teal" />
-            <span className="hidden sm:inline">Đặt lại về Có mặt</span>
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
             onClick={handleExportComprehensiveReport}
             disabled={isExporting}
             className="cursor-pointer bg-surface hover:bg-surface-muted text-text-primary border-border font-semibold shadow-2xs"
@@ -591,25 +533,13 @@ export default function AdminDashboardPage() {
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleOpenResetModal}
-                className="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-teal bg-teal-subtle hover:bg-teal/20 border border-teal/30 rounded-xs transition-colors shadow-2xs"
-                title="Khôi phục trạng thái 100% Có mặt cho học sinh khi có sai sót nhập liệu"
-              >
-                <ArrowsClockwise size={13} weight="bold" />
-                <span>Đặt lại về Có mặt</span>
-              </button>
-
-              <Link
-                href="/attendance"
-                className="text-xs font-bold text-teal hover:underline flex items-center gap-1"
-              >
-                <span>Mở sổ điểm danh toàn trường</span>
-                <ArrowRight size={12} weight="bold" />
-              </Link>
-            </div>
+            <Link
+              href="/admin/attendance"
+              className="text-xs font-bold text-teal hover:underline flex items-center gap-1"
+            >
+              <span>Quản lý chuyên cần chi tiết</span>
+              <ArrowRight size={12} weight="bold" />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -694,7 +624,7 @@ export default function AdminDashboardPage() {
                     {items.map((item) => (
                       <Link
                         key={item.classId}
-                        href="/attendance"
+                        href="/admin/attendance"
                         className={cn(
                           'p-2 rounded-xs border text-text-primary text-xs flex items-center justify-between transition-all shadow-2xs hover:border-border-strong',
                           item.absentCount > 0
@@ -1273,111 +1203,6 @@ export default function AdminDashboardPage() {
           })}
         </div>
       </div>
-
-      {/* =============================================
-          MODAL: ĐẶT LẠI ĐIỂM DANH TOÀN TRƯỜNG VỀ CÓ MẶT
-          ============================================= */}
-      <Modal
-        isOpen={isResetModalOpen}
-        onClose={() => setIsResetModalOpen(false)}
-        title="Đặt lại điểm danh về Có mặt"
-        description="Khôi phục trạng thái 100% Có mặt cho học sinh khi có sai sót nhập liệu hoặc làm mới dữ liệu chuyên cần."
-        size="lg"
-        footer={
-          <div className="flex items-center justify-end gap-2.5 w-full">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsResetModalOpen(false)}
-              disabled={isResetting}
-              className="cursor-pointer"
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleConfirmReset}
-              disabled={isResetting}
-              className="cursor-pointer gap-1.5"
-            >
-              <CheckCircle size={15} weight="bold" />
-              <span>{isResetting ? 'Đang đặt lại...' : 'Xác nhận đặt lại về Có mặt'}</span>
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-4 py-1 text-xs">
-          {/* Info banner explaining Default-Present Attendance */}
-          <div className="p-3 rounded-xs border border-teal/30 bg-teal-subtle/50 text-text-primary space-y-1.5">
-            <div className="flex items-center gap-1.5 font-bold text-teal text-xs">
-              <Sparkle size={15} weight="fill" />
-              <span>Quy chế Điểm danh theo ngoại lệ (Default-Present Attendance)</span>
-            </div>
-            <p className="text-text-secondary text-[11px] leading-relaxed">
-              Mỗi khi sang ngày mới, hệ thống tự động coi <strong>100% học sinh của toàn bộ 16 lớp (480 học sinh)</strong> là Có mặt. Giáo viên chỉ cần vào sổ điểm danh để ghi nhận khi có phát sinh ngoại lệ <em>(Vắng có phép, Vắng không phép, Đi muộn)</em>.
-            </p>
-            <p className="text-text-muted text-[11px] leading-relaxed">
-              Công cụ này dùng khi giáo viên nhập nhầm dữ liệu trên diện rộng hoặc Ban Giám hiệu muốn làm sạch các ngoại lệ và đưa ngày được chọn trở về trạng thái <strong>100% Có mặt ban đầu</strong>.
-            </p>
-          </div>
-
-          {/* Form Controls */}
-          <div className="space-y-3 pt-1">
-            <div>
-              <label className="block text-xs font-bold text-text-primary mb-1">
-                Ngày áp dụng đặt lại
-              </label>
-              <input
-                type="date"
-                value={resetTargetDate}
-                onChange={(e) => setResetTargetDate(e.target.value)}
-                className="w-full bg-surface border border-border rounded-xs px-3 py-2 text-xs text-text-primary font-mono focus:outline-none focus:border-teal"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-text-primary mb-1">
-                Phạm vi đặt lại chuyên cần
-              </label>
-              <select
-                value={resetTargetScope}
-                onChange={(e) => setResetTargetScope(e.target.value)}
-                className="w-full bg-surface border border-border rounded-xs px-3 py-2 text-xs text-text-primary font-medium focus:outline-none focus:border-teal cursor-pointer"
-              >
-                <option value="all">⚡ Toàn bộ 16 lớp THCS (Toàn trường · 480 học sinh)</option>
-                <optgroup label="Khối 6 (Ca Sáng)">
-                  {classes.filter((c) => c.grade === 6).map((c) => (
-                    <option key={c.id} value={c.id}>Lớp {c.name} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
-                  ))}
-                </optgroup>
-                <optgroup label="Khối 7 (Ca Chiều)">
-                  {classes.filter((c) => c.grade === 7).map((c) => (
-                    <option key={c.id} value={c.id}>Lớp {c.name} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
-                  ))}
-                </optgroup>
-                <optgroup label="Khối 8 (Ca Chiều)">
-                  {classes.filter((c) => c.grade === 8).map((c) => (
-                    <option key={c.id} value={c.id}>Lớp {c.name} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
-                  ))}
-                </optgroup>
-                <optgroup label="Khối 9 (Ca Sáng)">
-                  {classes.filter((c) => c.grade === 9).map((c) => (
-                    <option key={c.id} value={c.id}>Lớp {c.name} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
-                  ))}
-                </optgroup>
-              </select>
-            </div>
-
-            <div className="p-3 rounded-xs border border-amber-300 bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-200 text-[11px] flex items-start gap-2.5">
-              <WarningCircle size={16} className="text-amber-700 flex-shrink-0 mt-0.5" weight="fill" />
-              <div className="leading-relaxed">
-                <strong>Xác nhận thao tác:</strong> Tất cả bản ghi vắng, đi muộn của ngày <strong>{resetTargetDate}</strong> trong phạm vi {resetTargetScope === 'all' ? 'Toàn trường' : `lớp ${classes.find((c) => c.id === resetTargetScope)?.name || resetTargetScope}`} sẽ được xóa và đặt lại về <strong>Có mặt</strong>.
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

@@ -58,7 +58,7 @@
 * **Primary Actor:** Administrator (Admin) or Homeroom Teacher (for own class)
 * **Preconditions:** User is logged in with Admin or GVCN privileges.
 * **Main Success Scenario:**
-  1. Admin navigates to `/admin/dashboard` and clicks **"Đặt lại về Có mặt"**.
+  1. Admin navigates to `/admin/attendance` (Quản lý Chuyên cần) and clicks the red action button **"Đặt lại về Có mặt"**.
   2. Confirmation modal prompts for:
      - Target Date (default: today).
      - Target Scope (`Toàn bộ 16 lớp (480 học sinh)` or specific class).
