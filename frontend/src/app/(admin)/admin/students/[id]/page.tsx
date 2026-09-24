@@ -37,7 +37,7 @@ import {
   AttendanceService,
   ClassService,
 } from '@/services';
-import { StudentRow, DeskWithSeats, StudentNoteRow, AttendanceRow, ClassRow, StudentFormData, UserRow } from '@/types';
+import { StudentRow, DeskWithSeats, StudentNoteRow, AttendanceRow, ClassRow, StudentFormData, UserRow, StudentStatus } from '@/types';
 import { Button } from '@/components/ui/button';
 import { StudentStatusBadge, AttendanceBadge } from '@/components/ui/badge';
 import { formatDateVietnamese } from '@/lib/utils';
