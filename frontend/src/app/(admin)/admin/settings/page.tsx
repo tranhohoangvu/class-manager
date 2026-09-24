@@ -31,8 +31,8 @@ export default function AdminSettingsPage() {
     <div className="p-6 md:p-8 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="pb-5 border-b border-border-strong">
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-          Cài đặt hệ thống
+        <h1 className="text-2xl font-extrabold tracking-wide uppercase text-text-primary">
+          CẤU HÌNH & CÀI ĐẶT HỆ THỐNG
         </h1>
         <p className="text-xs text-text-muted mt-1">
           Cấu hình quy mô toàn trường và quản lý cơ sở dữ liệu mẫu

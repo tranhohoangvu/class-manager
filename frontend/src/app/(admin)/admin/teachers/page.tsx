@@ -224,8 +224,8 @@ export default function AdminTeachersPage() {
               Năm học: 2026 - 2027
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary mt-2">
-            Quản lý Đội ngũ Giáo viên
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary mt-2">
+            QUẢN LÝ ĐỘI NGŨ GIÁO VIÊN
           </h1>
           <p className="text-xs text-text-muted mt-1 font-medium">
             Quản lý hồ sơ, cấp tài khoản và phân công chuyên môn giáo viên chủ nhiệm & bộ môn

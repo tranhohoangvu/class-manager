@@ -195,8 +195,8 @@ export default function AdminClassesPage() {
               Năm học: 2026 - 2027
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary mt-2">
-            Quản lý Lớp học
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary mt-2">
+            QUẢN LÝ LỚP HỌC
           </h1>
           <p className="text-xs text-text-muted mt-1 font-medium">
             Danh sách 16 lớp học 4 khối (6 - 9), phân công giáo viên chủ nhiệm và phòng học chuyên dụng

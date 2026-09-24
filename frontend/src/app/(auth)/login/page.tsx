@@ -148,8 +148,8 @@ export default function LoginPage() {
 
         {/* Welcome Heading */}
         <div className="mb-6">
-          <h1 className="text-xl font-bold tracking-tight text-text-primary">
-            Chào mừng trở lại
+          <h1 className="text-xl font-extrabold tracking-wide uppercase text-text-primary">
+            CHÀO MỪNG TRỞ LẠI
           </h1>
           <p className="text-sm text-text-secondary mt-1">
             Đăng nhập để quản lý lớp học, nề nếp và thời khóa biểu.

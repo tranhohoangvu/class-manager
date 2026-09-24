@@ -364,17 +364,17 @@ export default function AdminDashboardPage() {
           ============================================= */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-border">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text-primary">
-            Trung tâm Điều hành Nhà trường
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
+            TRUNG TÂM ĐIỀU HÀNH NHÀ TRƯỜNG
           </h1>
-          <p className="text-xs md:text-sm text-text-muted mt-1 font-medium flex items-center gap-2 flex-wrap">
-            <span className="text-text-secondary font-semibold">Trường THCS Nguyễn Tất Thành</span>
+          <p className="text-xs md:text-sm text-text-muted mt-1.5 font-medium flex items-center gap-2 flex-wrap">
+            <span className="text-text-primary font-bold">Trường THCS Nguyễn Tất Thành</span>
             <span>·</span>
-            <span>Năm học: 2026 - 2027</span>
+            <span className="text-text-secondary font-medium">Năm học: 2026 - 2027</span>
             <span>·</span>
-            <span>Học kỳ 1</span>
+            <span className="text-text-secondary font-medium">Học kỳ 1</span>
             <span>·</span>
-            <span className="inline-flex items-center gap-1 text-accent font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-xs bg-accent text-accent-text border border-border-strong font-mono font-bold text-xs shadow-xs">
               <CalendarCheck size={14} weight="bold" />
               Ngày {attendanceOverview.dateFormatted}
             </span>

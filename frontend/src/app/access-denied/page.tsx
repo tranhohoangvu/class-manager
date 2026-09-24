@@ -16,8 +16,8 @@ export default function AccessDeniedPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-xl font-semibold tracking-tight text-text-primary">
-            Truy cập bị từ chối
+          <h1 className="text-xl font-extrabold uppercase tracking-wide text-text-primary">
+            TRUY CẬP BỊ TỪ CHỐI
           </h1>
           <p className="text-sm text-text-muted leading-relaxed">
             Tài khoản <strong className="text-text-secondary">{user?.email || 'hiện tại'}</strong> không có quyền truy cập vào khu vực này.

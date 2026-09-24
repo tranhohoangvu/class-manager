@@ -295,8 +295,8 @@ Người báo cáo: ${user?.name || 'GVCN'}`;
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
-              Điểm danh {currentSubjectObj ? `tiết ${currentSubjectObj.name}` : 'buổi học'}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
+              ĐIỂM DANH {currentSubjectObj ? `TIẾT ${currentSubjectObj.name}` : 'BUỔI HỌC'}
             </h1>
             {isSubjectTeacher ? (
               <RoleBadge

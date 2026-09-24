@@ -185,8 +185,8 @@ export default function DashboardPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
-              Chào buổi sáng, {user?.role === 'ADMIN' || user?.name?.includes('Admin') ? 'Quản trị viên' : (user?.name || 'Thầy/Cô')} 👋
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
+              CHÀO BUỔI SÁNG, {user?.role === 'ADMIN' || user?.name?.includes('Admin') ? 'QUẢN TRỊ VIÊN' : (user?.name || 'THẦY/CÔ')} 👋
             </h1>
             {isHomeroom ? (
               <RoleBadge role="HOMEROOM" label={`Chủ nhiệm ${classInfo.name}`} size="md" />

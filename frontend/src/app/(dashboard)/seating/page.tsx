@@ -339,25 +339,25 @@ export default function SeatingPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border no-print">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2.5 py-1 text-xs font-bold bg-teal-subtle text-teal border border-teal/30 rounded-xs inline-flex items-center gap-1.5 shadow-xs">
+            <span className="px-2.5 py-1 text-xs font-bold bg-teal text-surface border border-teal-700 rounded-xs inline-flex items-center gap-1.5 shadow-xs">
               <Chalkboard size={14} weight="bold" />
               Trường THCS Nguyễn Tất Thành
             </span>
-            <span className="px-2.5 py-1 text-xs font-semibold bg-surface-muted text-text-secondary border border-border rounded-xs">
+            <span className="px-2.5 py-1 text-xs font-bold bg-surface text-text-primary border border-border-strong rounded-xs shadow-xs">
               {currentClass ? currentClass.name : 'Lớp học'} · Phòng {currentClass?.room_name || '101'}
             </span>
-            <span className="px-2.5 py-1 text-xs font-bold bg-success-bg text-success border border-success/30 rounded-xs">
+            <span className="px-2.5 py-1 text-xs font-bold font-mono bg-emerald-100 text-emerald-950 border border-emerald-400 rounded-xs shadow-xs">
               {seatedCount}/{totalCapacity} chỗ đã xếp
             </span>
-            <span className="px-2.5 py-1 text-xs font-medium text-text-muted bg-surface-muted rounded-xs border border-border">
+            <span className="px-2.5 py-1 text-xs font-bold font-mono text-amber-950 bg-amber-100 rounded-xs border border-amber-400 shadow-xs">
               {genderStats.maleCount} Nam · {genderStats.femaleCount} Nữ
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary mt-2">
-            Sơ đồ Chỗ ngồi {currentClass ? currentClass.name : 'Lớp học'}
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary mt-2">
+            SƠ ĐỒ CHỖ NGỒI {currentClass ? currentClass.name : 'LỚP HỌC'}
           </h1>
-          <p className="text-sm text-text-muted mt-1 font-medium">
+          <p className="text-sm text-text-secondary mt-1 font-medium">
             Sơ đồ phòng học: {distinctColNumbers.length || 4} dãy bàn đôi · {distinctRowNumbers.length || 5} hàng ({desks.length} bàn · sức chứa tối đa {totalCapacity} học sinh).
           </p>
         </div>
@@ -560,37 +560,37 @@ export default function SeatingPage() {
         {viewPerspective === 'nhin_tu_duoi_len' && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6 border-b-2 border-border-strong">
             {/* Front Left: BÀN GIÁO VIÊN (Aligned with Dãy 1) */}
-            <div className="bg-surface-muted border-2 border-border-strong rounded-sm p-3.5 flex items-center gap-3 shadow-xs">
-              <div className="w-10 h-10 rounded-xs bg-accent text-accent-text border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs">
+            <div className="bg-amber-50/80 border-2 border-amber-300 rounded-sm p-3.5 flex items-center gap-3 shadow-xs">
+              <div className="w-10 h-10 rounded-xs bg-amber-300 text-amber-950 border border-amber-400 flex items-center justify-center flex-shrink-0 shadow-xs">
                 <ChalkboardTeacher size={22} weight="bold" />
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-bold uppercase tracking-wider text-text-primary">BÀN GIÁO VIÊN</div>
-                <div className="text-[11px] text-text-muted truncate font-medium mt-0.5">
+                <div className="text-xs font-bold uppercase tracking-wider text-amber-950">BÀN GIÁO VIÊN</div>
+                <div className="text-[11px] text-amber-900 truncate font-semibold mt-0.5">
                   {teacherName ? `GVCN: ${teacherName}` : 'Vị trí giảng dạy (Cạnh Dãy 1)'}
                 </div>
               </div>
             </div>
 
             {/* Front Center: BẢNG LỚP HỌC (Aligned with Dãy 2 & 3) */}
-            <div className="md:col-span-2 bg-[#132a24] text-cream border-2 border-[#244b3f] rounded-sm p-4 text-center shadow-xs relative flex flex-col justify-center">
-              <div className="text-xs font-extrabold uppercase tracking-widest text-[#a8dfc8] flex items-center justify-center gap-2">
+            <div className="md:col-span-2 bg-[#0e271f] text-white border-2 border-[#225745] rounded-sm p-4 text-center shadow-xs relative flex flex-col justify-center">
+              <div className="text-xs font-black uppercase tracking-widest text-[#85e3be] flex items-center justify-center gap-2">
                 <Chalkboard size={18} weight="bold" />
                 <span>BỤC GIẢNG & BẢNG VIẾT PHẤN</span>
               </div>
-              <div className="text-[11px] text-cream/70 mt-1 font-mono font-medium">
+              <div className="text-[11px] text-[#e0f5ed] mt-1 font-mono font-semibold">
                 Bảng từ chống lóa 4.0m · Hướng nhìn từ cuối lớp lên bục giảng
               </div>
             </div>
 
             {/* Front Right: CỬA VÀO (Aligned with Dãy 4) */}
-            <div className="bg-surface-muted border-2 border-border-strong rounded-sm p-3.5 flex items-center gap-3 shadow-xs">
-              <div className="w-10 h-10 rounded-xs bg-teal text-surface border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs">
+            <div className="bg-teal-50/80 border-2 border-teal/40 rounded-sm p-3.5 flex items-center gap-3 shadow-xs">
+              <div className="w-10 h-10 rounded-xs bg-teal text-surface border border-teal-700 flex items-center justify-center flex-shrink-0 shadow-xs">
                 <Door size={22} weight="bold" />
               </div>
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-text-primary">CỬA RA VÀO</div>
-                <div className="text-[11px] text-text-muted font-medium mt-0.5">Lối vào lớp học (Cạnh Dãy 4)</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-teal">CỬA RA VÀO</div>
+                <div className="text-[11px] text-teal-900 font-semibold mt-0.5">Lối vào lớp học (Cạnh Dãy 4)</div>
               </div>
             </div>
           </div>
@@ -601,20 +601,20 @@ export default function SeatingPage() {
           {orderedColNumbers.map((col) => {
             const colInfo =
               col === 1
-                ? { label: 'DÃY 1', note: 'Sát bàn GV / Cửa sổ' }
+                ? { label: 'DÃY 1', note: 'Sát bàn GV / Cửa sổ', color: 'bg-amber-100/70 border-amber-300 text-amber-950' }
                 : col === 2
-                ? { label: 'DÃY 2', note: 'Giữa trái' }
+                ? { label: 'DÃY 2', note: 'Giữa trái', color: 'bg-teal-100/70 border-teal/40 text-teal' }
                 : col === 3
-                ? { label: 'DÃY 3', note: 'Giữa phải' }
-                : { label: 'DÃY 4', note: 'Sát cửa ra vào' };
+                ? { label: 'DÃY 3', note: 'Giữa phải', color: 'bg-teal-100/70 border-teal/40 text-teal' }
+                : { label: 'DÃY 4', note: 'Sát cửa ra vào', color: 'bg-amber-100/70 border-amber-300 text-amber-950' };
 
             return (
               <div
                 key={col}
-                className="py-2 px-2 bg-surface-muted rounded-xs border border-border-strong flex flex-col items-center justify-center shadow-xs"
+                className={cn('py-2 px-2 rounded-xs border-2 flex flex-col items-center justify-center shadow-xs', colInfo.color)}
               >
-                <span className="text-xs font-extrabold tracking-wider text-text-primary font-mono">{colInfo.label}</span>
-                <span className="text-[10px] text-text-muted font-medium mt-0.5">{colInfo.note}</span>
+                <span className="text-xs font-black tracking-wider font-mono">{colInfo.label}</span>
+                <span className="text-[10px] font-semibold opacity-90 mt-0.5">{colInfo.note}</span>
               </div>
             );
           })}
@@ -674,35 +674,39 @@ export default function SeatingPage() {
                           (genderFilter === 'female' && isFemale));
 
                       // Styling rules based on active overlay / filter
-                      let containerClasses = 'bg-surface border-border-strong hover:border-accent hover:bg-surface-muted/30 shadow-xs';
+                      let containerClasses = isMale
+                        ? 'bg-[#f0f8f8] border-teal/40 hover:border-teal hover:bg-[#e4f3f3] shadow-xs'
+                        : isFemale
+                        ? 'bg-[#fcf2f4] border-[#964253]/35 hover:border-[#964253] hover:bg-[#fae4e8] shadow-xs'
+                        : 'bg-surface border-border-strong hover:border-accent hover:bg-surface-muted/30 shadow-xs';
 
                       if (isSeatSelected) {
-                        containerClasses = 'bg-accent/20 border-accent ring-2 ring-accent shadow-xs';
+                        containerClasses = 'bg-accent/40 border-2 border-accent-text ring-2 ring-accent shadow-xs';
                       } else if (showAttendanceOverlay && student) {
                         if (attStatus === 'absent') {
-                          containerClasses = 'bg-danger-bg border-danger ring-2 ring-danger/30 shadow-xs';
+                          containerClasses = 'bg-danger-bg border-2 border-danger ring-2 ring-danger/30 shadow-xs';
                         } else if (attStatus === 'late') {
-                          containerClasses = 'bg-warning-bg border-warning ring-2 ring-warning/30 shadow-xs';
+                          containerClasses = 'bg-warning-bg border-2 border-warning ring-2 ring-warning/30 shadow-xs';
                         } else if (attStatus === 'excused') {
-                          containerClasses = 'bg-surface-muted border-border-strong ring-2 ring-border shadow-xs';
+                          containerClasses = 'bg-indigo-50 border-2 border-indigo-400 ring-2 ring-indigo-200 shadow-xs';
                         } else {
-                          containerClasses = 'bg-success-bg border-success/60 shadow-xs';
+                          containerClasses = 'bg-success-bg border-2 border-success/60 shadow-xs';
                         }
                       } else if (isHighlightedByGender) {
                         if (isMale) {
-                          containerClasses = 'bg-teal-subtle border-teal ring-2 ring-teal/30 shadow-xs';
+                          containerClasses = 'bg-teal-subtle border-2 border-teal ring-2 ring-teal/30 shadow-xs';
                         } else if (isFemale) {
-                          containerClasses = 'bg-[#fcf0f2] border-[#964253] ring-2 ring-[#964253]/30 shadow-xs';
+                          containerClasses = 'bg-[#fcf0f2] border-2 border-[#964253] ring-2 ring-[#964253]/30 shadow-xs';
                         }
                       } else if (!student) {
-                        containerClasses = 'bg-surface-muted/30 border-dashed border-border-strong hover:bg-accent/10 hover:border-accent text-text-muted';
+                        containerClasses = 'bg-[#fffcf7] border-2 border-dashed border-border-strong/40 hover:bg-accent/20 hover:border-border-strong text-text-muted shadow-2xs';
                       }
 
                       return (
                         <div
                           onClick={() => handleSeatClick(seatItem)}
                           className={cn(
-                            'p-2.5 rounded-xs border-2 text-xs cursor-pointer transition-all relative group min-h-[84px] flex flex-col justify-between',
+                            'p-2.5 rounded-xs border-2 text-xs cursor-pointer transition-all relative group min-h-[88px] flex flex-col justify-between',
                             containerClasses,
                             isDimmedByGender && 'opacity-25 filter grayscale'
                           )}
@@ -710,28 +714,33 @@ export default function SeatingPage() {
                           {student ? (
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-mono text-text-muted font-bold">
+                                <span className="text-[10px] font-mono text-text-secondary font-bold">
                                   {student.student_code}
                                 </span>
                                 <div className="flex items-center gap-1">
-                                  <span className="text-[9px] font-bold text-text-muted font-mono bg-surface-muted px-1 rounded-xs border border-border">
+                                  <span className={cn(
+                                    "text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-xs border",
+                                    isMale
+                                      ? "bg-teal-100 text-teal border-teal/30"
+                                      : "bg-rose-100 text-[#964253] border-rose-300"
+                                  )}>
                                     {seatItem === seat01 ? '01' : '02'}
                                   </span>
-                                  {student.gender === 'male' ? (
-                                    <GenderMale size={13} weight="bold" className="text-teal" />
+                                  {isMale ? (
+                                    <GenderMale size={14} weight="bold" className="text-teal" />
                                   ) : (
-                                    <GenderFemale size={13} weight="bold" className="text-[#964253]" />
+                                    <GenderFemale size={14} weight="bold" className="text-[#964253]" />
                                   )}
                                 </div>
                               </div>
 
                               <div
-                                className="font-bold text-text-primary text-[13px] leading-tight truncate"
+                                className="font-black text-text-primary text-[14px] leading-tight truncate"
                                 title={student.full_name}
                               >
                                 {student.full_name.split(' ').slice(-1)[0]}
                               </div>
-                              <div className="text-[11px] text-text-muted truncate leading-tight">
+                              <div className="text-[11px] text-text-secondary font-semibold truncate leading-tight">
                                 {student.full_name.split(' ').slice(0, -1).join(' ')}
                               </div>
 
@@ -739,22 +748,22 @@ export default function SeatingPage() {
                               {showAttendanceOverlay && attStatus && (
                                 <div className="pt-0.5">
                                   {attStatus === 'absent' && (
-                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-danger text-white tracking-wider">
+                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-danger text-white tracking-wider font-mono">
                                       VẮNG
                                     </span>
                                   )}
                                   {attStatus === 'late' && (
-                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-warning text-accent-text tracking-wider">
+                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-warning text-accent-text tracking-wider font-mono">
                                       MUỘN
                                     </span>
                                   )}
                                   {attStatus === 'excused' && (
-                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-surface-muted border border-border-strong text-text-secondary tracking-wider">
+                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-black bg-indigo-100 border border-indigo-400 text-indigo-950 tracking-wider font-mono">
                                       PHÉP
                                     </span>
                                   )}
                                   {attStatus === 'present' && (
-                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-success text-white tracking-wider">
+                                    <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-bold bg-success text-white tracking-wider font-mono">
                                       CÓ MẶT
                                     </span>
                                   )}
@@ -773,12 +782,12 @@ export default function SeatingPage() {
                               )}
                             </div>
                           ) : (
-                            <div className="py-3.5 text-center space-y-0.5">
-                              <div className="text-[11px] font-semibold text-text-muted">
-                                {seatItem === seat01 ? '+ Trống (01)' : '+ Trống (02)'}
+                            <div className="py-3.5 text-center space-y-1">
+                              <div className="text-[11px] font-bold text-text-secondary">
+                                {seatItem === seat01 ? '+ Ghế 01' : '+ Ghế 02'}
                               </div>
                               <div className="text-[9px] text-text-muted font-mono">
-                                {seatItem === seat01 ? 'Vị trí 01' : 'Vị trí 02'}
+                                Trống · Bấm để xếp
                               </div>
                             </div>
                           )}
@@ -789,16 +798,16 @@ export default function SeatingPage() {
                     return (
                       <div
                         key={desk.id}
-                        className="bg-surface rounded-sm border-2 border-border-strong p-3 shadow-xs hover:border-accent transition-all flex flex-col justify-between"
+                        className="bg-[#faf6ee] rounded-sm border-2 border-border-strong p-3 shadow-xs hover:border-accent-text transition-all flex flex-col justify-between"
                       >
                         {/* Desk Header Badge */}
-                        <div className="flex items-center justify-between text-xs pb-2 border-b border-border">
+                        <div className="flex items-center justify-between text-xs pb-2 border-b border-border-strong/40">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-extrabold text-text-primary text-[13px] font-mono">
+                            <span className="font-black text-amber-950 text-[13px] font-mono px-2 py-0.5 rounded-xs bg-amber-200/80 border border-amber-400 shadow-2xs">
                               Bàn {desk.desk_number.toString().padStart(2, '0')}
                             </span>
                           </div>
-                          <span className="text-[11px] font-semibold font-mono text-text-muted bg-surface-muted px-2 py-0.5 rounded-xs border border-border">
+                          <span className="text-[11px] font-bold font-mono text-text-secondary bg-surface px-2 py-0.5 rounded-xs border border-border-strong shadow-2xs">
                             Dãy {desk.col_num} · H{desk.row_num}
                           </span>
                         </div>
@@ -845,27 +854,27 @@ export default function SeatingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-stretch">
               {/* Front Left: CỬA RA VÀO (Aligned with Dãy 4) */}
-              <div className="bg-surface-muted border-2 border-border-strong rounded-sm p-4 flex items-center gap-3.5 shadow-xs">
-                <div className="w-11 h-11 rounded-xs bg-teal text-surface border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs">
+              <div className="bg-teal-50/80 border-2 border-teal/40 rounded-sm p-4 flex items-center gap-3.5 shadow-xs">
+                <div className="w-11 h-11 rounded-xs bg-teal text-surface border border-teal-700 flex items-center justify-center flex-shrink-0 shadow-xs">
                   <Door size={24} weight="bold" />
                 </div>
                 <div>
-                  <div className="text-xs font-extrabold uppercase tracking-wider text-text-primary">
+                  <div className="text-xs font-black uppercase tracking-wider text-teal">
                     CỬA RA VÀO
                   </div>
-                  <div className="text-[11px] text-text-muted font-medium mt-0.5">
+                  <div className="text-[11px] text-teal-900 font-semibold mt-0.5">
                     Lối vào lớp học (Cạnh Dãy 4)
                   </div>
                 </div>
               </div>
 
               {/* Front Center: BẢNG VIẾT PHẤN & BỤC GIẢNG (Aligned with Dãy 3 & Dãy 2) */}
-              <div className="md:col-span-2 bg-[#132a24] text-cream border-2 border-[#244b3f] rounded-sm p-4 shadow-xs relative flex flex-col justify-center text-center">
-                <div className="text-[13px] font-extrabold uppercase tracking-widest text-[#a8dfc8] flex items-center justify-center gap-2">
+              <div className="md:col-span-2 bg-[#0e271f] text-white border-2 border-[#225745] rounded-sm p-4 shadow-xs relative flex flex-col justify-center text-center">
+                <div className="text-[13px] font-black uppercase tracking-widest text-[#85e3be] flex items-center justify-center gap-2">
                   <Chalkboard size={20} weight="bold" />
                   <span>BỤC GIẢNG & BẢNG VIẾT PHẤN</span>
                 </div>
-                <div className="text-[11px] text-cream/70 mt-1 font-mono font-medium">
+                <div className="text-[11px] text-[#e0f5ed] mt-1 font-mono font-semibold">
                   Bảng từ chống lóa 4.0m · Hướng nhìn từ bục giảng xuống lớp
                 </div>
 
@@ -878,15 +887,15 @@ export default function SeatingPage() {
               </div>
 
               {/* Front Right: BÀN GIÁO VIÊN (Aligned with Dãy 1) */}
-              <div className="bg-surface-muted border-2 border-border-strong rounded-sm p-4 flex items-center gap-3.5 shadow-xs">
-                <div className="w-11 h-11 rounded-xs bg-accent text-accent-text border border-border-strong flex items-center justify-center flex-shrink-0 shadow-xs">
+              <div className="bg-amber-50/80 border-2 border-amber-300 rounded-sm p-4 flex items-center gap-3.5 shadow-xs">
+                <div className="w-11 h-11 rounded-xs bg-amber-300 text-amber-950 border border-amber-400 flex items-center justify-center flex-shrink-0 shadow-xs">
                   <ChalkboardTeacher size={24} weight="bold" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-extrabold uppercase tracking-wider text-text-primary">
+                  <div className="text-xs font-black uppercase tracking-wider text-amber-950">
                     BÀN GIÁO VIÊN
                   </div>
-                  <div className="text-[11px] text-text-muted truncate font-medium mt-0.5">
+                  <div className="text-[11px] text-amber-900 truncate font-semibold mt-0.5">
                     {teacherName ? `GVCN: ${teacherName}` : 'Vị trí giảng bài (Cạnh Dãy 1)'}
                   </div>
                 </div>

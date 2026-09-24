@@ -347,8 +347,8 @@ export default function StudentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
-              Danh sách học sinh
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
+              DANH SÁCH HỌC SINH
             </h1>
             <span className="px-2.5 py-0.5 text-xs font-bold font-mono bg-teal-subtle text-teal rounded-xs border border-teal/30">
               {students.length} học sinh

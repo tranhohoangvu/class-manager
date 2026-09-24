@@ -124,8 +124,8 @@ export default function SettingsPage() {
     <div className="p-6 md:p-8 space-y-8 max-w-4xl mx-auto">
       {/* Top Header */}
       <div className="pb-6 border-b border-border">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
-          Cài đặt lớp học
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
+          CÀI ĐẶT LỚP HỌC
         </h1>
         <p className="text-sm text-text-secondary mt-1.5">
           Tuỳ chỉnh thông số lớp học, thông tin phòng và quản trị cơ sở dữ liệu

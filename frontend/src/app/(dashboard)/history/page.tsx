@@ -201,7 +201,7 @@ export default function AttendanceHistoryPage() {
       case 'excused':
         return (
           <span
-            className="w-5 h-5 rounded-xs bg-surface-muted border border-border-strong text-text-secondary text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs"
+            className="w-5 h-5 rounded-xs bg-indigo-100 border border-indigo-400 text-indigo-950 text-[10px] font-black font-mono inline-flex items-center justify-center shadow-xs"
             title="Có phép"
           >
             P
@@ -216,8 +216,8 @@ export default function AttendanceHistoryPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
-              Lịch sử điểm danh {currentClass ? currentClass.name : 'lớp học'}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide uppercase text-text-primary">
+              LỊCH SỬ CHUYÊN CẦN {currentClass ? currentClass.name : 'LỚP HỌC'}
             </h1>
             <span className="px-2.5 py-0.5 text-xs font-bold font-mono bg-teal-subtle text-teal rounded-xs border border-teal/30">
               {dates.length} buổi đã học
@@ -387,15 +387,15 @@ export default function AttendanceHistoryPage() {
             <span>Vắng</span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-xs bg-warning text-accent-text text-[10px] font-bold font-mono inline-flex items-center justify-center">M</span>
-            <span>Đi muộn</span>
+            <span className="w-5 h-5 rounded-xs bg-warning text-accent-text text-[10px] font-bold font-mono inline-flex items-center justify-center shadow-xs">M</span>
+            <span className="font-semibold text-text-primary">Đi muộn</span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span className="w-5 h-5 rounded-xs bg-surface-muted border border-border text-text-secondary text-[10px] font-bold font-mono inline-flex items-center justify-center">P</span>
-            <span>Có phép</span>
+            <span className="w-5 h-5 rounded-xs bg-indigo-100 border border-indigo-400 text-indigo-950 text-[10px] font-black font-mono inline-flex items-center justify-center shadow-xs">P</span>
+            <span className="font-semibold text-text-primary">Có phép</span>
           </span>
         </div>
-        <div className="text-xs text-text-muted font-mono">
+        <div className="text-xs text-text-secondary font-mono">
           <span>Hiển thị <strong className="text-text-primary font-bold">{dates.length}</strong> buổi học gần nhất</span>
         </div>
       </div>
@@ -442,7 +442,7 @@ export default function AttendanceHistoryPage() {
                     <tr key={item.student.id} className="hover:bg-surface-muted/50 transition-colors h-[54px]">
                       <td className="px-5 py-3 sticky left-0 bg-surface z-10 border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-xs bg-surface-muted text-text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 border border-border-strong font-mono shadow-xs">
+                          <div className="w-7 h-7 rounded-xs bg-accent/30 text-accent-text font-black text-xs flex items-center justify-center flex-shrink-0 border border-border-strong font-mono shadow-2xs">
                             {initial}
                           </div>
                           <div className="min-w-0">
@@ -452,7 +452,7 @@ export default function AttendanceHistoryPage() {
                             >
                               {item.student.full_name}
                             </Link>
-                            <span className="text-xs text-text-muted font-mono block">
+                            <span className="text-xs text-text-secondary font-mono font-bold block">
                               {item.student.student_code}
                             </span>
                           </div>

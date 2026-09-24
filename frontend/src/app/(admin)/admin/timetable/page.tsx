@@ -430,8 +430,8 @@ export default function AdminTimetablePage() {
               <CalendarDots size={22} weight="duotone" />
             </span>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-text-primary">
-                Quản lý Thời khóa biểu & Xếp lịch
+              <h1 className="text-xl font-extrabold tracking-wide uppercase text-text-primary">
+                QUẢN LÝ THỜI KHÓA BIỂU TOÀN TRƯỜNG
               </h1>
               <p className="text-xs text-text-muted mt-0.5">
                 Kiểm soát, điều phối, tổ chức và kiểm toán lịch học toàn trường theo quy chuẩn THCS.

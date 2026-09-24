@@ -534,8 +534,8 @@ export default function TimetablePage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-strong">
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-                Thời khóa biểu — {activeClass.name}
+              <h1 className="text-2xl font-extrabold tracking-wide uppercase text-text-primary">
+                THỜI KHÓA BIỂU — {activeClass.name}
               </h1>
               <span className={cn(
                 "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-xs border shadow-xs uppercase",
