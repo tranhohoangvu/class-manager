@@ -45,6 +45,23 @@ import { cn } from '@/lib/utils';
 import { getGradeShift } from '@/lib/constants';
 
 type StatusFilter = 'all' | 'has_absence' | 'perfect';
+type AttendanceSortOption =
+  | 'class_asc'
+  | 'class_desc'
+  | 'absent_desc'
+  | 'absent_asc'
+  | 'late_desc'
+  | 'late_asc'
+  | 'rate_asc'
+  | 'rate_desc'
+  | 'students_desc';
+
+// Helper to normalize class display names and avoid "Lớp Lớp 6A1" duplicate prefixes
+const formatClassName = (name?: string) => {
+  if (!name) return '';
+  const clean = name.replace(/^lớp\s+/i, '').trim();
+  return `Lớp ${clean}`;
+};
 
 export default function AdminAttendanceManagementPage() {
   const { user } = useAuth();
@@ -67,6 +84,7 @@ export default function AdminAttendanceManagementPage() {
   // Filters & Search
   const [gradeFilter, setGradeFilter] = useState<'all' | '6' | '7' | '8' | '9'>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [sortBy, setSortBy] = useState<AttendanceSortOption>('class_asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -145,7 +163,7 @@ export default function AdminAttendanceManagementPage() {
       const scopeText =
         resetTargetScope === 'all'
           ? 'toàn bộ 16 lớp (480 học sinh)'
-          : `lớp ${classes.find((c) => c.id === resetTargetScope)?.name || resetTargetScope}`;
+          : formatClassName(classes.find((c) => c.id === resetTargetScope)?.name || resetTargetScope);
 
       toast.success(`Đã đặt lại điểm danh ngày ${selectedDate} cho ${scopeText} về 100% Có mặt!`);
       setIsResetModalOpen(false);
@@ -165,7 +183,7 @@ export default function AdminAttendanceManagementPage() {
 
   // Filtered class list
   const filteredClasses = useMemo(() => {
-    return classList.filter((item) => {
+    const list = classList.filter((item) => {
       const matchGrade = gradeFilter === 'all' || item.grade.toString() === gradeFilter;
       const q = searchQuery.toLowerCase().trim();
       const matchSearch =
@@ -183,7 +201,26 @@ export default function AdminAttendanceManagementPage() {
 
       return matchGrade && matchSearch && matchStatus;
     });
-  }, [classList, gradeFilter, searchQuery, statusFilter]);
+
+    return list.sort((a, b) => {
+      if (sortBy === 'class_asc') {
+        if (a.grade !== b.grade) return a.grade - b.grade;
+        return a.className.localeCompare(b.className, 'vi', { numeric: true });
+      }
+      if (sortBy === 'class_desc') {
+        if (a.grade !== b.grade) return b.grade - a.grade;
+        return b.className.localeCompare(a.className, 'vi', { numeric: true });
+      }
+      if (sortBy === 'absent_desc') return b.absentCount - a.absentCount;
+      if (sortBy === 'absent_asc') return a.absentCount - b.absentCount;
+      if (sortBy === 'late_desc') return b.lateCount - a.lateCount;
+      if (sortBy === 'late_asc') return a.lateCount - b.lateCount;
+      if (sortBy === 'rate_asc') return a.attendanceRate - b.attendanceRate;
+      if (sortBy === 'rate_desc') return b.attendanceRate - a.attendanceRate;
+      if (sortBy === 'students_desc') return b.totalStudents - a.totalStudents;
+      return 0;
+    });
+  }, [classList, gradeFilter, searchQuery, statusFilter, sortBy]);
 
   // List of all students with non-present records across whole school for selected date
   const schoolWideExceptions = useMemo(() => {
@@ -607,9 +644,27 @@ export default function AdminAttendanceManagementPage() {
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
               className="h-8 bg-surface border border-border rounded-xs px-3 text-xs text-text-primary font-medium cursor-pointer focus:outline-none focus:border-teal whitespace-nowrap flex-shrink-0"
             >
-              <option value="all">Tất cả tình trạng (16 lớp)</option>
+              <option value="all">Tất cả tình trạng</option>
               <option value="has_absence">Lớp có học sinh vắng/muộn</option>
               <option value="perfect">Lớp chuyên cần đủ 100%</option>
+            </select>
+
+            {/* Sorting Dropdown */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as AttendanceSortOption)}
+              className="h-8 bg-surface border border-border rounded-xs px-2.5 text-xs text-text-primary font-semibold cursor-pointer focus:outline-none focus:border-teal whitespace-nowrap flex-shrink-0"
+              title="Sắp xếp danh sách chuyên cần"
+            >
+              <option value="class_asc">Mặc định: Khối 6 &rarr; Khối 9</option>
+              <option value="class_desc">Tên lớp: Z &rarr; A</option>
+              <option value="absent_desc">🚨 Vắng nhiều nhất</option>
+              <option value="absent_asc">Vắng ít nhất</option>
+              <option value="late_desc">⏱ Đi muộn nhiều nhất</option>
+              <option value="late_asc">Đi muộn ít nhất</option>
+              <option value="rate_asc">⚠️ Chuyên cần thấp nhất</option>
+              <option value="rate_desc">✓ Chuyên cần cao nhất (100%)</option>
+              <option value="students_desc">Sĩ số: Nhiều nhất</option>
             </select>
 
             {/* Search Input */}
@@ -630,16 +685,60 @@ export default function AdminAttendanceManagementPage() {
         <div className="w-full border border-border rounded-xs overflow-hidden">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-surface-muted/60 border-b border-border text-text-secondary font-bold uppercase tracking-wider text-[11px] whitespace-nowrap">
+              <tr className="bg-surface-muted/60 border-b border-border text-text-secondary font-bold uppercase tracking-wider text-[11px] whitespace-nowrap select-none">
                 <th className="py-2.5 px-3 w-12 text-center whitespace-nowrap">STT</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Lớp học</th>
+                <th
+                  className="py-2.5 px-3 whitespace-nowrap cursor-pointer hover:text-text-primary"
+                  onClick={() => setSortBy(sortBy === 'class_asc' ? 'class_desc' : 'class_asc')}
+                >
+                  <div className="flex items-center gap-1">
+                    <span>Lớp học</span>
+                    {sortBy === 'class_asc' && <CaretUp size={11} weight="bold" />}
+                    {sortBy === 'class_desc' && <CaretDown size={11} weight="bold" />}
+                  </div>
+                </th>
                 <th className="py-2.5 px-3 whitespace-nowrap">Ca học & Phòng</th>
                 <th className="py-2.5 px-3 whitespace-nowrap">Giáo viên chủ nhiệm</th>
-                <th className="py-2.5 px-3 text-center whitespace-nowrap">Sĩ số</th>
+                <th
+                  className="py-2.5 px-3 text-center whitespace-nowrap cursor-pointer hover:text-text-primary"
+                  onClick={() => setSortBy(sortBy === 'students_desc' ? 'class_asc' : 'students_desc')}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Sĩ số</span>
+                    {sortBy === 'students_desc' && <CaretDown size={11} weight="bold" />}
+                  </div>
+                </th>
                 <th className="py-2.5 px-3 text-center whitespace-nowrap">Có mặt</th>
-                <th className="py-2.5 px-3 text-center whitespace-nowrap">Vắng</th>
-                <th className="py-2.5 px-3 text-center whitespace-nowrap">Muộn</th>
-                <th className="py-2.5 px-3 text-center whitespace-nowrap">Tỷ lệ</th>
+                <th
+                  className="py-2.5 px-3 text-center whitespace-nowrap cursor-pointer hover:text-text-primary"
+                  onClick={() => setSortBy(sortBy === 'absent_desc' ? 'absent_asc' : 'absent_desc')}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Vắng</span>
+                    {sortBy === 'absent_desc' && <CaretDown size={11} weight="bold" />}
+                    {sortBy === 'absent_asc' && <CaretUp size={11} weight="bold" />}
+                  </div>
+                </th>
+                <th
+                  className="py-2.5 px-3 text-center whitespace-nowrap cursor-pointer hover:text-text-primary"
+                  onClick={() => setSortBy(sortBy === 'late_desc' ? 'late_asc' : 'late_desc')}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Muộn</span>
+                    {sortBy === 'late_desc' && <CaretDown size={11} weight="bold" />}
+                    {sortBy === 'late_asc' && <CaretUp size={11} weight="bold" />}
+                  </div>
+                </th>
+                <th
+                  className="py-2.5 px-3 text-center whitespace-nowrap cursor-pointer hover:text-text-primary"
+                  onClick={() => setSortBy(sortBy === 'rate_asc' ? 'rate_desc' : 'rate_asc')}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Tỷ lệ</span>
+                    {sortBy === 'rate_asc' && <CaretUp size={11} weight="bold" />}
+                    {sortBy === 'rate_desc' && <CaretDown size={11} weight="bold" />}
+                  </div>
+                </th>
                 <th className="py-2.5 px-3 text-center whitespace-nowrap">Trạng thái</th>
                 <th className="py-2.5 px-3 text-right whitespace-nowrap">Thao tác Quản trị</th>
               </tr>
@@ -707,8 +806,8 @@ export default function AdminAttendanceManagementPage() {
                         cls.attendanceRate >= 95
                           ? 'bg-teal-subtle text-teal border-teal/30'
                           : cls.attendanceRate >= 85
-                          ? 'bg-warning-bg text-warning-700 border-warning/40'
-                          : 'bg-danger-bg text-danger border-danger/40'
+                            ? 'bg-warning-bg text-warning-700 border-warning/40'
+                            : 'bg-danger-bg text-danger border-danger/40'
                       )}>
                         {cls.attendanceRate}%
                       </span>
@@ -746,7 +845,7 @@ export default function AdminAttendanceManagementPage() {
                           size="sm"
                           onClick={() => handleOpenResetModal(cls.classId)}
                           className="h-7 px-2.5 text-xs font-bold cursor-pointer text-red-700 hover:text-white bg-red-50 hover:bg-red-600 border border-red-300 hover:border-red-600 gap-1 transition-colors whitespace-nowrap flex-shrink-0"
-                          title={`Đặt lại toàn bộ học sinh lớp ${cls.className} về Có mặt`}
+                          title={`Đặt lại toàn bộ học sinh ${formatClassName(cls.className)} về Có mặt`}
                         >
                           <ArrowsClockwise size={13} weight="bold" />
                           <span>Đặt lại</span>
@@ -953,22 +1052,22 @@ export default function AdminAttendanceManagementPage() {
                 <option value="all">⚡ Toàn bộ 16 lớp THCS (Toàn trường · 480 học sinh)</option>
                 <optgroup label="Khối 6 (Ca Sáng)">
                   {classes.filter((c) => c.grade === 6).map((c) => (
-                    <option key={c.id} value={c.id}>Lớp {c.name} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
+                    <option key={c.id} value={c.id}>{formatClassName(c.name)} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
                   ))}
                 </optgroup>
                 <optgroup label="Khối 7 (Ca Chiều)">
                   {classes.filter((c) => c.grade === 7).map((c) => (
-                    <option key={c.id} value={c.id}>Lớp {c.name} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
+                    <option key={c.id} value={c.id}>{formatClassName(c.name)} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
                   ))}
                 </optgroup>
                 <optgroup label="Khối 8 (Ca Chiều)">
                   {classes.filter((c) => c.grade === 8).map((c) => (
-                    <option key={c.id} value={c.id}>Lớp {c.name} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
+                    <option key={c.id} value={c.id}>{formatClassName(c.name)} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
                   ))}
                 </optgroup>
                 <optgroup label="Khối 9 (Ca Sáng)">
                   {classes.filter((c) => c.grade === 9).map((c) => (
-                    <option key={c.id} value={c.id}>Lớp {c.name} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
+                    <option key={c.id} value={c.id}>{formatClassName(c.name)} (30 học sinh · GVCN: {c.teacher_id ? teachers.find((t) => t.id === c.teacher_id)?.name || 'Chưa phân công' : 'Chưa phân công'})</option>
                   ))}
                 </optgroup>
               </select>
@@ -988,7 +1087,7 @@ export default function AdminAttendanceManagementPage() {
                   <strong className="text-red-700 dark:text-red-400 font-bold">
                     {resetTargetScope === 'all'
                       ? 'Toàn bộ 16 lớp THCS (Toàn trường · 480 học sinh)'
-                      : `Lớp ${classes.find((c) => c.id === resetTargetScope)?.name || resetTargetScope}`}
+                      : formatClassName(classes.find((c) => c.id === resetTargetScope)?.name || resetTargetScope)}
                   </strong>{' '}
                   sẽ bị xóa và khôi phục về trạng thái <strong>100% Có mặt</strong>.
                 </p>
@@ -1004,7 +1103,7 @@ export default function AdminAttendanceManagementPage() {
       <Modal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        title={selectedClassDetail ? `Chi tiết Chuyên cần: Lớp ${selectedClassDetail.className}` : 'Chi tiết lớp'}
+        title={selectedClassDetail ? `Chi tiết Chuyên cần: ${formatClassName(selectedClassDetail.className)}` : 'Chi tiết lớp'}
         description={`Sĩ số: ${selectedClassDetail?.totalStudents} HS · GVCN: ${selectedClassDetail?.teacherName} · Ngày: ${attendanceOverview.dateFormatted}`}
         size="lg"
         footer={

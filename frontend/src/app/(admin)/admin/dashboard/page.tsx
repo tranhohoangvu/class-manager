@@ -58,11 +58,12 @@ import {
 } from '@/services/timetable.service';
 import { exportSchoolComprehensiveReport } from '@/lib/export';
 import { toast } from 'sonner';
+import { getGradeShift, compareVietnameseNames } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { getGradeShift } from '@/lib/constants';
 
 type TableTab = 'classes' | 'teachers';
-type SortField = 'name' | 'students' | 'attendance' | 'timetable';
+type SortField = 'name' | 'students' | 'attendance' | 'absent' | 'late' | 'timetable';
+type TeacherSortField = 'name' | 'classes' | 'periods' | 'homeroom' | 'conflict';
 type SortOrder = 'asc' | 'desc';
 
 export default function AdminDashboardPage() {
@@ -92,6 +93,8 @@ export default function AdminDashboardPage() {
   const [teacherSearchQuery, setTeacherSearchQuery] = useState<string>('');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [teacherSortField, setTeacherSortField] = useState<TeacherSortField>('name');
+  const [teacherSortOrder, setTeacherSortOrder] = useState<SortOrder>('asc');
 
   useEffect(() => {
     loadDashboardData();
@@ -210,18 +213,33 @@ export default function AdminDashboardPage() {
     });
   }, [teachers, classes, assignments, subjectMap, timetables, auditReport]);
 
-  // Filtered teacher list
+  // Filtered and sorted teacher list
   const filteredTeachers = useMemo(() => {
     const q = teacherSearchQuery.toLowerCase().trim();
-    if (!q) return teacherWorkloadList;
-    return teacherWorkloadList.filter(
+    const filtered = !q ? teacherWorkloadList : teacherWorkloadList.filter(
       (t) =>
         t.name.toLowerCase().includes(q) ||
         t.email.toLowerCase().includes(q) ||
         (t.homeroomClass && t.homeroomClass.toLowerCase().includes(q)) ||
         t.assignedSubjects.some((s) => s.toLowerCase().includes(q))
     );
-  }, [teacherWorkloadList, teacherSearchQuery]);
+
+    return filtered.sort((a, b) => {
+      let comp = 0;
+      if (teacherSortField === 'name') {
+        comp = compareVietnameseNames(a.name, b.name);
+      } else if (teacherSortField === 'classes') {
+        comp = a.assignedClassCount - b.assignedClassCount;
+      } else if (teacherSortField === 'periods') {
+        comp = a.scheduledPeriods - b.scheduledPeriods;
+      } else if (teacherSortField === 'homeroom') {
+        comp = (a.homeroomClass ? 1 : 0) - (b.homeroomClass ? 1 : 0);
+      } else if (teacherSortField === 'conflict') {
+        comp = (a.hasConflict ? 1 : 0) - (b.hasConflict ? 1 : 0);
+      }
+      return teacherSortOrder === 'asc' ? comp : -comp;
+    });
+  }, [teacherWorkloadList, teacherSearchQuery, teacherSortField, teacherSortOrder]);
 
   // Enriched & filtered Class Overview Table
   const enrichedClassList = useMemo(() => {
@@ -278,11 +296,15 @@ export default function AdminDashboardPage() {
     return filtered.sort((a, b) => {
       let comparison = 0;
       if (sortField === 'name') {
-        comparison = a.grade - b.grade || a.name.localeCompare(b.name);
+        comparison = a.grade - b.grade || a.name.localeCompare(b.name, 'vi', { numeric: true });
       } else if (sortField === 'students') {
         comparison = a.studentCount - b.studentCount;
       } else if (sortField === 'attendance') {
         comparison = a.attendanceRate - b.attendanceRate;
+      } else if (sortField === 'absent') {
+        comparison = a.absentCount - b.absentCount;
+      } else if (sortField === 'late') {
+        comparison = a.lateCount - b.lateCount;
       } else if (sortField === 'timetable') {
         comparison = a.scheduledSlots - b.scheduledSlots;
       }
@@ -827,6 +849,28 @@ export default function AdminDashboardPage() {
                   ))}
                 </div>
 
+                {/* Quick Sort Dropdown for Classes */}
+                <select
+                  value={`${sortField}_${sortOrder}`}
+                  onChange={(e) => {
+                    const [field, order] = e.target.value.split('_') as [SortField, SortOrder];
+                    setSortField(field);
+                    setSortOrder(order);
+                  }}
+                  className="h-8 bg-surface border border-border rounded-xs px-2.5 text-xs text-text-primary font-semibold cursor-pointer focus:outline-none focus:border-teal whitespace-nowrap flex-shrink-0"
+                  title="Sắp xếp danh sách lớp học"
+                >
+                  <option value="name_asc">Sắp xếp: Khối 6 &rarr; Khối 9</option>
+                  <option value="name_desc">Sắp xếp: Tên lớp Z &rarr; A</option>
+                  <option value="absent_desc">🚨 Vắng nhiều nhất (Giảm dần)</option>
+                  <option value="late_desc">⏱ Đi muộn nhiều nhất (Giảm dần)</option>
+                  <option value="attendance_asc">⚠️ Chuyên cần thấp nhất</option>
+                  <option value="attendance_desc">✓ Chuyên cần cao nhất (100%)</option>
+                  <option value="students_desc">Sĩ số: Đông nhất</option>
+                  <option value="students_asc">Sĩ số: Ít nhất</option>
+                  <option value="timetable_asc">TKB: Chưa đủ tiết trước</option>
+                </select>
+
                 <div className="relative">
                   <MagnifyingGlass size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input
@@ -834,20 +878,42 @@ export default function AdminDashboardPage() {
                     placeholder="Tìm lớp, GVCN, phòng..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 text-xs rounded-sm border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent w-48 sm:w-56"
+                    className="pl-8 pr-3 py-1.5 text-xs rounded-sm border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent w-44 sm:w-52"
                   />
                 </div>
               </>
             ) : (
-              <div className="relative">
-                <MagnifyingGlass size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
-                <input
-                  type="text"
-                  placeholder="Tìm giáo viên, bộ môn..."
-                  value={teacherSearchQuery}
-                  onChange={(e) => setTeacherSearchQuery(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-xs rounded-sm border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent w-52 sm:w-64"
-                />
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Quick Sort Dropdown for Teachers */}
+                <select
+                  value={`${teacherSortField}_${teacherSortOrder}`}
+                  onChange={(e) => {
+                    const [field, order] = e.target.value.split('_') as [TeacherSortField, SortOrder];
+                    setTeacherSortField(field);
+                    setTeacherSortOrder(order);
+                  }}
+                  className="h-8 bg-surface border border-border rounded-xs px-2.5 text-xs text-text-primary font-semibold cursor-pointer focus:outline-none focus:border-teal whitespace-nowrap flex-shrink-0"
+                  title="Sắp xếp danh sách giáo viên"
+                >
+                  <option value="name_asc">Tên GV: A &rarr; Z (Tiếng Việt)</option>
+                  <option value="name_desc">Tên GV: Z &rarr; A</option>
+                  <option value="periods_desc">Số tiết dạy: Nhiều nhất</option>
+                  <option value="periods_asc">Số tiết dạy: Ít nhất</option>
+                  <option value="classes_desc">Số lớp dạy: Nhiều nhất</option>
+                  <option value="homeroom_desc">Ưu tiên Giáo viên chủ nhiệm</option>
+                  <option value="conflict_desc">🚨 Cảnh báo xung đột TKB</option>
+                </select>
+
+                <div className="relative">
+                  <MagnifyingGlass size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
+                  <input
+                    type="text"
+                    placeholder="Tìm giáo viên, bộ môn..."
+                    value={teacherSearchQuery}
+                    onChange={(e) => setTeacherSearchQuery(e.target.value)}
+                    className="pl-8 pr-3 py-1.5 text-xs rounded-sm border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-strong focus:ring-1 focus:ring-accent w-48 sm:w-56"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -995,16 +1061,16 @@ export default function AdminDashboardPage() {
                             <CalendarBlank size={15} />
                           </Link>
                           <Link
-                            href={`/attendance`}
+                            href={`/admin/attendance`}
                             className="p-1.5 rounded-sm text-text-muted hover:text-teal hover:bg-teal-subtle border border-transparent hover:border-teal/30 transition-colors"
-                            title="Xem Sổ điểm danh"
+                            title="Quản lý Chuyên cần lớp"
                           >
                             <CheckCircle size={15} />
                           </Link>
                           <Link
-                            href={`/seating`}
+                            href={`/admin/seating?classId=${c.id}`}
                             className="p-1.5 rounded-sm text-text-muted hover:text-accent-text hover:bg-accent border border-transparent hover:border-border transition-colors"
-                            title="Xem Sơ đồ lớp"
+                            title="Quản lý Sơ đồ chỗ ngồi lớp"
                           >
                             <Door size={15} />
                           </Link>
@@ -1022,14 +1088,99 @@ export default function AdminDashboardPage() {
         {activeTab === 'teachers' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-surface-muted/80 text-text-muted text-[11px] font-bold uppercase tracking-wider border-b border-border-strong">
+              <thead className="bg-surface-muted/80 text-text-muted text-[11px] font-bold uppercase tracking-wider border-b border-border-strong select-none">
                 <tr>
-                  <th className="py-2.5 px-3.5">Giáo viên</th>
+                  <th
+                    className="py-2.5 px-3.5 cursor-pointer hover:text-text-primary"
+                    onClick={() => {
+                      if (teacherSortField === 'name') {
+                        setTeacherSortOrder(teacherSortOrder === 'asc' ? 'desc' : 'asc');
+                      } else {
+                        setTeacherSortField('name');
+                        setTeacherSortOrder('asc');
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>Giáo viên</span>
+                      {teacherSortField === 'name' && (
+                        teacherSortOrder === 'asc' ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />
+                      )}
+                    </div>
+                  </th>
                   <th className="py-2.5 px-3.5">Chuyên môn / Bộ môn</th>
-                  <th className="py-2.5 px-3.5">Vai trò chủ nhiệm</th>
-                  <th className="py-2.5 px-3.5 text-center">Số lớp dạy</th>
-                  <th className="py-2.5 px-3.5 text-center">Số tiết/tuần</th>
-                  <th className="py-2.5 px-3.5 text-center">Tình trạng TKB</th>
+                  <th
+                    className="py-2.5 px-3.5 cursor-pointer hover:text-text-primary"
+                    onClick={() => {
+                      if (teacherSortField === 'homeroom') {
+                        setTeacherSortOrder(teacherSortOrder === 'asc' ? 'desc' : 'asc');
+                      } else {
+                        setTeacherSortField('homeroom');
+                        setTeacherSortOrder('desc');
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>Vai trò chủ nhiệm</span>
+                      {teacherSortField === 'homeroom' && (
+                        teacherSortOrder === 'asc' ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="py-2.5 px-3.5 text-center cursor-pointer hover:text-text-primary"
+                    onClick={() => {
+                      if (teacherSortField === 'classes') {
+                        setTeacherSortOrder(teacherSortOrder === 'asc' ? 'desc' : 'asc');
+                      } else {
+                        setTeacherSortField('classes');
+                        setTeacherSortOrder('desc');
+                      }
+                    }}
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>Số lớp dạy</span>
+                      {teacherSortField === 'classes' && (
+                        teacherSortOrder === 'asc' ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="py-2.5 px-3.5 text-center cursor-pointer hover:text-text-primary"
+                    onClick={() => {
+                      if (teacherSortField === 'periods') {
+                        setTeacherSortOrder(teacherSortOrder === 'asc' ? 'desc' : 'asc');
+                      } else {
+                        setTeacherSortField('periods');
+                        setTeacherSortOrder('desc');
+                      }
+                    }}
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>Số tiết/tuần</span>
+                      {teacherSortField === 'periods' && (
+                        teacherSortOrder === 'asc' ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="py-2.5 px-3.5 text-center cursor-pointer hover:text-text-primary"
+                    onClick={() => {
+                      if (teacherSortField === 'conflict') {
+                        setTeacherSortOrder(teacherSortOrder === 'asc' ? 'desc' : 'asc');
+                      } else {
+                        setTeacherSortField('conflict');
+                        setTeacherSortOrder('desc');
+                      }
+                    }}
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>Tình trạng TKB</span>
+                      {teacherSortField === 'conflict' && (
+                        teacherSortOrder === 'asc' ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />
+                      )}
+                    </div>
+                  </th>
                   <th className="py-2.5 px-3.5 text-center">Tài khoản</th>
                   <th className="py-2.5 px-3.5 text-right">Thao tác</th>
                 </tr>
