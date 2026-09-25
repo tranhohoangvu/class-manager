@@ -43,7 +43,7 @@ import {
 } from '@/services';
 import { exportSchoolComprehensiveReport } from '@/lib/export';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, getTodayISO } from '@/lib/utils';
 import { getGradeShift } from '@/lib/constants';
 
 type StatusFilter = 'all' | 'has_absence' | 'perfect';
@@ -70,7 +70,7 @@ export default function AdminAttendanceManagementPage() {
 
   // Selected date for viewing / managing attendance (defaults to today)
   const [selectedDate, setSelectedDate] = useState<string>(() => {
-    return new Date().toISOString().split('T')[0];
+    return getTodayISO();
   });
 
   const [classes, setClasses] = useState<ClassRow[]>([]);
@@ -205,11 +205,12 @@ export default function AdminAttendanceManagementPage() {
         item.teacherName.toLowerCase().includes(q) ||
         item.roomName.toLowerCase().includes(q);
 
+      const totalAbsent = item.absentCount + item.excusedCount;
       let matchStatus = true;
       if (statusFilter === 'has_absence') {
-        matchStatus = item.absentCount > 0 || item.lateCount > 0;
+        matchStatus = totalAbsent > 0 || item.lateCount > 0;
       } else if (statusFilter === 'perfect') {
-        matchStatus = item.absentCount === 0 && item.lateCount === 0;
+        matchStatus = totalAbsent === 0 && item.lateCount === 0;
       }
 
       return matchGrade && matchSearch && matchStatus;
@@ -224,8 +225,8 @@ export default function AdminAttendanceManagementPage() {
         if (a.grade !== b.grade) return b.grade - a.grade;
         return b.className.localeCompare(a.className, 'vi', { numeric: true });
       }
-      if (sortBy === 'absent_desc') return b.absentCount - a.absentCount;
-      if (sortBy === 'absent_asc') return a.absentCount - b.absentCount;
+      if (sortBy === 'absent_desc') return (b.absentCount + b.excusedCount) - (a.absentCount + a.excusedCount);
+      if (sortBy === 'absent_asc') return (a.absentCount + a.excusedCount) - (b.absentCount + b.excusedCount);
       if (sortBy === 'late_desc') return b.lateCount - a.lateCount;
       if (sortBy === 'late_asc') return a.lateCount - b.lateCount;
       if (sortBy === 'rate_asc') return a.attendanceRate - b.attendanceRate;
@@ -243,11 +244,20 @@ export default function AdminAttendanceManagementPage() {
     const classMap = new Map<string, ClassRow>();
     classes.forEach((c) => classMap.set(c.id, c));
 
-    // Map each student to their latest non-present status
+    // Map each student to their latest non-present status (lấy bản ghi cập nhật mới nhất)
     const exceptionMap = new Map<string, AttendanceRow>();
     records.forEach((r) => {
       if (r.status === 'absent' || r.status === 'late' || r.status === 'excused') {
-        exceptionMap.set(r.student_id, r);
+        const existing = exceptionMap.get(r.student_id);
+        if (!existing) {
+          exceptionMap.set(r.student_id, r);
+        } else {
+          const existingTime = new Date(existing.updated_at || existing.created_at || 0).getTime();
+          const curTime = new Date(r.updated_at || r.created_at || 0).getTime();
+          if (curTime >= existingTime) {
+            exceptionMap.set(r.student_id, r);
+          }
+        }
       }
     });
 
@@ -347,7 +357,10 @@ export default function AdminAttendanceManagementPage() {
                           <td className="border border-black py-1 px-1 font-bold">{cls.className}</td>
                           <td className="border border-black py-1 px-1 font-mono">{cls.totalStudents}</td>
                           <td className="border border-black py-1 px-1 font-mono">{cls.presentCount}</td>
-                          <td className="border border-black py-1 px-1 font-mono font-bold">{cls.absentCount}</td>
+                          <td className="border border-black py-1 px-1 font-mono font-bold">
+                            {cls.absentCount + cls.excusedCount}
+                            {cls.excusedCount > 0 ? ` (${cls.excusedCount}P)` : ''}
+                          </td>
                           <td className="border border-black py-1 px-1 font-mono">{cls.lateCount}</td>
                           <td className="border border-black py-1 px-1 font-mono font-bold">{cls.attendanceRate}%</td>
                           <td className="border border-black py-1 px-2 text-left truncate">{cls.teacherName || '—'}</td>
@@ -410,9 +423,10 @@ export default function AdminAttendanceManagementPage() {
               </thead>
               <tbody>
                 {schoolWideExceptions.map((item, idx) => {
+                  // Chỉ ghi nhận có phép khi người dùng chọn đúng trạng thái 'excused' (có hoặc không có ghi chú)
+                  const isExcused = item.record.status === 'excused';
                   const isAbsent = item.record.status === 'absent';
                   const isLate = item.record.status === 'late';
-                  const isExcused = item.record.status === 'excused' || (item.record.note && item.record.note.toLowerCase().includes('phép'));
 
                   const statusText = isExcused
                     ? 'Vắng có phép'
@@ -626,15 +640,15 @@ export default function AdminAttendanceManagementPage() {
             <div className="mt-2 flex items-baseline gap-2">
               <span className={cn(
                 'text-3xl font-extrabold font-mono tabular-nums',
-                attendanceOverview.absentCount > 0 ? 'text-danger' : 'text-text-primary'
+                (attendanceOverview.absentCount + attendanceOverview.excusedCount) > 0 ? 'text-danger' : 'text-text-primary'
               )}>
-                {attendanceOverview.absentCount}
+                {attendanceOverview.absentCount + attendanceOverview.excusedCount}
               </span>
               <span className="text-xs text-text-muted whitespace-nowrap">học sinh vắng</span>
             </div>
             <div className="flex items-center gap-3 mt-2 text-[11px]">
-              <span className="text-danger font-medium whitespace-nowrap">Không phép: <strong className="font-mono">{attendanceOverview.absentCount - attendanceOverview.excusedCount > 0 ? attendanceOverview.absentCount - attendanceOverview.excusedCount : 0}</strong></span>
-              <span className="text-text-muted font-medium whitespace-nowrap">Có phép: <strong className="font-mono">{attendanceOverview.excusedCount}</strong></span>
+              <span className="text-danger font-medium whitespace-nowrap">Không phép: <strong className="font-mono">{attendanceOverview.absentCount}</strong></span>
+              <span className="text-purple-700 font-medium whitespace-nowrap">Có phép: <strong className="font-mono">{attendanceOverview.excusedCount}</strong></span>
             </div>
           </div>
           <div className="mt-3 text-[11px] text-text-muted pt-2 border-t border-border">
@@ -728,7 +742,7 @@ export default function AdminAttendanceManagementPage() {
           ].map((cfg) => {
             const stat = gradeStats.find((g) => g.grade === cfg.grade);
             const classItems = classList.filter((c) => c.grade === cfg.grade);
-            const absentTotal = stat?.absentCount || 0;
+            const absentTotal = (stat?.absentCount || 0) + (stat?.excusedCount || 0);
             const lateTotal = stat?.lateCount || 0;
             const rate = stat?.attendanceRate || 100;
 
@@ -764,6 +778,7 @@ export default function AdminAttendanceManagementPage() {
                 <div className="grid grid-cols-2 gap-1.5 text-[11px] pt-1 border-t border-border/50">
                   <div className={cn('px-2 py-1 rounded-xs border font-medium text-center whitespace-nowrap', absentTotal > 0 ? 'bg-danger-bg text-danger border-danger/30 font-bold' : 'bg-surface/80 border-border text-text-muted')}>
                     Vắng: {absentTotal}
+                    {stat?.excusedCount ? ` (${stat.excusedCount}P)` : ''}
                   </div>
                   <div className={cn('px-2 py-1 rounded-xs border font-medium text-center whitespace-nowrap', lateTotal > 0 ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold' : 'bg-surface/80 border-border text-text-muted')}>
                     Muộn: {lateTotal}
@@ -771,31 +786,34 @@ export default function AdminAttendanceManagementPage() {
                 </div>
 
                 <div className="space-y-1 pt-1">
-                  {classItems.map((cls) => (
-                    <div
-                      key={cls.classId}
-                      className="flex items-center justify-between px-2.5 py-1.5 rounded-xs bg-surface/90 border border-border/70 text-[11px]"
-                    >
-                      <span className="font-bold text-text-primary whitespace-nowrap">{cls.className}</span>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className={cn(
-                          'px-1.5 py-0.2 rounded-xs font-mono font-bold text-[10px] border whitespace-nowrap',
-                          cls.absentCount > 0
-                            ? 'bg-danger text-white border-danger'
-                            : 'bg-surface-muted text-text-muted border-border'
-                        )}>
-                          Vắng {cls.absentCount}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleViewClassDetail(cls)}
-                          className="text-teal hover:underline text-[10px] font-bold cursor-pointer whitespace-nowrap flex-shrink-0"
-                        >
-                          Chi tiết
-                        </button>
+                  {classItems.map((cls) => {
+                    const classTotalAbsent = cls.absentCount + cls.excusedCount;
+                    return (
+                      <div
+                        key={cls.classId}
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-xs bg-surface/90 border border-border/70 text-[11px]"
+                      >
+                        <span className="font-bold text-text-primary whitespace-nowrap">{cls.className}</span>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <span className={cn(
+                            'px-1.5 py-0.2 rounded-xs font-mono font-bold text-[10px] border whitespace-nowrap',
+                            classTotalAbsent > 0
+                              ? 'bg-danger text-white border-danger'
+                              : 'bg-surface-muted text-text-muted border-border'
+                          )}>
+                            Vắng {classTotalAbsent}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleViewClassDetail(cls)}
+                            className="text-teal hover:underline text-[10px] font-bold cursor-pointer whitespace-nowrap flex-shrink-0"
+                          >
+                            Chi tiết
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -988,20 +1006,40 @@ export default function AdminAttendanceManagementPage() {
                       {cls.presentCount}
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                      <span className={cn(
-                        'px-2 py-0.5 rounded-xs font-mono font-bold text-xs border whitespace-nowrap inline-block',
-                        cls.absentCount > 0
-                          ? 'bg-danger text-white border-danger'
-                          : 'bg-surface-muted text-text-muted border-border'
-                      )}>
-                        {cls.absentCount}
-                      </span>
+                      {(() => {
+                        const totalAbsent = cls.absentCount + cls.excusedCount;
+                        if (totalAbsent === 0) {
+                          return (
+                            <span className="px-2 py-0.5 rounded-xs font-mono font-bold text-xs border whitespace-nowrap inline-block bg-surface-muted text-text-muted border-border">
+                              0
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className={cn(
+                            'px-2 py-0.5 rounded-xs font-mono font-bold text-xs border whitespace-nowrap inline-flex items-center gap-1',
+                            cls.absentCount > 0
+                              ? 'bg-danger text-white border-danger'
+                              : 'bg-purple-100 text-purple-900 border-purple-300'
+                          )}>
+                            <span>{totalAbsent}</span>
+                            {cls.excusedCount > 0 && (
+                              <span className={cn(
+                                'text-[10px] font-medium font-sans',
+                                cls.absentCount > 0 ? 'text-white/90' : 'text-purple-700'
+                              )}>
+                                ({cls.excusedCount}P)
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span className={cn(
                         'px-2 py-0.5 rounded-xs font-mono font-bold text-xs border whitespace-nowrap inline-block',
                         cls.lateCount > 0
-                          ? 'bg-amber-100 text-amber-900 border-amber-300'
+                          ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold'
                           : 'bg-surface-muted text-text-muted border-border'
                       )}>
                         {cls.lateCount}
@@ -1020,7 +1058,7 @@ export default function AdminAttendanceManagementPage() {
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                      {cls.absentCount === 0 && cls.lateCount === 0 ? (
+                      {(cls.absentCount + cls.excusedCount) === 0 && cls.lateCount === 0 ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-success whitespace-nowrap">
                           <CheckCircle size={13} weight="fill" />
                           <span>Đủ 100%</span>
@@ -1126,9 +1164,10 @@ export default function AdminAttendanceManagementPage() {
               </thead>
               <tbody className="divide-y divide-border/50">
                 {schoolWideExceptions.map((item, idx) => {
+                  // Chỉ ghi nhận có phép khi người dùng chọn đúng trạng thái 'excused' (có hoặc không có ghi chú)
+                  const isExcused = item.record.status === 'excused';
                   const isAbsent = item.record.status === 'absent';
                   const isLate = item.record.status === 'late';
-                  const isExcused = item.record.status === 'excused' || (item.record.note && item.record.note.toLowerCase().includes('phép'));
 
                   return (
                     <tr key={`${item.record.student_id}-${idx}`} className="hover:bg-surface-muted/30">
@@ -1361,8 +1400,13 @@ export default function AdminAttendanceManagementPage() {
                 <div className="text-base font-bold font-mono text-success">{selectedClassDetail.presentCount}</div>
               </div>
               <div>
-                <div className="text-[10px] text-text-muted">Vắng</div>
-                <div className="text-base font-bold font-mono text-danger">{selectedClassDetail.absentCount}</div>
+                <div className="text-[10px] text-text-muted">Tổng vắng</div>
+                <div className="text-base font-bold font-mono text-danger">
+                  {selectedClassDetail.absentCount + selectedClassDetail.excusedCount}
+                  {selectedClassDetail.excusedCount > 0 && (
+                    <span className="text-[10px] font-normal text-purple-700 ml-1">({selectedClassDetail.excusedCount} phép)</span>
+                  )}
+                </div>
               </div>
               <div>
                 <div className="text-[10px] text-text-muted">Đi muộn</div>
@@ -1411,14 +1455,31 @@ export default function AdminAttendanceManagementPage() {
                             </div>
                           )}
                         </div>
-                        <span className={cn(
-                          'px-2 py-0.5 rounded-xs font-bold text-[11px] border flex-shrink-0',
-                          item.record.status === 'absent'
-                            ? 'bg-danger text-white border-danger'
-                            : 'bg-amber-100 text-amber-900 border-amber-300'
-                        )}>
-                          {item.record.status === 'absent' ? 'Vắng' : 'Đi muộn'}
-                        </span>
+                        {(() => {
+                          // Chỉ ghi nhận có phép khi người dùng chọn đúng trạng thái 'excused' (có hoặc không có ghi chú)
+                          const isExcused = item.record.status === 'excused';
+                          const isAbsent = item.record.status === 'absent';
+                          const isLate = item.record.status === 'late';
+                          if (isExcused) {
+                            return (
+                              <span className="px-2 py-0.5 rounded-xs font-bold text-[11px] border bg-purple-100 text-purple-900 border-purple-300 flex-shrink-0 whitespace-nowrap">
+                                📋 Vắng có phép
+                              </span>
+                            );
+                          }
+                          if (isLate) {
+                            return (
+                              <span className="px-2 py-0.5 rounded-xs font-bold text-[11px] border bg-amber-100 text-amber-900 border-amber-300 flex-shrink-0 whitespace-nowrap">
+                                ⏱ Đi muộn
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="px-2 py-0.5 rounded-xs font-bold text-[11px] border bg-danger text-white border-danger flex-shrink-0 whitespace-nowrap">
+                              ✕ Vắng không phép
+                            </span>
+                          );
+                        })()}
                       </div>
                     ))}
                   </div>

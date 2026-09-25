@@ -275,6 +275,7 @@ export default function AdminDashboardPage() {
         attendanceRate: attendance ? attendance.attendanceRate : 100,
         presentCount: attendance ? attendance.presentCount : classStudents.length,
         absentCount: attendance ? attendance.absentCount : 0,
+        excusedCount: attendance ? attendance.excusedCount : 0,
         lateCount: attendance ? attendance.lateCount : 0,
         attendanceStatus: attendance ? attendance.status : 'excellent',
       };
@@ -302,7 +303,7 @@ export default function AdminDashboardPage() {
       } else if (sortField === 'attendance') {
         comparison = a.attendanceRate - b.attendanceRate;
       } else if (sortField === 'absent') {
-        comparison = a.absentCount - b.absentCount;
+        comparison = (a.absentCount + a.excusedCount) - (b.absentCount + b.excusedCount);
       } else if (sortField === 'late') {
         comparison = a.lateCount - b.lateCount;
       } else if (sortField === 'timetable') {
@@ -549,8 +550,8 @@ export default function AdminDashboardPage() {
                   THEO DÕI NỀ NẾP & CHUYÊN CẦN HÔM NAY THEO KHỐI
                 </span>
                 <span className="text-[11px] text-text-muted block sm:inline sm:ml-2">
-                  {classAttendanceList.reduce((acc, c) => acc + c.absentCount, 0) > 0
-                    ? `Phát hiện ${classAttendanceList.reduce((acc, c) => acc + c.absentCount, 0)} học sinh vắng trên toàn trường`
+                  {classAttendanceList.reduce((acc, c) => acc + c.absentCount + c.excusedCount, 0) > 0
+                    ? `Phát hiện ${classAttendanceList.reduce((acc, c) => acc + c.absentCount + c.excusedCount, 0)} học sinh vắng trên toàn trường`
                     : 'Toàn trường ghi nhận chuyên cần ổn định (0 HS vắng)'}
                 </span>
               </div>
@@ -612,7 +613,8 @@ export default function AdminDashboardPage() {
               },
             ].map((g) => {
               const items = classAttendanceList.filter((c) => c.grade === g.grade);
-              const gradeAbsent = items.reduce((acc, c) => acc + c.absentCount, 0);
+              const gradeAbsent = items.reduce((acc, c) => acc + c.absentCount + c.excusedCount, 0);
+              const gradeExcused = items.reduce((acc, c) => acc + c.excusedCount, 0);
 
               return (
                 <div
@@ -633,7 +635,7 @@ export default function AdminDashboardPage() {
                     </div>
                     {gradeAbsent > 0 ? (
                       <span className="text-[11px] font-bold text-danger bg-danger-bg px-1.5 py-0.2 rounded-xs border border-danger/30 font-mono">
-                        Vắng {gradeAbsent}
+                        Vắng {gradeAbsent}{gradeExcused > 0 ? ` (${gradeExcused}P)` : ''}
                       </span>
                     ) : (
                       <span className={cn('text-[10px] font-bold px-1.5 py-0.2 rounded-xs border font-mono', g.okTag)}>
@@ -643,39 +645,43 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    {items.map((item) => (
-                      <Link
-                        key={item.classId}
-                        href="/admin/attendance"
-                        className={cn(
-                          'p-2 rounded-xs border text-text-primary text-xs flex items-center justify-between transition-all shadow-2xs hover:border-border-strong',
-                          item.absentCount > 0
-                            ? 'bg-danger-bg/40 border-danger/40 hover:bg-danger-bg/70'
-                            : g.cardBase
-                        )}
-                      >
-                        <div className="min-w-0 pr-1">
-                          <div className="font-bold text-xs text-text-primary truncate">
-                            {item.className}
+                    {items.map((item) => {
+                      const classTotalAbsent = item.absentCount + item.excusedCount;
+
+                      return (
+                        <Link
+                          key={item.classId}
+                          href="/admin/attendance"
+                          className={cn(
+                            'p-2 rounded-xs border text-text-primary text-xs flex items-center justify-between transition-all shadow-2xs hover:border-border-strong',
+                            classTotalAbsent > 0
+                              ? 'bg-danger-bg/40 border-danger/40 hover:bg-danger-bg/70'
+                              : g.cardBase
+                          )}
+                        >
+                          <div className="min-w-0 pr-1">
+                            <div className="font-bold text-xs text-text-primary truncate">
+                              {item.className}
+                            </div>
+                            <div className="text-[11px] text-text-muted truncate mt-0.5">
+                              GVCN: {item.teacherName}
+                            </div>
                           </div>
-                          <div className="text-[11px] text-text-muted truncate mt-0.5">
-                            GVCN: {item.teacherName}
+                          <div className="flex-shrink-0">
+                            <span
+                              className={cn(
+                                'px-1.5 py-0.5 rounded-xs font-mono font-bold text-[11px] border',
+                                classTotalAbsent > 0
+                                  ? 'bg-danger text-white border-danger'
+                                  : 'bg-surface-muted text-text-muted border-border'
+                              )}
+                            >
+                              Vắng {classTotalAbsent}{item.excusedCount > 0 ? ` (${item.excusedCount}P)` : ''}
+                            </span>
                           </div>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <span
-                            className={cn(
-                              'px-1.5 py-0.5 rounded-xs font-mono font-bold text-[11px] border',
-                              item.absentCount > 0
-                                ? 'bg-danger text-white border-danger'
-                                : 'bg-surface-muted text-text-muted border-border'
-                            )}
-                          >
-                            Vắng {item.absentCount}
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
+                        </Link>
+                      );
+                    })}
                     {items.length === 0 && (
                       <div className="text-center py-2 text-text-muted text-[11px] italic">
                         Chưa có dữ liệu lớp
@@ -767,8 +773,11 @@ export default function AdminDashboardPage() {
           </div>
           <div className="mt-3.5 flex items-center justify-between text-[11px] text-text-muted pt-2.5 border-t border-border">
             <span className="text-teal font-semibold">Có mặt: <span className="font-mono tabular-nums">{attendanceOverview.presentCount}</span></span>
-            <span className={attendanceOverview.absentCount > 0 ? 'text-danger font-semibold' : 'text-text-muted'}>
-              Vắng: <span className="font-mono tabular-nums">{attendanceOverview.absentCount}</span>
+            <span className={(attendanceOverview.absentCount + attendanceOverview.excusedCount) > 0 ? 'text-danger font-semibold' : 'text-text-muted'}>
+              Vắng: <span className="font-mono tabular-nums">{attendanceOverview.absentCount + attendanceOverview.excusedCount}</span>
+              {attendanceOverview.excusedCount > 0 && (
+                <span className="text-[10px] font-normal text-purple-700 ml-1">({attendanceOverview.excusedCount} phép)</span>
+              )}
             </span>
             <span className={attendanceOverview.lateCount > 0 ? 'text-warning font-semibold' : 'text-text-muted'}>
               Muộn: <span className="font-mono tabular-nums">{attendanceOverview.lateCount}</span>
@@ -1037,7 +1046,7 @@ export default function AdminDashboardPage() {
                       <td className="py-3 px-3.5 text-center font-mono tabular-nums">
                         <div className="font-bold text-teal">{c.attendanceRate}%</div>
                         <div className="text-[11px] text-text-muted">
-                          {c.presentCount} có mặt{c.absentCount > 0 ? `, ${c.absentCount} vắng` : ''}
+                          {c.presentCount} có mặt{c.absentCount + c.excusedCount > 0 ? `, ${c.absentCount + c.excusedCount} vắng` : ''}{c.excusedCount > 0 ? ` (${c.excusedCount}P)` : ''}
                         </div>
                       </td>
                       <td className="py-3 px-3.5 text-center">
