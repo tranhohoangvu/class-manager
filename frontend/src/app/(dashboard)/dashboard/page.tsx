@@ -28,7 +28,7 @@ import {
   SubjectRow,
   UserRow,
 } from '@/types';
-import { formatDateVietnamese, cn } from '@/lib/utils';
+import { formatDateVietnamese, getTodayISO, cn } from '@/lib/utils';
 import { AttendanceBadge, RoleBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
@@ -56,7 +56,7 @@ export default function DashboardPage() {
   const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayISO();
 
   useEffect(() => {
     if (!currentClassId) return;
@@ -100,13 +100,22 @@ export default function DashboardPage() {
     );
   }
 
-  // Attendance statistics
+  // Attendance statistics (Default-Present Attendance Model)
   const totalStudents = students.length;
-  const presentCount = todayAttendance.filter((a) => a.status === 'present').length;
   const absentCount = todayAttendance.filter((a) => a.status === 'absent').length;
   const lateCount = todayAttendance.filter((a) => a.status === 'late').length;
   const excusedCount = todayAttendance.filter((a) => a.status === 'excused').length;
-  const isAttendanceDone = todayAttendance.length > 0;
+  const hasExceptionsRecorded = absentCount > 0 || lateCount > 0 || excusedCount > 0;
+  const hasExplicitSave = todayAttendance.length > 0;
+
+  // In Default-Present: if teacher explicitly saved present records, use them;
+  // otherwise, all active students default to present minus any recorded exceptions
+  const presentCount = hasExplicitSave && todayAttendance.some((a) => a.status === 'present')
+    ? todayAttendance.filter((a) => a.status === 'present').length
+    : Math.max(0, totalStudents - (absentCount + lateCount + excusedCount));
+
+  const presentRate = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 100;
+  const isAttendanceDone = true;
 
   // Seating statistics
   let seatedCount = 0;
@@ -131,7 +140,6 @@ export default function DashboardPage() {
     });
 
   const pinnedAnnouncement = announcements.find((a) => a.is_pinned) || announcements[0];
-  const presentRate = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
 
   // Today's Timetable Schedule Calculation
   const currentDayOfWeek = periodInfo?.dayOfWeek ?? (new Date().getDay() === 0 ? 8 : new Date().getDay() + 1);
@@ -278,13 +286,11 @@ export default function DashboardPage() {
                 </span>
                 <div className="flex items-baseline gap-3 mt-1">
                   <span className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
-                    {isAttendanceDone ? `${presentRate}% Có mặt` : 'Chưa điểm danh buổi học'}
+                    {`${presentRate}% Có mặt`}
                   </span>
-                  {isAttendanceDone && (
-                    <span className="text-[15px] font-semibold text-text-secondary">
-                      ({presentCount}/{totalStudents} học sinh)
-                    </span>
-                  )}
+                  <span className="text-[15px] font-semibold text-text-secondary">
+                    ({presentCount}/{totalStudents} học sinh)
+                  </span>
                 </div>
               </div>
 
@@ -292,12 +298,18 @@ export default function DashboardPage() {
                 <span
                   className={cn(
                     'px-3 py-1 rounded-xs text-xs font-bold border font-mono',
-                    isAttendanceDone
+                    hasExceptionsRecorded
+                      ? 'bg-amber-50 text-amber-800 border-amber-300'
+                      : hasExplicitSave
                       ? 'bg-success-bg text-success border-success/30'
-                      : 'bg-warning-bg text-warning border-warning/30'
+                      : 'bg-teal-subtle text-teal border-teal/30'
                   )}
                 >
-                  {isAttendanceDone ? 'ĐÃ HOÀN THÀNH' : 'CHỜ GHI NHẬN'}
+                  {hasExceptionsRecorded
+                    ? 'CÓ HỌC SINH VẮNG/MUỘN'
+                    : hasExplicitSave
+                    ? 'ĐÃ CẬP NHẬT'
+                    : 'MẶC ĐỊNH CÓ MẶT'}
                 </span>
               </div>
             </div>
@@ -342,7 +354,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-danger" />
                 <span className="text-text-secondary">Vắng mặt:</span>
-                <strong className="text-danger font-bold">{absentCount}</strong>
+                <strong className="text-danger font-bold">{absentCount + excusedCount}</strong>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-warning" />
@@ -350,9 +362,9 @@ export default function DashboardPage() {
                 <strong className="text-warning font-bold">{lateCount}</strong>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
                 <span className="text-text-secondary">Có phép:</span>
-                <strong className="text-text-secondary font-bold">{excusedCount}</strong>
+                <strong className="text-purple-700 font-bold">{excusedCount}</strong>
               </div>
             </div>
           </div>
@@ -377,7 +389,7 @@ export default function DashboardPage() {
             <Link href="/attendance" className="block w-full">
               <Button variant="primary" size="lg" className="w-full justify-center">
                 <ClipboardText size={20} weight="bold" />
-                <span>{isAttendanceDone ? 'Cập nhật điểm danh' : 'Bắt đầu điểm danh ngay'}</span>
+                <span>{hasExplicitSave ? 'Cập nhật điểm danh' : 'Ghi nhận vắng / muộn'}</span>
               </Button>
             </Link>
           </div>
