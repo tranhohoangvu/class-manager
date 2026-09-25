@@ -52,6 +52,8 @@ docs/
 │   └── state-diagrams.md                    # Entity lifecycles (Student, Attendance, Seat, Class, User)
 │
 ├── design/
+│   ├── DESIGN.md                            # Visual design system, component states, and layout spec
+│   ├── SKILL.md                             # Design conformance checklist & developer skill cheatsheet
 │   ├── technical-design.md                  # Technical decisions, OKLCH tokens, offline-first rationale
 │   └── implementation-notes.md              # Migration architecture, technical notes, and Render deployment
 │
@@ -101,6 +103,8 @@ docs/
 * [State Diagrams](diagrams/state-diagrams.md): Lifecycles for students, attendance statuses, seats, and classes.
 
 ### 8. Technical Decisions & Traceability
+* [Visual Design System Spec](design/DESIGN.md): Visual design tokens, 7-state button/form contracts, and layout specifications.
+* [Design Skill & Conformance Guide](design/SKILL.md): Token quick reference, component inventory, and audit conformance checklist.
 * [Technical Design & Rationale](design/technical-design.md): Inferred design decisions, Fisher-Yates shuffle, OKLCH tokens, and A4 print styling.
 * [Implementation Notes & Roadmap](design/implementation-notes.md): Migration architecture, technical notes, and Render deployment specifications.
 * [Feature-to-Code Traceability](traceability/feature-to-code.md): End-to-end matrix mapping requirements to UI pages, services, store keys, and Vitest test suites.
