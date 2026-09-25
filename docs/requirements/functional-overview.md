@@ -5,7 +5,7 @@
 The system encompasses two primary operational portals: the **Teacher Portal** (`(dashboard)`) and the **Administration Portal** (`(admin)`), supported by an **Authentication & Security Engine**.
 
 ```text
-Class Manager System
+SchoolOps System
 ├── 1. Authentication & Session Management
 │   ├── 1.1. Login via Email & Password
 │   ├── 1.2. 1-Click Demo Accounts (Admin, GVCN+GVBM, Pure GVBM, Pure GVCN, Unassigned, Disabled)

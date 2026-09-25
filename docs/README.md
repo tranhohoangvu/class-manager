@@ -1,6 +1,6 @@
-# Class Manager — Technical Documentation Specification
+# SchoolOps — Technical Documentation Specification
 
-> **System:** Class Manager (Trường THCS Nguyễn Tất Thành — Niên khóa 2026 - 2027)  
+> **System:** SchoolOps (Nguyen Tat Thanh Secondary School — Academic Year 2026–2027)  
 > **Architecture:** Next.js 16 App Router · Node.js + Express + TypeScript API · Native PostgreSQL · Per-Class RBAC · Render Ready  
 > **Source of Truth:** Active implementation in codebase (`frontend/src/`, `backend/`, `frontend/tests/`)
 

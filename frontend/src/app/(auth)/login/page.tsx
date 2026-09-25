@@ -131,14 +131,14 @@ export default function LoginPage() {
     <div className="w-full space-y-4 py-4">
       {/* Login Card */}
       <div className="bg-surface rounded-sm border border-border p-6 sm:p-7 shadow-xs">
-        {/* Class Manager Branding */}
+        {/* SchoolOps Branding */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-sm bg-teal-subtle text-teal border border-teal/20 flex items-center justify-center flex-shrink-0 shadow-2xs">
             <ChalkboardTeacher size={22} weight="duotone" />
           </div>
           <div>
             <span className="text-[15px] font-bold text-text-primary tracking-tight block leading-tight">
-              Class Manager
+              SchoolOps
             </span>
             <span className="text-[12px] text-text-muted block mt-0.5 font-medium">
               THCS Nguyễn Tất Thành

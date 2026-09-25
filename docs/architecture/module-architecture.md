@@ -5,7 +5,7 @@
 The application is structured into two primary workspace components: the **Frontend** (`frontend/`) and the **Backend** (`backend/`), coordinated by a root Monorepo workspace.
 
 ```text
-class-manager/
+school-ops/
 ├── frontend/                 # Next.js 16 App Router Frontend
 │   ├── frontend/src/                  # Application source code
 │   │   ├── app/              # Application pages and layout route groups

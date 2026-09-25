@@ -2,7 +2,7 @@
 
 ## 1. System Context Diagram (C4-Style)
 
-The diagram below documents the actors, system boundaries, and external integration touchpoints of the Class Manager platform.
+The diagram below documents the actors, system boundaries, and external integration touchpoints of the SchoolOps platform.
 
 ```mermaid
 graph TD
@@ -13,7 +13,7 @@ graph TD
         Unassigned["Unassigned Faculty<br/>(Giáo viên chưa phân công)"]
     end
 
-    subgraph SystemBoundary ["Class Manager Application (Next.js 16 SPA)"]
+    subgraph SystemBoundary ["SchoolOps Application (Next.js 16 SPA)"]
         AppShell["Application Shell & Navigation<br/>(Desktop & Responsive MobileNav)"]
         AuthModule["Authentication & Session Service<br/>(AuthService & AuthGuard)"]
         ClassModule["Classroom Operations Module<br/>(Roster, Seating, Attendance, Timetable)"]

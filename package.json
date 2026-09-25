@@ -1,5 +1,5 @@
 {
-  "name": "class-manager-workspace",
+  "name": "school-ops-workspace",
   "version": "1.0.0",
   "private": true,
   "workspaces": [
@@ -7,12 +7,12 @@
     "backend"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=class-manager-frontend",
-    "dev:frontend": "npm run dev --workspace=class-manager-frontend",
-    "dev:backend": "npm run dev --workspace=class-manager-backend",
-    "build": "npm run build --workspace=class-manager-frontend && npm run build --workspace=class-manager-backend",
-    "build:frontend": "npm run build --workspace=class-manager-frontend",
-    "build:backend": "npm run build --workspace=class-manager-backend",
-    "test": "npm run test --workspace=class-manager-frontend"
+    "dev": "npm run dev --workspace=school-ops-frontend",
+    "dev:frontend": "npm run dev --workspace=school-ops-frontend",
+    "dev:backend": "npm run dev --workspace=school-ops-backend",
+    "build": "npm run build --workspace=school-ops-frontend && npm run build --workspace=school-ops-backend",
+    "build:frontend": "npm run build --workspace=school-ops-frontend",
+    "build:backend": "npm run build --workspace=school-ops-backend",
+    "test": "npm run test --workspace=school-ops-frontend"
   }
 }

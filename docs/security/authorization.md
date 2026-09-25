@@ -2,7 +2,7 @@
 
 ## 1. Multi-Tier Security Model
 
-Authorization in Class Manager is enforced at multiple layers:
+Authorization in SchoolOps is enforced at multiple layers:
 
 ```text
 ┌───────────────────────────────────────────────────────────┐

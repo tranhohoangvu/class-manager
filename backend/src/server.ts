@@ -3,7 +3,7 @@ import { ENV } from './config/env.js';
 import { pool } from './config/database.js';
 
 const server = app.listen(ENV.PORT, '0.0.0.0', () => {
-  console.log(`🚀 Class Manager REST API backend running on http://0.0.0.0:${ENV.PORT}`);
+  console.log(`🚀 SchoolOps REST API backend running on http://0.0.0.0:${ENV.PORT}`);
   console.log(`📋 Environment: ${ENV.NODE_ENV}`);
   console.log(`🏥 Health check available at: http://localhost:${ENV.PORT}/health`);
 });

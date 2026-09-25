@@ -2,7 +2,7 @@
 
 ## 1. Production Hosting & Runtime Model
 
-The production deployment of **Class Manager** is partitioned into three decoupled tiers:
+The production deployment of **SchoolOps** is partitioned into three decoupled tiers:
 1. **Frontend Tier**: Next.js 16 App Router application deployed on frontend hosting (Render / Vercel).
 2. **Backend Tier**: Node.js + Express + TypeScript REST API deployed as a **Render Web Service**.
 3. **Database Tier**: Relational **Render PostgreSQL** database.

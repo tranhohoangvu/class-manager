@@ -1,6 +1,6 @@
 # Use Case Diagrams
 
-This document defines the formal UML Use Case Diagrams for the **Class Manager** system, derived directly from the authoritative specifications in [`docs/requirements/use-cases.md`](../requirements/use-cases.md) (UC-01 to UC-06) and aligned with the security rules in [`docs/security/authorization.md`](../security/authorization.md).
+This document defines the formal UML Use Case Diagrams for the **SchoolOps** system, derived directly from the authoritative specifications in [`docs/requirements/use-cases.md`](../requirements/use-cases.md) (UC-01 to UC-06) and aligned with the security rules in [`docs/security/authorization.md`](../security/authorization.md).
 
 ---
 
@@ -37,7 +37,7 @@ classDiagram
 
 ## 2. High-Level System Use Case Diagram
 
-This diagram captures the complete boundary of the Class Manager system and connects all actors to use cases **UC-01 through UC-06**.
+This diagram captures the complete boundary of the SchoolOps system and connects all actors to use cases **UC-01 through UC-06**.
 
 ```mermaid
 flowchart LR
@@ -56,7 +56,7 @@ flowchart LR
     ActorUnassigned -.->|inherits base| ActorUser
     ActorDisabled -.->|inherits base| ActorUser
 
-    subgraph SystemBoundary ["Class Manager System Boundary"]
+    subgraph SystemBoundary ["SchoolOps System Boundary"]
         %% Core Auth
         UC01(["UC-01: User Login & Role-Based Navigation"])
 

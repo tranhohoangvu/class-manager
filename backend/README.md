@@ -1,6 +1,6 @@
-# Class Manager — REST API Backend
+# SchoolOps — REST API Backend
 
-A dedicated REST API service for the Class Manager platform, built on **Node.js**, **Express**, **TypeScript**, and a relational **PostgreSQL** database.
+A dedicated REST API service for the SchoolOps platform, built on **Node.js**, **Express**, **TypeScript**, and a relational **PostgreSQL** database.
 
 ---
 

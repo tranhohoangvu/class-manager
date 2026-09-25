@@ -19,11 +19,11 @@ import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Class Manager',
-    template: '%s — Class Manager',
+    default: 'SchoolOps',
+    template: '%s — SchoolOps',
   },
-  description: 'Ứng dụng quản lý lớp học cho giáo viên. Quản lý học sinh, chỗ ngồi, điểm danh và thông báo.',
-  keywords: ['quản lý lớp học', 'điểm danh', 'học sinh', 'giáo viên'],
+  description: 'School Operations Management System — Nền tảng điều hành và quản lý trường học toàn diện.',
+  keywords: ['quản lý trường học', 'school operations', 'điểm danh', 'thời khóa biểu', 'học sinh', 'giáo viên'],
 };
 
 export default function RootLayout({

@@ -1,5 +1,5 @@
 // =============================================
-// Class Manager — Application Constants
+// SchoolOps — Application Constants
 // Central place for all business rules.
 // Never scatter magic numbers in components.
 // =============================================

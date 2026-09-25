@@ -1,6 +1,6 @@
-# Class Manager — Kế Hoạch Cải Tiến & Nâng Cấp Hệ Thống (Improvement Plan)
+# SchoolOps — Kế Hoạch Cải Tiến & Nâng Cấp Hệ Thống (Improvement Plan)
 
-> **Mục tiêu:** Nâng cấp, hoàn thiện và mở rộng hệ thống Class Manager hiện tại từ nền tảng đã chạy tốt lên chuẩn sản phẩm thực tế cho Trường THCS Nguyễn Tất Thành.  
+> **Mục tiêu:** Nâng cấp, hoàn thiện và mở rộng hệ thống SchoolOps hiện tại từ nền tảng đã chạy tốt lên chuẩn sản phẩm thực tế cho Trường THCS Nguyễn Tất Thành.  
 > **Quy chuẩn chốt:** 20 bàn / 40 học sinh / 4 dãy × 5 hàng / 2 góc nhìn / Đa lớp & Phân quyền RBAC.  
 > **Thời gian áp dụng:** Kế hoạch thực hiện tiếp theo (Bắt đầu từ 23/09/2026).  
 

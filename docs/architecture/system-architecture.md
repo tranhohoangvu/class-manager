@@ -2,7 +2,7 @@
 
 ## 1. High-Level Overview
 
-**Class Manager** is an enterprise-grade school management application engineered for Vietnamese secondary schools (Trường THCS), with the reference implementation modeled on **Trường THCS Nguyễn Tất Thành** (School Year 2026–2027).
+**SchoolOps** is an enterprise-grade school operations and management platform engineered for Vietnamese secondary schools (Trường THCS), with the reference implementation modeled on **Nguyen Tat Thanh Secondary School** (School Year 2026–2027).
 
 The system follows a modern decoupled full-stack architecture:
 - **Frontend**: **Next.js 16 (App Router)** and **React 19**, structured with a centralized REST API client (`apiClient`) and React Context state.

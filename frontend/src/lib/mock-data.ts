@@ -1,5 +1,5 @@
 // =============================================
-// Mock Data for Class Manager — THCS School Model
+// Mock Data for SchoolOps — THCS School Model
 // 4 Grades x 4 Classes = 16 Classes, 480 Students, 10 Subjects, 25+ Teachers
 // =============================================
 

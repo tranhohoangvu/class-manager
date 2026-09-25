@@ -1,6 +1,6 @@
-# Class Manager — Frontend Application
+# SchoolOps — Frontend Application
 
-A modern web application engineered for secondary school management (Trường THCS), built on **Next.js 16 (App Router)** and **React 19**.
+A modern web application engineered for secondary school operations and management (Trường THCS), built on **Next.js 16 (App Router)** and **React 19**.
 
 ---
 

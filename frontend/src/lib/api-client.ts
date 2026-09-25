@@ -1,5 +1,5 @@
 // =============================================
-// Class Manager — Centralized REST API Client
+// SchoolOps — Centralized REST API Client
 // Connects Next.js Frontend to Express Backend
 // =============================================
 

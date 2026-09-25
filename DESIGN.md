@@ -18,7 +18,7 @@
    - Primary in-page actions feature a crisp Butter Yellow fill with a signature **hard-offset shadow** (`1px 1px 3px 0px #000000` or `2px 2px 0px #000000`). Clicking feels like pressing a physical physical stamp or sticker into paper.
 
 3. **High Operational Information Density (SaaS Data Restraint):**
-   - Unlike a marketing landing page, Class Manager is an operational cockpit. Table rows are compact and scannable (`py-2.5` to `py-3`), fonts range from 11px to 15px for data grids, and cards avoid unnecessary nesting ("card-inside-card" is banned). Whitespace and 1px hairline borders define hierarchy.
+   - Unlike a marketing landing page, SchoolOps is an operational cockpit. Table rows are compact and scannable (`py-2.5` to `py-3`), fonts range from 11px to 15px for data grids, and cards avoid unnecessary nesting ("card-inside-card" is banned). Whitespace and 1px hairline borders define hierarchy.
 
 4. **Academic Semantic Clarity:**
    - Four non-negotiable status inks calibrated to harmonize with cream paper:
@@ -73,7 +73,7 @@
 
 ### Scaled Hierarchy for SaaS Admin
 
-| Role | Font Size | Line Height | Weight | Tailwind Utility | Usage in Class Manager |
+| Role | Font Size | Line Height | Weight | Tailwind Utility | Usage in SchoolOps |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Display Title** | `26px (1.625rem)` | `1.2` | `700` | `page-title` | Tiêu đề chính trang điều hành Admin |
 | **Section Header** | `18px (1.125rem)` | `1.3` | `700` | `section-heading` | Tiêu đề khối (Bảng TKB, Danh sách HS) |

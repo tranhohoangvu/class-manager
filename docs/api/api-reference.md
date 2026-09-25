@@ -2,7 +2,7 @@
 
 ## 1. Overview & Base URL
 
-The **Class Manager REST API** is an Express + TypeScript service deployed on Render Web Service and proxied locally through Next.js at `/api/*`.
+The **SchoolOps REST API** is an Express + TypeScript service deployed on Render Web Service and proxied locally through Next.js at `/api/*`.
 
 * **Local Base URL**: `http://localhost:4000/api`
 * **Production Base URL**: `https://<render-service-url>/api`

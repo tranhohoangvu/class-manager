@@ -1,7 +1,7 @@
 <div align="center">
 
-# 🏫 Class Manager (THCS Scale)
-### Classroom & Attendance Management Platform for THCS Nguyễn Tất Thành
+# 🏫 SchoolOps
+### School Operations Management System for Nguyen Tat Thanh Secondary School
 **Academic Year: 2026 - 2027**
 
 [![Next.js 16](https://img.shields.io/badge/Frontend-Next.js%2016%20(App%20Router)-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -18,7 +18,7 @@
 
 ## 📖 Overview
 
-**Class Manager** is an enterprise-grade school management platform engineered specifically for Vietnamese secondary schools (Trường THCS), with its reference operational model based on **Trường THCS Nguyễn Tất Thành** (Academic Year: 2026 - 2027).
+**SchoolOps** is an enterprise-grade school operations and management platform engineered specifically for Vietnamese secondary schools (Trường THCS), with its reference operational model based on **Nguyen Tat Thanh Secondary School** (Academic Year: 2026 - 2027).
 
 The repository is structured as a clean, standardized **Monorepo**:
 * **[Frontend (`/frontend`)](frontend/README.md):** Next.js 16 (App Router), React 19, TailwindCSS v4, Vitest.
@@ -26,7 +26,7 @@ The repository is structured as a clean, standardized **Monorepo**:
 * **[Documentation (`/docs`)](docs/README.md):** Comprehensive technical specifications, architectural diagrams, ER schemas, and workflows.
 
 ### 🏫 Standard Secondary School Dataset Scale (2026 - 2027)
-- **Institution**: Trường THCS Nguyễn Tất Thành
+- **Institution**: Nguyen Tat Thanh Secondary School
 - **4 Grades**: Grade 6, Grade 7, Grade 8, Grade 9
 - **16 Classes**: 6A1–6A4, 7A1–7A4, 8A1–8A4, 9A1–9A4
 - **480 Students**: 30 students per class with realistic demographic and parent contact profiles
@@ -39,20 +39,20 @@ The repository is structured as a clean, standardized **Monorepo**:
 ## 📁 Monorepo Directory Structure
 
 ```text
-class-manager/
+school-ops/
 ├── frontend/                 # Next.js 16 Web Application (App Router)
 │   ├── src/                  # Application source code (UI, components, contexts, services, lib)
 │   ├── tests/                # Automated Vitest test suite (8 files, 105 unit tests)
 │   ├── next.config.ts        # Next.js config & API proxy rewrites (/api/* -> :4000)
 │   ├── tsconfig.json         # TypeScript compiler config (@/* path alias)
-│   ├── package.json          # Frontend dependencies (package: "class-manager-frontend")
+│   ├── package.json          # Frontend dependencies (package: "school-ops-frontend")
 │   └── README.md             # 📖 Detailed Frontend Documentation
 │
 ├── backend/                  # Dedicated REST API Service (Express + TypeScript + PostgreSQL)
 │   ├── src/                  # Controllers, services, repositories, routes, middleware
 │   ├── migrations/           # 7 sequenced PostgreSQL SQL migration files (001 -> 007)
 │   ├── scripts/              # Migration runner script (migrate.ts)
-│   ├── package.json          # Backend dependencies (package: "class-manager-backend")
+│   ├── package.json          # Backend dependencies (package: "school-ops-backend")
 │   └── README.md             # 📖 Detailed Backend Documentation
 │
 ├── docs/                     # Master Technical Documentation Suite
@@ -148,7 +148,7 @@ Permissions adapt automatically based on the teacher's active assignment in each
 * Node.js >= 20
 * PostgreSQL 16 (Local instance or Cloud database such as Render PostgreSQL)
 
-### 2. Install Workspace Dependencies (from root `class-manager/`)
+### 2. Install Workspace Dependencies (from root `school-ops/`)
 ```bash
 npm install
 ```
@@ -168,7 +168,7 @@ npm run dev
 ```
 
 ### 4. Start Frontend
-From the root workspace `class-manager/`:
+From the root workspace `school-ops/`:
 ```bash
 # Start frontend dev server (Port 3000)
 npm run dev:frontend

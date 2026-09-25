@@ -1,5 +1,5 @@
 // =============================================
-// Class Manager — TypeScript Type Definitions
+// SchoolOps — TypeScript Type Definitions
 // =============================================
 
 export type UserRole = 'ADMIN' | 'TEACHER';

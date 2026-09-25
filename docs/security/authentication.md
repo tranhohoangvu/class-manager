@@ -2,7 +2,7 @@
 
 ## 1. Authentication Mechanism
 
-Authentication in Class Manager is managed by the self-managed Express backend (`backend/src/services/auth.service.ts`) using secure password hashing with **bcrypt**, signed **JSON Web Tokens (JWT)**, and secure **HTTP-only cookies** (`token`) with Bearer token fallback.
+Authentication in SchoolOps is managed by the self-managed Express backend (`backend/src/services/auth.service.ts`) using secure password hashing with **bcrypt**, signed **JSON Web Tokens (JWT)**, and secure **HTTP-only cookies** (`token`) with Bearer token fallback.
 
 ```mermaid
 sequenceDiagram

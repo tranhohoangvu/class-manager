@@ -1,8 +1,8 @@
 {
-  "name": "class-manager-backend",
+  "name": "school-ops-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "Express + TypeScript + PostgreSQL REST API backend for Class Manager",
+  "description": "Express + TypeScript + PostgreSQL REST API backend for SchoolOps",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

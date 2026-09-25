@@ -1,6 +1,6 @@
 # Class Diagrams
 
-This document specifies the UML Class Diagrams for the **Class Manager** system based directly on the active implementation across `frontend/src/types/`, `frontend/src/services/`, `frontend/src/lib/store.ts`, and `frontend/src/lib/auth.ts`.
+This document specifies the UML Class Diagrams for the **SchoolOps** system based directly on the active implementation across `frontend/src/types/`, `frontend/src/services/`, `frontend/src/lib/store.ts`, and `frontend/src/lib/auth.ts`.
 
 To maintain readability and technical precision, the class architecture is presented in two focused diagrams:
 1. **Domain Model & Entity Class Diagram**: Represents core business entities, value objects, structural compositions, and associations.
