@@ -307,7 +307,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-admin",
     "name": "Quản trị viên Hệ thống",
-    "email": "admin@classmanager.local",
+    "email": "admin@schoolops.local",
     "phone": "0901234567",
     "role": "ADMIN",
     "status": "active",
@@ -319,7 +319,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-01",
     "name": "Thầy Nguyễn Văn An",
-    "email": "an.nguyen@classmanager.local",
+    "email": "an.nguyen@schoolops.local",
     "phone": "0912345601",
     "role": "TEACHER",
     "status": "active",
@@ -336,7 +336,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-02",
     "name": "Cô Trần Thị Bình",
-    "email": "binh.tran@classmanager.local",
+    "email": "binh.tran@schoolops.local",
     "phone": "0912345602",
     "role": "TEACHER",
     "status": "active",
@@ -354,7 +354,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-03",
     "name": "Thầy Lê Hoàng Cường",
-    "email": "cuong.le@classmanager.local",
+    "email": "cuong.le@schoolops.local",
     "phone": "0912345603",
     "role": "TEACHER",
     "status": "active",
@@ -371,7 +371,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-04",
     "name": "Thầy Phạm Quang Dũng",
-    "email": "dung.pham@classmanager.local",
+    "email": "dung.pham@schoolops.local",
     "phone": "0912345604",
     "role": "TEACHER",
     "status": "active",
@@ -389,7 +389,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-05",
     "name": "Cô Vũ Thị Mai",
-    "email": "mai.vu@classmanager.local",
+    "email": "mai.vu@schoolops.local",
     "phone": "0912345605",
     "role": "TEACHER",
     "status": "active",
@@ -406,7 +406,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-06",
     "name": "Cô Đặng Thúy Nga",
-    "email": "nga.dang@classmanager.local",
+    "email": "nga.dang@schoolops.local",
     "phone": "0912345606",
     "role": "TEACHER",
     "status": "active",
@@ -423,7 +423,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-07",
     "name": "Cô Bùi Diệu Linh",
-    "email": "linh.bui@classmanager.local",
+    "email": "linh.bui@schoolops.local",
     "phone": "0912345607",
     "role": "TEACHER",
     "status": "active",
@@ -440,7 +440,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-08",
     "name": "Cô Đỗ Thu Thảo",
-    "email": "thao.do@classmanager.local",
+    "email": "thao.do@schoolops.local",
     "phone": "0912345608",
     "role": "TEACHER",
     "status": "active",
@@ -457,7 +457,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-09",
     "name": "Cô Hoàng Mỹ Duyên",
-    "email": "duyen.hoang@classmanager.local",
+    "email": "duyen.hoang@schoolops.local",
     "phone": "0912345609",
     "role": "TEACHER",
     "status": "active",
@@ -476,7 +476,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-10",
     "name": "Thầy Ngô Gia Huy",
-    "email": "huy.ngo@classmanager.local",
+    "email": "huy.ngo@schoolops.local",
     "phone": "0912345610",
     "role": "TEACHER",
     "status": "active",
@@ -493,7 +493,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-11",
     "name": "Cô Phan Khánh Chi",
-    "email": "chi.phan@classmanager.local",
+    "email": "chi.phan@schoolops.local",
     "phone": "0912345611",
     "role": "TEACHER",
     "status": "active",
@@ -512,7 +512,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-12",
     "name": "Thầy Trịnh Văn Hải",
-    "email": "hai.trinh@classmanager.local",
+    "email": "hai.trinh@schoolops.local",
     "phone": "0912345612",
     "role": "TEACHER",
     "status": "active",
@@ -533,7 +533,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-13",
     "name": "Thầy Đinh Đức Tuấn",
-    "email": "tuan.dinh@classmanager.local",
+    "email": "tuan.dinh@schoolops.local",
     "phone": "0912345613",
     "role": "TEACHER",
     "status": "active",
@@ -554,7 +554,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-14",
     "name": "Cô Lý Thu Thủy",
-    "email": "thuy.ly@classmanager.local",
+    "email": "thuy.ly@schoolops.local",
     "phone": "0912345614",
     "role": "TEACHER",
     "status": "active",
@@ -576,7 +576,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-15",
     "name": "Thầy Mai Xuân Phúc",
-    "email": "phuc.mai@classmanager.local",
+    "email": "phuc.mai@schoolops.local",
     "phone": "0912345615",
     "role": "TEACHER",
     "status": "active",
@@ -597,7 +597,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-16",
     "name": "Cô Nguyễn Thị Hương",
-    "email": "huong.nguyen@classmanager.local",
+    "email": "huong.nguyen@schoolops.local",
     "phone": "0912345616",
     "role": "TEACHER",
     "status": "active",
@@ -611,7 +611,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-17",
     "name": "Cô Cao Minh Nguyệt",
-    "email": "nguyet.cao@classmanager.local",
+    "email": "nguyet.cao@schoolops.local",
     "phone": "0912345617",
     "role": "TEACHER",
     "status": "active",
@@ -632,7 +632,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-18",
     "name": "Cô Tạ Phương Lan",
-    "email": "lan.ta@classmanager.local",
+    "email": "lan.ta@schoolops.local",
     "phone": "0912345618",
     "role": "TEACHER",
     "status": "active",
@@ -653,7 +653,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-19",
     "name": "Thầy Vương Quốc Bảo",
-    "email": "bao.vuong@classmanager.local",
+    "email": "bao.vuong@schoolops.local",
     "phone": "0912345619",
     "role": "TEACHER",
     "status": "active",
@@ -674,7 +674,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-20",
     "name": "Cô Kiều Thanh Vân",
-    "email": "van.kieu@classmanager.local",
+    "email": "van.kieu@schoolops.local",
     "phone": "0912345620",
     "role": "TEACHER",
     "status": "active",
@@ -695,7 +695,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-21",
     "name": "Thầy Lương Thế Vinh",
-    "email": "vinh.luong@classmanager.local",
+    "email": "vinh.luong@schoolops.local",
     "phone": "0912345621",
     "role": "TEACHER",
     "status": "active",
@@ -716,7 +716,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-22",
     "name": "Cô Bạch Diễm My",
-    "email": "my.bach@classmanager.local",
+    "email": "my.bach@schoolops.local",
     "phone": "0912345622",
     "role": "TEACHER",
     "status": "active",
@@ -737,7 +737,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-23",
     "name": "Thầy Hoàng Văn Cường",
-    "email": "cuong.hoang@classmanager.local",
+    "email": "cuong.hoang@schoolops.local",
     "phone": "0912345623",
     "role": "TEACHER",
     "status": "active",
@@ -758,7 +758,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-24",
     "name": "Cô Chu Diệu Huyền",
-    "email": "huyen.chu@classmanager.local",
+    "email": "huyen.chu@schoolops.local",
     "phone": "0912345624",
     "role": "TEACHER",
     "status": "active",
@@ -779,7 +779,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-25",
     "name": "Thầy Hà Quốc Đạt",
-    "email": "dat.ha@classmanager.local",
+    "email": "dat.ha@schoolops.local",
     "phone": "0912345625",
     "role": "TEACHER",
     "status": "active",
@@ -800,7 +800,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-26",
     "name": "Thầy Nông Văn Sơn",
-    "email": "son.nong@classmanager.local",
+    "email": "son.nong@schoolops.local",
     "phone": "0912345626",
     "role": "TEACHER",
     "status": "active",
@@ -821,7 +821,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-unassigned",
     "name": "Cô Đỗ Thu Hà (Chưa phân công)",
-    "email": "teacher4@classmanager.local",
+    "email": "teacher4@schoolops.local",
     "phone": "0945678901",
     "role": "TEACHER",
     "status": "active",
@@ -833,7 +833,7 @@ export const INITIAL_USERS: UserRow[] = [
   {
     "id": "u-tea-disabled",
     "name": "Thầy Vũ Đình Trọng (Đã khóa)",
-    "email": "teacher5@classmanager.local",
+    "email": "teacher5@schoolops.local",
     "phone": "0956789012",
     "role": "TEACHER",
     "status": "disabled",

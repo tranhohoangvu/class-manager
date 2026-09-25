@@ -1,4 +1,4 @@
-# CLASS MANAGER — TOÀN BỘ KIỂM TOÁN UI/UX & KẾ HOẠCH TINH CHỈNH SẢN PHẨM
+# SCHOOL OPS — TOÀN BỘ KIỂM TOÁN UI/UX & KẾ HOẠCH TINH CHỈNH SẢN PHẨM
 
 **Ngày kiểm toán:** 22/09/2026  
 **Phiên bản:** Local Prototype (Production-ready Architecture)  

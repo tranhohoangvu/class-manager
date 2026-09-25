@@ -7,7 +7,7 @@ describe('Teacher Domain Rules & Student Validation Tests', () => {
   const mockAdmin: UserRow = {
     id: 'u-admin',
     name: 'Admin',
-    email: 'admin@classmanager.local',
+    email: 'admin@schoolops.local',
     phone: null,
     role: 'ADMIN',
     status: 'active',

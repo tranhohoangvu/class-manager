@@ -22,7 +22,7 @@ const DEMO_ACCOUNTS = [
     badge: 'Quản trị viên',
     badgeColor: 'bg-teal-subtle text-teal border-teal/20',
     name: 'Admin Hệ thống',
-    email: 'admin@classmanager.local',
+    email: 'admin@schoolops.local',
     password: 'admin',
     desc: 'Quản lý 16 lớp THCS (480 HS), 24 giáo viên & 10 môn học',
   },
@@ -31,7 +31,7 @@ const DEMO_ACCOUNTS = [
     badge: 'GVCN & GVBM',
     badgeColor: 'bg-success-bg text-success border-success/30',
     name: 'Thầy Nguyễn Văn An',
-    email: 'an.nguyen@classmanager.local',
+    email: 'an.nguyen@schoolops.local',
     password: 'teacher1',
     desc: 'GVCN 6A1 (Toán) + GVBM 6A2, 7A1, 7A2 (Test đổi quyền khi chuyển lớp)',
   },
@@ -40,7 +40,7 @@ const DEMO_ACCOUNTS = [
     badge: 'Chỉ GVBM',
     badgeColor: 'bg-warning-bg text-warning-700 border-warning/30',
     name: 'Thầy Hoàng Văn Cường',
-    email: 'cuong.hoang@classmanager.local',
+    email: 'cuong.hoang@schoolops.local',
     password: 'teacher23',
     desc: 'Dạy Công nghệ nhiều lớp. Quyền chỉ đọc + điểm danh môn',
   },
@@ -49,7 +49,7 @@ const DEMO_ACCOUNTS = [
     badge: 'Chỉ GVCN',
     badgeColor: 'bg-accent text-accent-text border-border',
     name: 'Cô Nguyễn Thị Hương',
-    email: 'huong.nguyen@classmanager.local',
+    email: 'huong.nguyen@schoolops.local',
     password: 'teacher16',
     desc: 'GVCN lớp 6A4 (không dạy bộ môn lớp khác). Toàn quyền quản lý 6A4',
   },
@@ -58,7 +58,7 @@ const DEMO_ACCOUNTS = [
     badge: 'Chưa có lớp',
     badgeColor: 'bg-surface-muted text-text-muted border-border',
     name: 'Thầy Đỗ Văn Tân',
-    email: 'unassigned@classmanager.local',
+    email: 'unassigned@schoolops.local',
     password: 'unassigned',
     desc: 'Giáo viên mới chưa được gán lớp hay bộ môn (Test Empty State)',
   },
@@ -67,7 +67,7 @@ const DEMO_ACCOUNTS = [
     badge: 'Đã khóa',
     badgeColor: 'bg-danger-bg text-danger border-danger/30',
     name: 'Thầy Vũ Đình Trọng',
-    email: 'disabled@classmanager.local',
+    email: 'disabled@schoolops.local',
     password: 'disabled',
     desc: 'Tài khoản bị vô hiệu hóa (Test Account Disabled)',
   },
@@ -76,7 +76,7 @@ const DEMO_ACCOUNTS = [
 export default function LoginPage() {
   const router = useRouter();
   const { user, login } = useAuth();
-  const [email, setEmail] = useState('an.nguyen@classmanager.local');
+  const [email, setEmail] = useState('an.nguyen@schoolops.local');
   const [password, setPassword] = useState('teacher1');
   const [showPassword, setShowPassword] = useState(false);
   const [showDemoAccounts, setShowDemoAccounts] = useState(false);

@@ -19,14 +19,14 @@ ON CONFLICT (code) DO NOTHING;
 
 -- 2. USERS (Admin + Key Demo Teachers with bcrypt hashed passwords)
 INSERT INTO users (id, name, email, phone, role, status, password_hash) VALUES
-  ('u-admin', 'Quản trị viên Hệ thống', 'admin@classmanager.local', '0901234567', 'ADMIN', 'active', '$2b$10$dzn3wISgnU.Tdne2FzEaju8hsVRGHmi/ipSRGqikf4VajFP3dA6m2'),
-  ('u-tea-01', 'Thầy Nguyễn Văn An', 'an.nguyen@classmanager.local', '0912345601', 'TEACHER', 'active', '$2b$10$ED4fXuXObqn7p7tDV603S.j8bGtF6xw7M/9cuWKU3sV6J77aFB6NS'),
-  ('u-tea-02', 'Cô Trần Thị Bình', 'binh.tran@classmanager.local', '0912345602', 'TEACHER', 'active', '$2b$10$b6zIxkXblKoKZx0XTZ0hkei8D0xBTYnawJV8.DJJyEZ0d7YAWOsdu'),
-  ('u-tea-03', 'Thầy Lê Hoàng Cường', 'cuong.le@classmanager.local', '0912345603', 'TEACHER', 'active', '$2b$10$M7U8NyBQKsIbOBJ21m53JeSDRcb4OfBKfKsXvJqIGUNUQFoULwh0.'),
-  ('u-tea-16', 'Cô Nguyễn Thị Hương', 'huong.nguyen@classmanager.local', '0912345616', 'TEACHER', 'active', '$2b$10$X7NuhIt3lmD3I.KSDKehQ.5VesP.P3EjD6gtxsG.75tdch8yXlMLq'),
-  ('u-tea-23', 'Thầy Vũ Đình Trọng', 'disabled@classmanager.local', '0912345623', 'TEACHER', 'disabled', '$2b$10$vSi8TRKWD5rPx6DBtOrEYOe0Ug6xTooaVb1AgkTRW6oPwFTOzl.Oe'),
-  ('u-tea-24', 'Thầy Hoàng Văn Cường', 'cuong.hoang@classmanager.local', '0912345624', 'TEACHER', 'active', '$2b$10$owHiYO0sXv6lFIkd/zK4hubbfTFXAhT3J/DoixL.Bq/OATh7UlmS2'),
-  ('u-tea-unassigned', 'Thầy Đỗ Văn Tân', 'unassigned@classmanager.local', '0912345699', 'TEACHER', 'active', '$2b$10$veQB4fMFub4vywOR4suokeFU3Z7RDghTqKO..0Jpz2Bv7iuIKAf3m')
+  ('u-admin', 'Quản trị viên Hệ thống', 'admin@schoolops.local', '0901234567', 'ADMIN', 'active', '$2b$10$dzn3wISgnU.Tdne2FzEaju8hsVRGHmi/ipSRGqikf4VajFP3dA6m2'),
+  ('u-tea-01', 'Thầy Nguyễn Văn An', 'an.nguyen@schoolops.local', '0912345601', 'TEACHER', 'active', '$2b$10$ED4fXuXObqn7p7tDV603S.j8bGtF6xw7M/9cuWKU3sV6J77aFB6NS'),
+  ('u-tea-02', 'Cô Trần Thị Bình', 'binh.tran@schoolops.local', '0912345602', 'TEACHER', 'active', '$2b$10$b6zIxkXblKoKZx0XTZ0hkei8D0xBTYnawJV8.DJJyEZ0d7YAWOsdu'),
+  ('u-tea-03', 'Thầy Lê Hoàng Cường', 'cuong.le@schoolops.local', '0912345603', 'TEACHER', 'active', '$2b$10$M7U8NyBQKsIbOBJ21m53JeSDRcb4OfBKfKsXvJqIGUNUQFoULwh0.'),
+  ('u-tea-16', 'Cô Nguyễn Thị Hương', 'huong.nguyen@schoolops.local', '0912345616', 'TEACHER', 'active', '$2b$10$X7NuhIt3lmD3I.KSDKehQ.5VesP.P3EjD6gtxsG.75tdch8yXlMLq'),
+  ('u-tea-23', 'Thầy Vũ Đình Trọng', 'disabled@schoolops.local', '0912345623', 'TEACHER', 'disabled', '$2b$10$vSi8TRKWD5rPx6DBtOrEYOe0Ug6xTooaVb1AgkTRW6oPwFTOzl.Oe'),
+  ('u-tea-24', 'Thầy Hoàng Văn Cường', 'cuong.hoang@schoolops.local', '0912345624', 'TEACHER', 'active', '$2b$10$owHiYO0sXv6lFIkd/zK4hubbfTFXAhT3J/DoixL.Bq/OATh7UlmS2'),
+  ('u-tea-unassigned', 'Thầy Đỗ Văn Tân', 'unassigned@schoolops.local', '0912345699', 'TEACHER', 'active', '$2b$10$veQB4fMFub4vywOR4suokeFU3Z7RDghTqKO..0Jpz2Bv7iuIKAf3m')
 ON CONFLICT (email) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   name = EXCLUDED.name,

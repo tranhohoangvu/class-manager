@@ -1,4 +1,4 @@
-# CLASS MANAGER — BÁO CÁO AUDIT TOÀN DIỆN CODEBASE
+# SCHOOL OPS — BÁO CÁO AUDIT TOÀN DIỆN CODEBASE
 **Ngày thực hiện:** 22/09/2026 (Cập nhật Backend Migration: 23/09/2026)  
 **Phiên bản hệ thống:** THCS Scale (16 lớp, 480 học sinh, 24 giáo viên, 10 môn học)  
 **Mục tiêu:** Đánh giá hiện trạng kiến trúc, bảo mật, tính toàn vẹn dữ liệu và lộ trình phát triển hệ thống hoàn chỉnh (Node.js + Express + PostgreSQL + Render).

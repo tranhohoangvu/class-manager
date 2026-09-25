@@ -126,7 +126,7 @@ Required settings in `.env`:
 ```env
 PORT=4000
 NODE_ENV=development
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/class_manager
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/school_ops
 JWT_SECRET=super_secret_jwt_key_change_in_production_32chars
 SESSION_SECRET=super_secret_session_key_change_in_production
 CORS_ORIGIN=http://localhost:3000

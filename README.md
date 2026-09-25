@@ -193,12 +193,12 @@ The `/login` view provides quick-access preconfigured test accounts:
 
 | Persona | Name | Email | Password | Test Scenario |
 | :--- | :--- | :--- | :--- | :--- |
-| **System Administrator** | Admin Hệ thống | `admin@classmanager.local` | `admin` | Full school-wide governance & timetable scheduling |
-| **Dual Role (GVCN + GVBM)** | Thầy Nguyễn Văn An | `an.nguyen@classmanager.local` | `teacher1` | **GVCN of Class 6A1** & **GVBM (Math) in 6A2, 7A1, 7A2** |
-| **Subject Teacher Only** | Thầy Hoàng Văn Cường | `cuong.hoang@classmanager.local` | `teacher23` | Pure GVBM (Technology), marks only assigned subject |
-| **Homeroom Teacher Only** | Cô Nguyễn Thị Hương | `huong.nguyen@classmanager.local` | `teacher16` | Pure GVCN of Class 6A4 |
-| **Unassigned Staff** | Thầy Đỗ Văn Tân | `unassigned@classmanager.local` | `unassigned` | Verifies empty state when staff has no active classes |
-| **Disabled Account** | Thầy Vũ Đình Trọng | `disabled@classmanager.local` | `disabled` | Verifies security rejection on deactivated accounts |
+| **System Administrator** | Admin Hệ thống | `admin@schoolops.local` | `admin` | Full school-wide governance & timetable scheduling |
+| **Dual Role (GVCN + GVBM)** | Thầy Nguyễn Văn An | `an.nguyen@schoolops.local` | `teacher1` | **GVCN of Class 6A1** & **GVBM (Math) in 6A2, 7A1, 7A2** |
+| **Subject Teacher Only** | Thầy Hoàng Văn Cường | `cuong.hoang@schoolops.local` | `teacher23` | Pure GVBM (Technology), marks only assigned subject |
+| **Homeroom Teacher Only** | Cô Nguyễn Thị Hương | `huong.nguyen@schoolops.local` | `teacher16` | Pure GVCN of Class 6A4 |
+| **Unassigned Staff** | Thầy Đỗ Văn Tân | `unassigned@schoolops.local` | `unassigned` | Verifies empty state when staff has no active classes |
+| **Disabled Account** | Thầy Vũ Đình Trọng | `disabled@schoolops.local` | `disabled` | Verifies security rejection on deactivated accounts |
 
 ---
 

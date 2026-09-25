@@ -59,7 +59,7 @@ graph TD
 | `NODE_ENV` | `production` | No |
 | `DATABASE_URL` | Connection string from Render PostgreSQL (`postgresql://...`) | Yes |
 | `JWT_SECRET` | 32+ character random secret for signing tokens | Yes |
-| `CORS_ORIGIN` | Allowed frontend origin URL (e.g. `https://classmanager.onrender.com`) | No |
+| `CORS_ORIGIN` | Allowed frontend origin URL (e.g. `https://schoolops.onrender.com`) | No |
 
 ---
 
@@ -74,7 +74,7 @@ graph TD
 Database migrations are versioned under `backend/migrations/` and executed sequentially:
 ```bash
 # Execute migrations against Render PostgreSQL
-DATABASE_URL="postgresql://user:password@render-host/class_manager" npm run migrate
+DATABASE_URL="postgresql://user:password@render-host/school_ops" npm run migrate
 ```
 Migration sequence:
 1. `001_initial_schema.sql` (Tables: users, classes, students, desks, seats, attendance...)

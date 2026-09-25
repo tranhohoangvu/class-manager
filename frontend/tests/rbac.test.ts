@@ -7,7 +7,7 @@ describe('RBAC & AuthGuard Tests', () => {
   const mockAdmin: UserRow = {
     id: 'u-admin',
     name: 'Quản trị viên Hệ thống',
-    email: 'admin@classmanager.local',
+    email: 'admin@schoolops.local',
     phone: '0901234567',
     role: 'ADMIN',
     status: 'active',
@@ -18,7 +18,7 @@ describe('RBAC & AuthGuard Tests', () => {
   const mockGVCN_6A1: UserRow = {
     id: 'u-tea-01', // Thầy Nguyễn Văn An (GVCN 6A1, dạy Toán 6A1, 6A2, 7A1, 7A2)
     name: 'Thầy Nguyễn Văn An',
-    email: 'an.nguyen@classmanager.local',
+    email: 'an.nguyen@schoolops.local',
     phone: '0912345601',
     role: 'TEACHER',
     status: 'active',
@@ -29,7 +29,7 @@ describe('RBAC & AuthGuard Tests', () => {
   const mockGVBM_Cuong: UserRow = {
     id: 'u-tea-24', // Thầy Hoàng Văn Cường (chỉ làm GVBM môn Công nghệ)
     name: 'Thầy Hoàng Văn Cường',
-    email: 'cuong.hoang@classmanager.local',
+    email: 'cuong.hoang@schoolops.local',
     phone: '0912345624',
     role: 'TEACHER',
     status: 'active',
@@ -40,7 +40,7 @@ describe('RBAC & AuthGuard Tests', () => {
   const mockDisabledTeacher: UserRow = {
     id: 'u-tea-23', // Thầy Vũ Đình Trọng (disabled)
     name: 'Thầy Vũ Đình Trọng',
-    email: 'trong.vu@classmanager.local',
+    email: 'trong.vu@schoolops.local',
     phone: '0912345623',
     role: 'TEACHER',
     status: 'disabled',

@@ -1,4 +1,4 @@
-# CLASS MANAGER — DESIGN SYSTEM SPECIFICATION (DESIGN.md)
+# SCHOOL OPS — DESIGN SYSTEM SPECIFICATION (DESIGN.md)
 
 **Codename:** Syllabus Academic Edition  
 **Version:** 2.0 (Canonical Production Standard)  

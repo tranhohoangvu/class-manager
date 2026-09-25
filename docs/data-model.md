@@ -1,4 +1,4 @@
-# CLASS MANAGER — HỆ THỐNG DATA MODEL & DATA CONTRACTS
+# SCHOOL OPS — HỆ THỐNG DATA MODEL & DATA CONTRACTS
 **Phiên bản:** 3.0 (Chuẩn hóa cho THCS Scale & Hoàn thiện Backend Migration Native PostgreSQL)  
 **Tác giả:** Antigravity Team  
 **Mục tiêu:** Định nghĩa chuẩn mực cấu trúc dữ liệu cho tất cả các thực thể (Entities), quan hệ (Relationships), ràng buộc tính toàn vẹn (Integrity Constraints) và phân quyền (Role Access/RBAC), hỗ trợ đầy đủ cơ chế lưu trữ quan hệ chuẩn trên PostgreSQL và lưu trữ offline `LocalStore`.

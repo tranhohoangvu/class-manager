@@ -62,7 +62,7 @@ describe('Attendance System & Calculations Tests', () => {
     const mockGVCN_6A1: UserRow = {
       id: 'u-tea-01', // Thầy Nguyễn Văn An: GVCN 6A1, dạy Toán (sub-mat)
       name: 'Thầy Nguyễn Văn An',
-      email: 'an.nguyen@classmanager.local',
+      email: 'an.nguyen@schoolops.local',
       phone: '0912345601',
       role: 'TEACHER',
       status: 'active',
@@ -73,7 +73,7 @@ describe('Attendance System & Calculations Tests', () => {
     const mockGVBM_Lit: UserRow = {
       id: 'u-tea-05', // Cô Trần Thị Bình: dạy Ngữ văn (sub-lit) ở 6A1
       name: 'Cô Trần Thị Bình',
-      email: 'binh.tran@classmanager.local',
+      email: 'binh.tran@schoolops.local',
       phone: '0912345605',
       role: 'TEACHER',
       status: 'active',
@@ -84,7 +84,7 @@ describe('Attendance System & Calculations Tests', () => {
     const mockGVBM_Other: UserRow = {
       id: 'u-tea-24', // Thầy Hoàng Văn Cường: không dạy môn nào ở 6A1
       name: 'Thầy Hoàng Văn Cường',
-      email: 'cuong.hoang@classmanager.local',
+      email: 'cuong.hoang@schoolops.local',
       phone: '0912345624',
       role: 'TEACHER',
       status: 'active',
@@ -95,7 +95,7 @@ describe('Attendance System & Calculations Tests', () => {
     const mockDisabledTeacher: UserRow = {
       id: 'u-tea-23',
       name: 'Thầy Vũ Đình Trọng',
-      email: 'trong.vu@classmanager.local',
+      email: 'trong.vu@schoolops.local',
       phone: '0912345623',
       role: 'TEACHER',
       status: 'disabled',

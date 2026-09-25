@@ -82,12 +82,12 @@ The `/login` route exposes 6 pre-configured user scenarios designed to test dist
 
 | Persona | Name | Role | Email | Password | Intended Test Coverage |
 | :--- | :--- | :---: | :--- | :--- | :--- |
-| **System Administrator** | Admin Hệ thống | `ADMIN` | `admin@classmanager.local` | `admin` | Full school access, faculty assignments, master timetable. |
-| **Dual Role (GVCN + GVBM)** | Thầy Nguyễn Văn An | `TEACHER` | `an.nguyen@classmanager.local` | `teacher1` | Tests dynamic role switching: GVCN in 6A1 (Toán), GVBM in 6A2, 7A1, 7A2. |
-| **Pure Subject Teacher** | Thầy Hoàng Văn Cường | `TEACHER` | `cuong.hoang@classmanager.local` | `teacher23` | Pure GVBM (Công nghệ). Tests read-only rosters and subject attendance locking. |
-| **Pure Homeroom Teacher**| Cô Nguyễn Thị Hương | `TEACHER` | `huong.nguyen@classmanager.local` | `teacher16` | Pure GVCN of 6A4 (no outside subject teaching). |
-| **Unassigned Staff** | Thầy Đỗ Văn Tân | `TEACHER` | `unassigned@classmanager.local` | `unassigned` | Newly onboarded staff with 0 classes. Tests empty state banner. |
-| **Disabled Account** | Thầy Vũ Đình Trọng | `TEACHER` | `disabled@classmanager.local` | `disabled` | Account marked `status = 'disabled'`. Tests login rejection. |
+| **System Administrator** | Admin Hệ thống | `ADMIN` | `admin@schoolops.local` | `admin` | Full school access, faculty assignments, master timetable. |
+| **Dual Role (GVCN + GVBM)** | Thầy Nguyễn Văn An | `TEACHER` | `an.nguyen@schoolops.local` | `teacher1` | Tests dynamic role switching: GVCN in 6A1 (Toán), GVBM in 6A2, 7A1, 7A2. |
+| **Pure Subject Teacher** | Thầy Hoàng Văn Cường | `TEACHER` | `cuong.hoang@schoolops.local` | `teacher23` | Pure GVBM (Công nghệ). Tests read-only rosters and subject attendance locking. |
+| **Pure Homeroom Teacher**| Cô Nguyễn Thị Hương | `TEACHER` | `huong.nguyen@schoolops.local` | `teacher16` | Pure GVCN of 6A4 (no outside subject teaching). |
+| **Unassigned Staff** | Thầy Đỗ Văn Tân | `TEACHER` | `unassigned@schoolops.local` | `unassigned` | Newly onboarded staff with 0 classes. Tests empty state banner. |
+| **Disabled Account** | Thầy Vũ Đình Trọng | `TEACHER` | `disabled@schoolops.local` | `disabled` | Account marked `status = 'disabled'`. Tests login rejection. |
 
 ---
 

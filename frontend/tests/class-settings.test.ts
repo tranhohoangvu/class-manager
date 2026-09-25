@@ -8,7 +8,7 @@ describe('Class Settings & 20 Desks / 40 Students Constraint Tests', () => {
   const mockAdmin: UserRow = {
     id: 'u-admin',
     name: 'Quản trị viên',
-    email: 'admin@classmanager.local',
+    email: 'admin@schoolops.local',
     phone: null,
     role: 'ADMIN',
     status: 'active',

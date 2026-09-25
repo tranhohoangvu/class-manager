@@ -7,7 +7,7 @@ describe('Cải tiến 3: Student Import & Management Tests', () => {
   const mockAdmin: UserRow = {
     id: 'u-admin',
     name: 'Quản trị viên',
-    email: 'admin@classmanager.local',
+    email: 'admin@schoolops.local',
     phone: null,
     role: 'ADMIN',
     status: 'active',

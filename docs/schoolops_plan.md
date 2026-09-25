@@ -19,7 +19,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                          HỆ THỐNG CẢI TIẾN CLASS MANAGER                               │
+│                          HỆ THỐNG CẢI TIẾN SCHOOL OPS                               │
 ├───────────────────┬───────────────────┬──────────────────┬───────────────┬─────────────┤
 │ 1. SƠ ĐỒ LỚP HỌC  │ 2. CÀI ĐẶT & DATA │ 3. ĐIỂM DANH &   │ 4. THỜI KHÓA  │ 5. ADMIN &  │
 │    (SEATING MAP)  │    (CONSISTENCY)  │    HỌC SINH      │    BIỂU (TKB) │    HỆ THỐNG │
@@ -233,7 +233,7 @@ Hệ thống hiện tại đã hoàn thiện bộ khung chức năng cốt lõi 
 
 ```mermaid
 gantt
-    title LỘ TRÌNH TRIỂN KHAI CẢI TIẾN CLASS MANAGER
+    title LỘ TRÌNH TRIỂN KHAI CẢI TIẾN SCHOOL OPS
     dateFormat  YYYY-MM-DD
     section Giai đoạn 1 (Core Fixes)
     Fix logic trang Settings & max_students       :done, a1, 2026-09-23, 1d

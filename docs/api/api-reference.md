@@ -22,7 +22,7 @@ The **SchoolOps REST API** is an Express + TypeScript service deployed on Render
 * **Request Body**:
   ```json
   {
-    "email": "an.nguyen@classmanager.local",
+    "email": "an.nguyen@schoolops.local",
     "password": "teacher1"
   }
   ```
@@ -33,7 +33,7 @@ The **SchoolOps REST API** is an Express + TypeScript service deployed on Render
       "user": {
         "id": "u-tea-01",
         "name": "Thầy Nguyễn Văn An",
-        "email": "an.nguyen@classmanager.local",
+        "email": "an.nguyen@schoolops.local",
         "phone": "0912345601",
         "role": "TEACHER",
         "status": "active"
