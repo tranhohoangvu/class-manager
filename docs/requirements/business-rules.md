@@ -128,15 +128,21 @@ This document catalogues all auditable business rules, constraints, and invarian
   - `frontend/src/services/auth-guard.ts` (`canViewAttendance`)
   - `frontend/src/app/(dashboard)/attendance/page.tsx`
 
-### BR-018: Valid Attendance Status Domain
+### BR-018: Valid Attendance Status Domain & Absence Classification Rule
 * **Rule:** Attendance records can only take one of four validated values:
   - `'present'`: Có mặt
   - `'absent'`: Vắng không phép
   - `'late'`: Đi muộn
   - `'excused'`: Vắng có phép
+* **Absence Classification Invariant:**
+  - Absence consists of two strictly segregated types: **Vắng không phép** (`absent`) and **Vắng có phép** (`excused`).
+  - **Excused Absence Invariant:** A record is classified as excused (`excused`) IF AND ONLY IF the user explicitly selects status `'excused'` (with or without notes).
+  - **Unexcused Absence Invariant:** A record with status `'absent'` is always classified as unexcused absence, regardless of note contents (notes mentioning "phép", "ốm", etc. must never alter the status to excused).
+  - Total absences for reports, overview, and dashboard metrics is computed as `absentCount + excusedCount`.
 * **Enforced By:**
   - `frontend/src/types/index.ts` (`AttendanceStatus`)
   - `frontend/src/services/attendance.service.ts` (`VALID_STATUSES`)
+  - `frontend/src/services/admin-report.service.ts` (`getEffectiveStudentRecords`, `getSchoolAttendanceOverview`, `getClassAttendanceStats`)
   - `backend/migrations/001_initial_schema.sql` (`status text CHECK (status IN ('present', 'absent', 'late', 'excused'))`)
 
 ### BR-019: Unique Daily Attendance per Student & Period

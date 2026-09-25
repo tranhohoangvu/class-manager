@@ -1,8 +1,10 @@
 import { LocalStore } from '@/lib/store';
+import { getTodayISO } from '@/lib/utils';
 import {
   TIMETABLE_PERIODS,
   TIMETABLE_DAYS,
 } from '@/lib/constants';
+import { AttendanceRow } from '@/types';
 
 export interface SchoolAttendanceOverview {
   date: string;
@@ -102,21 +104,38 @@ export interface SchoolReportWorkbookData {
 
 export const AdminReportService = {
   /**
-   * Lấy ngày có dữ liệu điểm danh gần nhất trong hệ thống hoặc ngày hôm nay
+   * Lấy ngày có dữ liệu điểm danh theo thời gian thực (hôm nay) hoặc ngày được yêu cầu
    */
   getEffectiveAttendanceDate(preferredDate?: string): string {
     if (preferredDate) return preferredDate;
+    // Tự động chuyển ngày theo thời gian thực (new Date()), không gán cứng, sang ngày mới luôn lấy ngày hiện tại
+    return getTodayISO();
+  },
 
-    // Mặc định luôn là ngày hôm nay. Sang ngày mới mặc định tất cả đều có mặt
-    const todayStr = new Date().toISOString().split('T')[0];
-    const allRecords = LocalStore.getAttendanceRecords();
-    if (allRecords.length === 0) {
-      return todayStr;
-    }
-
-    // Nếu trong store có bản ghi ngày hôm nay hoặc chưa chọn ngày, lấy ngày hôm nay
-    const dates = Array.from(new Set(allRecords.map((r) => r.date))).sort().reverse();
-    return dates.includes(todayStr) ? todayStr : dates[0] || todayStr;
+  /**
+   * Xác định bản ghi điểm danh có hiệu lực nhất của từng học sinh trong ngày.
+   * Ưu tiên bản ghi cập nhật mới nhất (updated_at / created_at).
+   * Nếu cùng thời gian, ưu tiên trạng thái ngoại lệ: absent / excused / late > present.
+   */
+  getEffectiveStudentRecords(records: AttendanceRow[]): Map<string, AttendanceRow> {
+    const studentRecordMap = new Map<string, AttendanceRow>();
+    records.forEach((r) => {
+      const existing = studentRecordMap.get(r.student_id);
+      if (!existing) {
+        studentRecordMap.set(r.student_id, r);
+      } else {
+        const existingTime = new Date(existing.updated_at || existing.created_at || 0).getTime();
+        const curTime = new Date(r.updated_at || r.created_at || 0).getTime();
+        if (curTime > existingTime) {
+          studentRecordMap.set(r.student_id, r);
+        } else if (curTime === existingTime) {
+          if (r.status !== 'present' && existing.status === 'present') {
+            studentRecordMap.set(r.student_id, r);
+          }
+        }
+      }
+    });
+    return studentRecordMap;
   },
 
   /**
@@ -128,13 +147,8 @@ export const AdminReportService = {
     const classes = LocalStore.getClasses().filter((c) => c.status === 'active');
     const records = LocalStore.getAttendanceForDate(effectiveDate);
 
-    // Map studentId -> status (ngoại lệ vắng/muộn hoặc bản ghi điểm danh cụ thể)
-    const studentStatusMap = new Map<string, string>();
-    records.forEach((r) => {
-      if (!studentStatusMap.has(r.student_id) || r.status === 'absent' || r.status === 'late') {
-        studentStatusMap.set(r.student_id, r.status);
-      }
-    });
+    // Map studentId -> bản ghi điểm danh có hiệu lực nhất
+    const studentRecordMap = this.getEffectiveStudentRecords(records);
 
     let presentCount = 0;
     let absentCount = 0;
@@ -143,18 +157,16 @@ export const AdminReportService = {
     let unrecordedCount = 0;
 
     students.forEach((s) => {
-      const status = studentStatusMap.get(s.id);
-      if (status === 'absent') {
-        const note = records.find((r) => r.student_id === s.id && r.status === 'absent')?.note;
-        if (note && note.toLowerCase().includes('phép')) {
-          excusedCount++;
-        } else {
-          absentCount++;
-        }
+      const rec = studentRecordMap.get(s.id);
+      const status = rec?.status;
+      if (status === 'excused') {
+        // Chỉ ghi nhận có phép khi người dùng chọn đúng trạng thái 'excused' (có hoặc không có ghi chú)
+        excusedCount++;
+      } else if (status === 'absent') {
+        // Trạng thái 'absent' luôn là vắng không phép (kể cả có ghi chú)
+        absentCount++;
       } else if (status === 'late') {
         lateCount++;
-      } else if (status === 'excused') {
-        excusedCount++;
       } else {
         // Mặc định toàn bộ học sinh Có mặt (Default-Present Attendance)
         presentCount++;
@@ -192,12 +204,7 @@ export const AdminReportService = {
     const students = LocalStore.getStudents().filter((s) => s.status === 'active');
     const records = LocalStore.getAttendanceForDate(effectiveDate);
 
-    const studentStatusMap = new Map<string, string>();
-    records.forEach((r) => {
-      if (!studentStatusMap.has(r.student_id) || r.status === 'absent' || r.status === 'late') {
-        studentStatusMap.set(r.student_id, r.status);
-      }
-    });
+    const studentRecordMap = this.getEffectiveStudentRecords(records);
 
     const grades = [6, 7, 8, 9];
 
@@ -212,10 +219,11 @@ export const AdminReportService = {
       let excusedCount = 0;
 
       gradeStudents.forEach((s) => {
-        const status = studentStatusMap.get(s.id);
-        if (status === 'absent') absentCount++;
+        const rec = studentRecordMap.get(s.id);
+        const status = rec?.status;
+        if (status === 'excused') excusedCount++;
+        else if (status === 'absent') absentCount++;
         else if (status === 'late') lateCount++;
-        else if (status === 'excused') excusedCount++;
         else presentCount++; // Mặc định Có mặt
       });
 
@@ -251,12 +259,7 @@ export const AdminReportService = {
     const teacherMap = new Map<string, string>();
     teachers.forEach((t) => teacherMap.set(t.id, t.name));
 
-    const studentStatusMap = new Map<string, string>();
-    records.forEach((r) => {
-      if (!studentStatusMap.has(r.student_id) || r.status === 'absent' || r.status === 'late') {
-        studentStatusMap.set(r.student_id, r.status);
-      }
-    });
+    const studentRecordMap = this.getEffectiveStudentRecords(records);
 
     return classes
       .map((c) => {
@@ -268,10 +271,11 @@ export const AdminReportService = {
         let unrecordedCount = 0;
 
         classStudents.forEach((s) => {
-          const status = studentStatusMap.get(s.id);
-          if (status === 'absent') absentCount++;
+          const rec = studentRecordMap.get(s.id);
+          const status = rec?.status;
+          if (status === 'excused') excusedCount++;
+          else if (status === 'absent') absentCount++;
           else if (status === 'late') lateCount++;
-          else if (status === 'excused') excusedCount++;
           else presentCount++; // Mặc định Có mặt
         });
 
@@ -280,9 +284,10 @@ export const AdminReportService = {
             ? Math.round((presentCount / classStudents.length) * 1000) / 10
             : 100;
 
+        const totalAbsent = absentCount + excusedCount;
         let status: 'excellent' | 'good' | 'warning' | 'critical' = 'excellent';
-        if (attendanceRate < 85 || absentCount >= 3) status = 'critical';
-        else if (attendanceRate < 95 || absentCount > 0) status = 'warning';
+        if (attendanceRate < 85 || totalAbsent >= 3) status = 'critical';
+        else if (attendanceRate < 95 || totalAbsent > 0) status = 'warning';
         else if (lateCount > 0) status = 'good';
 
         return {
