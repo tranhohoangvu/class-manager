@@ -14,6 +14,9 @@ This documentation suite reverse-engineers the actual implementation found in th
 docs/
 ├── README.md                                # Master documentation entry point (this file)
 │
+├── assets/
+│   └── thumbnail.png                        # SchoolOps dashboard preview thumbnail
+│
 ├── architecture/
 │   ├── system-architecture.md               # High-level architecture, multi-tier layers, runtime model
 │   ├── module-architecture.md               # Module boundaries, package structure, state management
@@ -112,6 +115,6 @@ docs/
 ---
 
 ## 🔍 Verification & Health
-* **Test Suite:** 8 test files, 91 automated tests passing (`npm test`).
+* **Test Suite:** 8 test files, 110 automated tests passing (`npm test`).
 * **TypeScript:** Strict type checking with 0 compiler errors (`npx tsc --noEmit`).
 * **Production Build:** Next.js 16 production build compiles with Turbopack (`npm run build`).

@@ -37,7 +37,7 @@ school-ops/
 │   │   └── types/            # Canonical TypeScript interfaces & domain models
 │   │       └── index.ts
 │   │
-│   ├── frontend/tests/                # Vitest unit test suite (91 passing tests)
+│   ├── frontend/tests/                # Vitest unit test suite (110 passing tests)
 │   ├── next.config.ts        # Next.js configuration with API proxy rewrites
 │   ├── postcss.config.mjs    # Tailwind PostCSS configuration
 │   ├── tsconfig.json         # TypeScript configuration with @/* paths alias

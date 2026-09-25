@@ -10,7 +10,16 @@
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%2016-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript%205-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![TailwindCSS v4](https://img.shields.io/badge/Styling-TailwindCSS%20v4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-105%2F105%20Passed-brightgreen?style=for-the-badge&logo=vitest)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-110%2F110%20Passed-brightgreen?style=for-the-badge&logo=vitest)](https://vitest.dev/)
+
+<br />
+<br />
+
+<img src="docs/assets/thumbnail.png" alt="SchoolOps Operations Command Center Dashboard" width="100%" />
+
+<p align="center">
+  <em>School Operations Command Center — Nguyen Tat Thanh Secondary School Management System</em>
+</p>
 
 </div>
 
@@ -42,7 +51,7 @@ The repository is structured as a clean, standardized **Monorepo**:
 school-ops/
 ├── frontend/                 # Next.js 16 Web Application (App Router)
 │   ├── src/                  # Application source code (UI, components, contexts, services, lib)
-│   ├── tests/                # Automated Vitest test suite (8 files, 105 unit tests)
+│   ├── tests/                # Automated Vitest test suite (8 files, 110 unit tests)
 │   ├── next.config.ts        # Next.js config & API proxy rewrites (/api/* -> :4000)
 │   ├── tsconfig.json         # TypeScript compiler config (@/* path alias)
 │   ├── package.json          # Frontend dependencies (package: "school-ops-frontend")
@@ -56,6 +65,7 @@ school-ops/
 │   └── README.md             # 📖 Detailed Backend Documentation
 │
 ├── docs/                     # Master Technical Documentation Suite
+│   ├── assets/               # Dashboard previews, screenshots, and visual media
 │   ├── architecture/         # System, module, and deployment architecture specifications
 │   ├── requirements/         # Functional tree, use cases, and auditable business rules
 │   ├── data/                 # PostgreSQL schema design and ER diagrams

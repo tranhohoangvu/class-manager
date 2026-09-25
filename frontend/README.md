@@ -11,7 +11,7 @@ A modern web application engineered for secondary school operations and manageme
 * **Styling:** TailwindCSS v4 (@tailwindcss/postcss), Phosphor Icons (`@phosphor-icons/react`)
 * **State Management:** React Context (`AuthContext`, `ClassContext`) + Layered Domain Service Architecture
 * **Validation & Forms:** Zod 3.25
-* **Testing:** Vitest 5.0 (8 test suites, 105 passing unit tests)
+* **Testing:** Vitest 5.0 (8 test suites, 110 passing unit tests)
 * **Data Processing & Export:** SheetJS (`xlsx`) for bidirectional Excel import and export
 * **UI Feedback:** Sonner (Toast notifications)
 
@@ -74,7 +74,7 @@ frontend/
 │   ├── types/                    # Canonical TypeScript interfaces & domain models
 │   └── proxy.ts                  # Next.js 16 route protection & redirect proxy (migrated from middleware)
 │
-├── tests/                        # Vitest automated test suite (105 unit tests)
+├── tests/                        # Vitest automated test suite (110 unit tests)
 ├── next.config.ts                # Next.js configuration & API proxy rewrites to Backend (:4000)
 ├── postcss.config.mjs            # Tailwind PostCSS configuration
 ├── tsconfig.json                 # TypeScript compiler configuration with @/* alias
