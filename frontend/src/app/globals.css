@@ -342,7 +342,7 @@ textarea {
 .metric-card {
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius);   /* 4px — DESIGN.md §4.2: cards max 4px */
   padding: 22px 24px;
   display: flex;
   flex-direction: column;

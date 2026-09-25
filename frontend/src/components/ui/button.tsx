@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { ButtonHTMLAttributes, forwardRef } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'error';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -17,7 +17,11 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary: [
     'bg-accent text-accent-text hover:bg-accent-hover',
     'border border-border-strong shadow-[1px_1px_3px_0px_#000000]',
-    'font-bold tracking-wide active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer',
+    'hover:-translate-x-px hover:-translate-y-px hover:shadow-[2px_2px_4px_0px_#000000]',
+    'font-bold uppercase tracking-wide',
+    'active:translate-x-[1px] active:translate-y-[1px] active:shadow-none active:bg-[#ebd374]',
+    'disabled:!opacity-50 disabled:!cursor-not-allowed disabled:!shadow-none disabled:!bg-[#e8e4d8] disabled:!text-[#787285] disabled:!border-[#b0abbc] disabled:!translate-x-0 disabled:!translate-y-0',
+    'cursor-pointer',
   ].join(' '),
   secondary: [
     'bg-surface text-text-primary hover:bg-surface-muted',
@@ -37,6 +41,11 @@ const variantStyles: Record<ButtonVariant, string> = {
   danger: [
     'bg-danger text-white hover:opacity-95',
     'border border-border-strong shadow-[1px_1px_2px_0px_#000000]',
+    'font-semibold active:translate-x-[0.5px] active:translate-y-[0.5px] cursor-pointer',
+  ].join(' '),
+  error: [
+    'bg-danger-bg text-danger hover:bg-danger/10',
+    'border border-danger shadow-none',
     'font-semibold active:translate-x-[0.5px] active:translate-y-[0.5px] cursor-pointer',
   ].join(' '),
 };
@@ -71,7 +80,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           'select-none cursor-pointer',
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-none disabled:shadow-none',
           'transition-all duration-100',
-          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-strong',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-strong focus-visible:ring-2 focus-visible:ring-accent',
           variantStyles[variant],
           sizeStyles[size],
           className
